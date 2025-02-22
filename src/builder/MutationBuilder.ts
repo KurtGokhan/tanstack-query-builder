@@ -24,12 +24,16 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     };
   };
 
+  protected mergeVars: (list: [T['vars'], ...Partial<T['vars']>[]]) => T['vars'] = (list) => {
+    return mergeVars(list, this.config.mergeVars);
+  };
+
   getMutationOptions: (
     opts?: MutationBuilderConfig<T>['options'],
   ) => UseMutationOptions<T['data'], T['error'], T['vars']> = (opts) => {
     return mergeMutationOptions([
       {
-        mutationFn: this.config.mutationFn,
+        mutationFn: (vars) => this.config.mutationFn(this.mergeVars([this.config.vars, vars])),
         meta: {
           invalidates: this.config.invalidates,
           updates: this.config.updates,
@@ -49,11 +53,11 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
 }
 
 export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends MutationBuilderFrozen<T> {
-  withVars<TVars>(vars?: TVars): MutationBuilder<PrettifyWithVars<T, TVars>> {
+  withVars<TVars = T['vars']>(vars?: TVars): MutationBuilder<PrettifyWithVars<T, Partial<TVars>>> {
     if (!vars) return this as any;
 
     return this.withConfig({
-      vars: mergeVars([this.config.vars, vars], this.config.mergeVars),
+      vars: this.mergeVars([this.config.vars, vars]),
     }) as any;
   }
 

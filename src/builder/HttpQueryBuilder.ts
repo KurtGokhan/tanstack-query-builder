@@ -61,5 +61,5 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
 
   declare withData: <TData>() => HttpQueryBuilder<Prettify<T & { data: TData }>>;
   declare withError: <TError>() => HttpQueryBuilder<Prettify<T & { error: TError }>>;
-  declare withVars: <TVars>(vars?: TVars) => HttpQueryBuilder<PrettifyWithVars<T, TVars>>;
+  declare withVars: <TVars = T['vars']>(vars?: TVars) => HttpQueryBuilder<PrettifyWithVars<T, Partial<TVars>>>;
 }

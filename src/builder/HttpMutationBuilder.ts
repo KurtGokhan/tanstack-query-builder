@@ -1,3 +1,4 @@
+import { httpRequest } from '../http/request';
 import { ExtractPathParams } from '../http/types';
 import { Prettify, WithOptional } from '../types/utils';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
@@ -11,8 +12,11 @@ export class HttpMutationBuilder<
   constructor(config?: WithOptional<MutationBuilderConfig<T>, 'mutationFn'>) {
     super({
       mergeVars: mergeHttpVars,
-      mutationFn: async () => {
-        throw new Error('mutationFn is not defined');
+      mutationFn: async (vars) => {
+        const search = { ...vars?.search! };
+        const params = { ...vars?.params! } as any;
+
+        return httpRequest<T['data']>({ ...(vars as any), vars, search, params });
       },
       ...config,
     });
@@ -58,5 +62,5 @@ export class HttpMutationBuilder<
 
   declare withData: <TData>() => HttpMutationBuilder<Prettify<T & { data: TData }>>;
   declare withError: <TError>() => HttpMutationBuilder<Prettify<T & { error: TError }>>;
-  declare withVars: <TVars>(vars?: TVars) => HttpMutationBuilder<PrettifyWithVars<T, TVars>>;
+  declare withVars: <TVars = T['vars']>(vars?: TVars) => HttpMutationBuilder<PrettifyWithVars<T, Partial<TVars>>>;
 }

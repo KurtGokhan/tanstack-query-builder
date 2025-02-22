@@ -121,7 +121,7 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
 }
 
 export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends QueryBuilderFrozen<T> {
-  withVars<TVars>(vars?: TVars): QueryBuilder<PrettifyWithVars<T, TVars>> {
+  withVars<TVars = T['vars']>(vars?: TVars): QueryBuilder<PrettifyWithVars<T, Partial<TVars>>> {
     if (!vars) return this as any;
 
     return this.withConfig({

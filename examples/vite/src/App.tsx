@@ -1,21 +1,31 @@
 import { useState } from 'react';
 import './App.css';
-import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 
-const builder = new HttpQueryBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
+const qBuilder = new HttpQueryBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
+const mBuilder = new HttpMutationBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
 
 type PostData = { id: number; title: string; body: string; userId: number };
 type CommentData = { postId: number; id: number; name: string; email: string; body: string };
 
-const postsQuery = builder.withConfig({ tags: 'refreshable' }).withPath('/posts').withData<PostData[]>();
+const postsQuery = qBuilder
+  .withConfig({ tags: 'refreshable' })
+  .withConfig({ tags: { type: 'posts' as any, id: 'LIST' } })
+  .withPath('/posts')
+  .withData<PostData[]>();
 
-const postQuery = builder.withConfig({ tags: 'refreshable' }).withPath('/posts/:id').withData<PostData>();
+const postQuery = qBuilder.withConfig({ tags: 'refreshable' }).withPath('/posts/:id').withData<PostData>();
 
-const commentsQuery = builder
+const commentsQuery = qBuilder
   .withConfig({ tags: 'refreshable' })
   .withPath('/comments')
   .withSearch<{ postId: number | null }>()
   .withData<CommentData[]>();
+
+const deletePostMutation = mBuilder
+  .withConfig({ invalidates: { type: 'posts' as any, id: 'LIST' } })
+  .withVars({ method: 'delete' })
+  .withPath('/posts/:id');
 
 function App() {
   const [clickedPost, setClickedPost] = useState<number | null>(null);
@@ -23,6 +33,8 @@ function App() {
   const posts = postsQuery.useQuery({}, { enabled: !clickedPost });
   const post = postQuery.useQuery({ params: { id: clickedPost } }, { enabled: !!clickedPost });
   const comments = commentsQuery.useQuery({ search: { postId: clickedPost } }, { enabled: !!clickedPost });
+
+  const deletePost = deletePostMutation.useMutation();
 
   const [refresh] = useOperateOnTags({ tags: ['refreshable'], operation: 'refetch' });
 
@@ -76,6 +88,14 @@ function App() {
                 <a>
                   <h2 onClick={() => setClickedPost(post.id)}>{post.title}</h2>
                 </a>
+
+                <button
+                  onClick={() => deletePost.mutateAsync({ params: { id: post.id } })}
+                  disabled={deletePost.isPending}
+                >
+                  Delete
+                </button>
+
                 <p>{post.body}</p>
               </div>
             ))}
