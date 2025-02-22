@@ -1,4 +1,5 @@
 import { MutationFunction, QueryClient, UseMutationOptions, useMutation } from '@tanstack/react-query';
+import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
 import { Prettify } from '../types/utils';
 import { BuilderMergeVarsFn } from './types';
@@ -7,6 +8,21 @@ import { mergeMutationOptions, mergeVars } from './utils';
 
 export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   constructor(protected config: MutationBuilderConfig<T>) {}
+
+  protected mergeConfigs: (
+    config: MutationBuilderConfig<T>,
+    other: Partial<MutationBuilderConfig<T>>,
+  ) => MutationBuilderConfig<T> = (config, other) => {
+    return {
+      ...config,
+      ...other,
+      invalidates: mergeTagOptions([config.invalidates, other.invalidates]),
+      updates: mergeTagOptions([config.updates, other.updates]),
+      optimisticUpdates: mergeTagOptions([config.optimisticUpdates, other.optimisticUpdates]),
+      vars: mergeVars([config.vars, other.vars], other.mergeVars || config.mergeVars),
+      options: mergeMutationOptions([config.options, other.options]),
+    };
+  };
 
   getMutationOptions: (
     opts?: MutationBuilderConfig<T>['options'],
@@ -49,8 +65,10 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
     return this as any;
   }
 
-  withConfig(config: Partial<MutationBuilderConfig<T>>): MutationBuilder<T> {
-    return new MutationBuilder<T>({ ...this.config, ...config });
+  withConfig(config: Partial<MutationBuilderConfig<T>>): this {
+    const ctor = this.constructor as typeof MutationBuilder;
+    const newConfig = this.mergeConfigs(this.config, config);
+    return new ctor<T>(newConfig) as this;
   }
 
   freeze(): MutationBuilderFrozen<T> {

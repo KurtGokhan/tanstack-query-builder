@@ -50,12 +50,12 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
   withPath<const TPath extends string>(
     path: TPath,
   ): ExtractPathParams<TPath> extends void
-    ? HttpQueryBuilder<T>
+    ? this
     : HttpQueryBuilder<PrettifyWithVars<T, { params: ExtractPathParams<TPath> }>> {
     return this.withVars({ path }) as any;
   }
 
-  withBaseUrl(baseUrl: string): HttpQueryBuilder<T> {
+  withBaseUrl(baseUrl: string): this {
     return this.withVars({ baseUrl }) as any;
   }
 

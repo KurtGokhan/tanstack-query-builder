@@ -10,6 +10,7 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryTagOption } from '../tags/types';
 import { FunctionType, Prettify } from '../types/utils';
 import { BuilderMergeVarsFn, BuilderQueriesResult } from './types';
@@ -19,7 +20,20 @@ import { mergeQueryOptions, mergeVars } from './utils';
 export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
   constructor(protected config: QueryBuilderConfig<T>) {}
 
-  mergeVars: (list: [T['vars'], ...Partial<T['vars']>[]]) => T['vars'] = (list) => {
+  protected mergeConfigs: (
+    config: QueryBuilderConfig<T>,
+    other: Partial<QueryBuilderConfig<T>>,
+  ) => QueryBuilderConfig<T> = (config, other) => {
+    return {
+      ...config,
+      ...other,
+      tags: mergeTagOptions([config.tags, other.tags]),
+      vars: mergeVars([config.vars, other.vars], other.mergeVars || config.mergeVars),
+      options: mergeQueryOptions([config.options, other.options]),
+    };
+  };
+
+  protected mergeVars: (list: [T['vars'], ...Partial<T['vars']>[]]) => T['vars'] = (list) => {
     return mergeVars(list, this.config.mergeVars);
   };
 
@@ -125,7 +139,8 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
 
   withConfig(config: Partial<QueryBuilderConfig<T>>): this {
     const ctor = this.constructor as typeof QueryBuilder;
-    return new ctor<T>({ ...this.config, ...config }) as this;
+    const newConfig = this.mergeConfigs(this.config, config);
+    return new ctor<T>(newConfig) as this;
   }
 
   freeze(): QueryBuilderFrozen<T> {

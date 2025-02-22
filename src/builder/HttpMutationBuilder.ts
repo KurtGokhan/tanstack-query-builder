@@ -1,5 +1,5 @@
 import { ExtractPathParams } from '../http/types';
-import { WithOptional } from '../types/utils';
+import { Prettify, WithOptional } from '../types/utils';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
@@ -47,16 +47,16 @@ export class HttpMutationBuilder<
   withPath<const TPath extends string>(
     path: TPath,
   ): ExtractPathParams<TPath> extends void
-    ? HttpMutationBuilder<T>
+    ? this
     : HttpMutationBuilder<PrettifyWithVars<T, { params: ExtractPathParams<TPath> }>> {
     return this.withVars({ path }) as any;
   }
 
-  withBaseUrl(baseUrl: string): HttpMutationBuilder<T> {
+  withBaseUrl(baseUrl: string): this {
     return this.withVars({ baseUrl }) as any;
   }
 
-  withConfig(config: Partial<MutationBuilderConfig<T>>): HttpMutationBuilder<T> {
-    return new HttpMutationBuilder<T>({ ...this.config, ...config });
-  }
+  declare withData: <TData>() => HttpMutationBuilder<Prettify<T & { data: TData }>>;
+  declare withError: <TError>() => HttpMutationBuilder<Prettify<T & { error: TError }>>;
+  declare withVars: <TVars>(vars?: TVars) => HttpMutationBuilder<PrettifyWithVars<T, TVars>>;
 }
