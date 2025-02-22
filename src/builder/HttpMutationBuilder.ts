@@ -11,7 +11,15 @@ export class HttpMutationBuilder<
   constructor(config?: WithOptional<MutationBuilderConfig<T>, 'queryFn'>) {
     const mergeVars = config?.mergeVars || mergeHttpVars;
     const queryFn = config?.queryFn || createHttpQueryFn<T>(mergeVars);
-    super({ mergeVars, queryFn, ...config });
+    super({
+      mergeVars,
+      queryFn,
+      ...config,
+      vars: {
+        method: 'post',
+        ...config?.vars,
+      },
+    });
   }
 
   withBody<TBody>(body?: TBody): HttpMutationBuilder<PrettifyWithVars<T, { body: TBody }>> {

@@ -83,7 +83,7 @@ export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> 
 
 export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
   mergeVarsFn: BuilderMergeVarsFn<T['vars']>,
-): BuilderQueryFn<T['data'], T['vars']> {
+): BuilderQueryFn<T> {
   return async ({ queryKey, signal, meta, pageParam }: any) => {
     const [vars] = queryKey || [];
     const mergedVars = mergeVarsFn(vars, pageParam);

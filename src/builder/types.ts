@@ -1,4 +1,4 @@
-import { QueryFunctionContext, UseQueryResult } from '@tanstack/react-query';
+import { QueryFunction, UseQueryResult } from '@tanstack/react-query';
 import { RequestError } from '../http/errors';
 import { HttpRequestOptions } from '../http/types';
 import { Prettify } from '../types/utils';
@@ -40,4 +40,4 @@ export type BuilderQueriesResult<T extends BuilderTypeTemplate> = QueriesResultI
   queryMap: QueriesResultMapType<T>;
 };
 
-export type BuilderQueryFn<TData, TVars> = (context: Partial<QueryFunctionContext<[TVars]>>) => TData | Promise<TData>;
+export type BuilderQueryFn<T extends BuilderTypeTemplate> = QueryFunction<T['data'], [T['vars']]>;

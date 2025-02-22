@@ -46,7 +46,7 @@ export function resolveQueryTags({ query, client }: { client: QueryClient; query
   return resolveTags({
     tags: query.meta?.tags,
     client,
-    vars: query.queryKey[1],
+    vars: query.queryKey[0],
     data: query.state.data,
     error: query.state.error,
   });

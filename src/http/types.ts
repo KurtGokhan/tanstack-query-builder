@@ -15,7 +15,7 @@ export type HttpRequestPathParams = {
   [param: string]: PathParam;
 };
 
-export type HttpMethod = 'get' | 'post' | 'put' | 'delete';
+export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 // biome-ignore lint/suspicious/noEmptyInterface: <explanation>
 export interface HttpRequestMeta {}

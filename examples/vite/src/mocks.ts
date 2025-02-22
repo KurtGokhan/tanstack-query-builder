@@ -133,7 +133,7 @@ window.addEventListener('storage', (event) => {
 });
 
 const handlers = [
-  http.get(`${baseUrl}/reset`, async () => {
+  http.post(`${baseUrl}/reset`, async () => {
     await delay();
     const allData = recreateMockData();
     users = allData.users;

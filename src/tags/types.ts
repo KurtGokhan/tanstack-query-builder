@@ -9,7 +9,7 @@ export type QueryTagId = 'LIST' | StringLiteral | number | null | undefined;
 
 export type QueryTagObject = { type: QueryTagType; id?: QueryTagId };
 
-export type QueryTag = QueryTagType | QueryTagObject;
+export type QueryTag = '*' | QueryTagType | QueryTagObject;
 
 export type QueryTagContext<TVars = void, TData = unknown, TErr = unknown> = {
   client: QueryClient;
@@ -20,9 +20,10 @@ export type QueryTagContext<TVars = void, TData = unknown, TErr = unknown> = {
 
 export type QueryTagCallback<TVars = void, TData = unknown, TErr = unknown, TTag = QueryTag> = (
   ctx: QueryTagContext<TVars, TData, TErr>,
-) => readonly TTag[];
+) => TTag | readonly TTag[];
 
 export type QueryTagOption<TVars = void, TData = unknown, TErr = unknown, TTag extends QueryTag = QueryTag> =
+  | '*'
   | TTag
   | readonly TTag[]
   | QueryTagCallback<TVars, TData, TErr, TTag>;

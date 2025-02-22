@@ -1,5 +1,5 @@
 import './mocks';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
 import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
@@ -8,7 +8,7 @@ import { queryClient } from './client';
 const baseQuery = new HttpQueryBuilder({ queryClient }).withBaseUrl(baseUrl);
 const baseMutation = new HttpMutationBuilder({ queryClient }).withBaseUrl(baseUrl);
 
-const resetMutation = baseMutation.withPath('/reset').withConfig({ invalidates: ['posts' as any, 'refreshable'] });
+const resetMutation = baseMutation.withPath('/reset').withConfig({ invalidates: '*' });
 
 const postsQuery = baseQuery
   .withConfig({ tags: 'refreshable' })
@@ -16,13 +16,36 @@ const postsQuery = baseQuery
   .withPath('/posts')
   .withData<PostData[]>();
 
-const postQuery = baseQuery.withConfig({ tags: 'refreshable' }).withPath('/posts/:id').withData<PostData>();
+const postQuery = baseQuery
+  .withConfig({ tags: 'refreshable' })
+  .withPath('/posts/:id')
+  .withData<PostData>()
+  .withConfig({
+    tags: (ctx) => [{ type: 'posts' as any, id: ctx.vars.params.id }],
+  });
 
 const commentsQuery = baseQuery
   .withConfig({ tags: 'refreshable' })
   .withPath('/comments')
   .withSearch<{ postId: number | null }>()
   .withData<CommentData[]>();
+
+const editPostMutation = baseMutation
+  .withPath('/posts/:id')
+  .withVars({ method: 'put' })
+  .withBody<Partial<PostData>>()
+  .withConfig({
+    invalidates: () => [{ type: 'posts' as any, id: 'LIST' }],
+    optimisticUpdates: (ctx) => [
+      {
+        type: 'posts' as any,
+        id: ctx.vars.params.id,
+        updater(ctx, target) {
+          return { ...target!, ...ctx.vars.body };
+        },
+      },
+    ],
+  });
 
 const deletePostMutation = baseMutation
   .withVars({ method: 'delete' })
@@ -68,8 +91,8 @@ function App() {
                   <h2
                     onClick={() => setPostId(post.id)}
                     onMouseOver={() => {
-                      postQuery.client.ensureData({ params: { id: post.id } });
-                      commentsQuery.client.ensureData({ search: { postId: post.id } });
+                      postQuery.client.prefetch({ params: { id: post.id } });
+                      commentsQuery.client.prefetch({ search: { postId: post.id } });
                     }}
                   >
                     {post.title}
@@ -94,18 +117,53 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
   const post = postQuery.useQuery({ params: { id: postId } });
   const comments = commentsQuery.useQuery({ search: { postId: postId } });
 
+  const [showEdit, setShowEdit] = useState(false);
+  const editPost = editPostMutation.useMutation();
+
+  const titleRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+
   return (
     <>
-      {post.isLoading ? (
-        'Loading...'
-      ) : post.isError ? (
-        post.error.message
+      {!showEdit ? (
+        <>
+          {post.isLoading ? (
+            'Loading...'
+          ) : post.isError ? (
+            post.error.message
+          ) : (
+            <div>
+              <h2>{post.data?.title}</h2>
+              <p>{post.data?.body}</p>
+              <button onClick={onBack}>Back</button>
+              <button onClick={() => setShowEdit(true)} disabled={editPost.isPending}>
+                Edit post
+              </button>
+            </div>
+          )}
+        </>
       ) : (
-        <div>
-          <h2>{post.data?.title}</h2>
-          <p>{post.data?.body}</p>
-          <button onClick={onBack}>Back</button>
-        </div>
+        <>
+          <h2>Edit post</h2>
+
+          <input ref={titleRef} defaultValue={post.data?.title} style={{ display: 'block' }} />
+
+          <textarea ref={bodyRef} defaultValue={post.data?.body} style={{ display: 'block', width: 400 }} />
+
+          <button
+            onClick={() => {
+              editPost.mutateAsync({
+                params: { id: postId },
+                body: { title: titleRef.current!.value, body: bodyRef.current!.value },
+              });
+
+              setShowEdit(false);
+            }}
+            disabled={editPost.isPending}
+          >
+            Save
+          </button>
+        </>
       )}
 
       <h3>Comments</h3>

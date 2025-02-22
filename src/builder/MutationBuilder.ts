@@ -1,10 +1,12 @@
 import {
   MutationFilters,
+  MutationFunction,
   MutationKey,
   QueryClient,
   UseMutationOptions,
   useIsMutating,
   useMutation,
+  useQueryClient,
 } from '@tanstack/react-query';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
@@ -42,22 +44,32 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     return mergeVars(list, this.config.mergeVars);
   };
 
+  getMutationFn: (queryClient: QueryClient, meta?: any) => MutationFunction<T['data'], T['vars']> = (
+    queryClient,
+    meta,
+  ) => {
+    return async (vars) => {
+      return this.config.queryFn({
+        queryKey: [this.mergeVars([this.config.vars, vars])],
+        meta,
+        client: this.config.queryClient || queryClient,
+        signal: new AbortController().signal,
+      });
+    };
+  };
+
   getMutationKey: (vars: T['vars']) => MutationKey = (vars) => {
     const mergedVars = this.mergeVars([this.config.vars, vars]);
     return [this.mutationKeyPrefix, mergedVars];
   };
 
   getMutationOptions: (
+    queryClient: QueryClient,
     opts?: MutationBuilderConfig<T>['options'],
-  ) => UseMutationOptions<T['data'], T['error'], T['vars']> = (opts) => {
+  ) => UseMutationOptions<T['data'], T['error'], T['vars']> = (queryClient, opts) => {
     return mergeMutationOptions([
       {
-        mutationFn: async (vars) => {
-          return this.config.queryFn({
-            queryKey: [this.mergeVars([this.config.vars, vars])],
-            meta: opts?.meta as any,
-          });
-        },
+        mutationFn: this.getMutationFn(queryClient, opts?.meta),
         meta: {
           invalidates: this.config.invalidates,
           updates: this.config.updates,
@@ -72,7 +84,8 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   useMutation: (
     opts?: MutationBuilderConfig<T>['options'],
   ) => ReturnType<typeof useMutation<T['data'], T['error'], T['vars']>> = (opts) => {
-    return useMutation(this.getMutationOptions(opts), this.config.queryClient);
+    const queryClient = useQueryClient();
+    return useMutation(this.getMutationOptions(queryClient, opts), this.config.queryClient);
   };
 
   useIsMutating: (vars: T['vars'], filters?: MutationFilters<T['data'], T['error'], T['vars']>) => number = (
@@ -131,7 +144,7 @@ export type MutationBuilderConfig<T extends BuilderTypeTemplate> = QueryInvalida
   T['data'],
   T['error']
 > & {
-  queryFn: BuilderQueryFn<T['data'], T['vars']>;
+  queryFn: BuilderQueryFn<T>;
 
   vars?: Partial<T['vars']>;
   mergeVars?: BuilderMergeVarsFn<T['vars']>;

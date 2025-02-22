@@ -4,6 +4,7 @@ import {
   InvalidateOptions,
   QueryClient,
   QueryFilters,
+  QueryFunction,
   RefetchOptions,
   ResetOptions,
   SetDataOptions,
@@ -43,6 +44,12 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     return mergeVars(list, this.config.mergeVars);
   };
 
+  getQueryFn: () => QueryFunction<T['data'], [T['vars']]> = () => {
+    return ({ client, meta, queryKey, signal, pageParam }) => {
+      return this.config.queryFn({ client, meta, queryKey, signal, pageParam });
+    };
+  };
+
   getQueryKey: (vars: T['vars']) => DataTag<[T['vars']], T['data'], T['error']> = (vars) => {
     return [this.mergeVars([this.config.vars, vars])] as DataTag<[T['vars']], T['data'], T['error']>;
   };
@@ -53,7 +60,7 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
   ) => UseQueryOptions<T['data'], T['error'], T['data'], [T['vars']]> & { queryFn: FunctionType } = (vars, opts) => {
     return mergeQueryOptions([
       {
-        queryFn: this.config.queryFn,
+        queryFn: this.getQueryFn(),
         queryKey: this.getQueryKey(vars),
         meta: { tags: this.config.tags },
       },
@@ -214,7 +221,7 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
 type Updater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);
 
 export type QueryBuilderConfig<T extends BuilderTypeTemplate> = {
-  queryFn: BuilderQueryFn<T['data'], T['vars']>;
+  queryFn: BuilderQueryFn<T>;
   vars?: Partial<T['vars']>;
   mergeVars?: BuilderMergeVarsFn<T['vars']>;
 

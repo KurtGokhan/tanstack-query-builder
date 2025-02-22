@@ -12,15 +12,16 @@ import type { QueryTag } from './types';
  * Based on the behavior described in https://redux-toolkit.js.org/rtk-query/usage/automated-refetching#tag-invalidation-behavior
  */
 function tagMatchesTag(queryTag: QueryTag, comparedTag: QueryTag) {
-  const qType = typeof queryTag === 'object' ? queryTag.type : queryTag;
-  const cType = typeof comparedTag === 'object' ? comparedTag.type : comparedTag;
+  const qType = typeof queryTag === 'object' ? queryTag?.type : queryTag;
+  const cType = typeof comparedTag === 'object' ? comparedTag?.type : comparedTag;
 
+  if (qType != null && cType === '*') return true;
   if (qType !== cType) return false;
 
-  const cId = typeof comparedTag === 'object' ? comparedTag.id : undefined;
+  const cId = typeof comparedTag === 'object' ? comparedTag?.id : undefined;
   if (cId == null) return true;
 
-  const qId = typeof queryTag === 'object' ? queryTag.id : undefined;
+  const qId = typeof queryTag === 'object' ? queryTag?.id : undefined;
   return cId === qId;
 }
 
