@@ -1,21 +1,11 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BuilderMutationCache } from 'react-query-builder';
-
-const client = new QueryClient({
-  mutationCache: new BuilderMutationCache(
-    {},
-    {
-      getQueryClient: (): QueryClient => client,
-      syncChannel: new BroadcastChannel('react-query-builder'),
-    },
-  ),
-});
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './client';
 
 const app = (
-  <QueryClientProvider client={client}>
+  <QueryClientProvider client={queryClient}>
     <App />
   </QueryClientProvider>
 );

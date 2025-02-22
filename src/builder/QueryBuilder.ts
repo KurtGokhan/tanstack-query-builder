@@ -1,7 +1,13 @@
 import {
+  CancelOptions,
+  DataTag,
+  InvalidateOptions,
   QueryClient,
   QueryFilters,
   QueryFunction,
+  RefetchOptions,
+  ResetOptions,
+  SetDataOptions,
   UseQueryOptions,
   useIsFetching,
   usePrefetchQuery,
@@ -18,7 +24,7 @@ import { BuilderTypeTemplate, PrettifyWithVars } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
 export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
-  constructor(protected config: QueryBuilderConfig<T>) {}
+  constructor(public config: QueryBuilderConfig<T>) {}
 
   protected mergeConfigs: (
     config: QueryBuilderConfig<T>,
@@ -37,8 +43,8 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     return mergeVars(list, this.config.mergeVars);
   };
 
-  getQueryKey: (vars: T['vars']) => [T['vars']] = (vars) => {
-    return [this.mergeVars([this.config.vars, vars])] as const;
+  getQueryKey: (vars: T['vars']) => DataTag<[T['vars']], T['data'], T['error']> = (vars) => {
+    return [this.mergeVars([this.config.vars, vars])] as DataTag<[T['vars']], T['data'], T['error']>;
   };
 
   getQueryOptions: (
@@ -118,6 +124,54 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
   useSuspenseQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
     return this.useQueriesInternal(useSuspenseQueries)(queries, sharedVars, sharedOpts);
   };
+
+  private _client?: QueryBuilderClient<T>;
+  get client() {
+    return (this._client ??= new QueryBuilderClient(this));
+  }
+}
+
+class QueryBuilderClient<
+  T extends BuilderTypeTemplate,
+  TFilters = QueryFilters<T['data'], T['error'], T['data'], [T['vars']]>,
+> {
+  constructor(private builder: QueryBuilderFrozen<T>) {}
+
+  readonly ensureData = (vars: T['vars'], opts?: QueryBuilderConfig<T>['options']) =>
+    this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
+
+  readonly refetch = (vars: T['vars'], filters?: TFilters, opts?: RefetchOptions) =>
+    this.builder.config.queryClient?.refetchQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+
+  readonly fetch = (vars: T['vars'], opts?: QueryBuilderConfig<T>['options']) =>
+    this.builder.config.queryClient?.fetchQuery(this.builder.getQueryOptions(vars, opts));
+
+  readonly isFetching = (vars: T['vars'], filters?: TFilters) =>
+    this.builder.config.queryClient?.isFetching({ queryKey: this.builder.getQueryKey(vars), ...filters });
+
+  readonly prefetch = (vars: T['vars'], opts?: QueryBuilderConfig<T>['options']) =>
+    this.builder.config.queryClient?.prefetchQuery(this.builder.getQueryOptions(vars, opts));
+
+  readonly reset = (vars: T['vars'], filters?: TFilters, opts?: ResetOptions) =>
+    this.builder.config.queryClient?.resetQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+
+  readonly remove = (vars: T['vars'], filters?: TFilters) =>
+    this.builder.config.queryClient?.removeQueries({ queryKey: this.builder.getQueryKey(vars), ...filters });
+
+  readonly cancel = (vars: T['vars'], filters?: TFilters, opts?: CancelOptions) =>
+    this.builder.config.queryClient?.cancelQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+
+  readonly invalidate = (vars: T['vars'], filters?: TFilters, opts?: InvalidateOptions) =>
+    this.builder.config.queryClient?.invalidateQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+
+  readonly getData = (vars: T['vars']) =>
+    this.builder.config.queryClient?.getQueryData<T['data']>(this.builder.getQueryKey(vars));
+
+  readonly setData = (vars: T['vars'], updater: Updater<T['data']>, opts?: SetDataOptions) =>
+    this.builder.config.queryClient?.setQueryData(this.builder.getQueryKey(vars), updater, opts);
+
+  readonly getState = (vars: T['vars']) =>
+    this.builder.config.queryClient?.getQueryState<T['data'], T['error']>(this.builder.getQueryKey(vars));
 }
 
 export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends QueryBuilderFrozen<T> {
@@ -147,6 +201,8 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
     return this;
   }
 }
+
+type Updater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);
 
 export type QueryBuilderConfig<T extends BuilderTypeTemplate> = {
   queryFn: QueryFunction<T['data'], [T['vars']]>;

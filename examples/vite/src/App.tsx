@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
 import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { queryClient } from './client';
 
-const baseQuery = new HttpQueryBuilder().withBaseUrl(baseUrl);
-const baseMutation = new HttpMutationBuilder().withBaseUrl(baseUrl);
+const baseQuery = new HttpQueryBuilder({ queryClient }).withBaseUrl(baseUrl);
+const baseMutation = new HttpMutationBuilder({ queryClient }).withBaseUrl(baseUrl);
 
 const resetMutation = baseMutation.withPath('/reset').withConfig({ invalidates: ['posts' as any, 'refreshable'] });
 
