@@ -123,6 +123,15 @@ function getMockData() {
 
 let { users, posts, comments } = getMockData();
 
+window.addEventListener('storage', (event) => {
+  if (event.key === 'mockData') {
+    const { users: newUsers, posts: newPosts, comments: newComments } = getMockData();
+    users = newUsers;
+    posts = newPosts;
+    comments = newComments;
+  }
+});
+
 const handlers = [
   http.get(`${baseUrl}/reset`, async () => {
     await delay();
@@ -156,7 +165,7 @@ const handlers = [
     return HttpResponse.json(postComments);
   }),
   http.delete(`${baseUrl}/posts/:id`, async (req) => {
-    await delay(2500);
+    await delay(1000);
     const { id } = req.params;
     const postIndex = posts.findIndex((post) => post.id === Number(id));
     if (postIndex === -1) return HttpResponse.json({ error: 'Not found' }, { status: 404 });

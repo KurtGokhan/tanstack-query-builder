@@ -5,7 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BuilderMutationCache } from 'react-query-builder';
 
 const client = new QueryClient({
-  mutationCache: new BuilderMutationCache({}, (): QueryClient => client),
+  mutationCache: new BuilderMutationCache(
+    {},
+    {
+      getQueryClient: (): QueryClient => client,
+      syncChannel: new BroadcastChannel('react-query-builder'),
+    },
+  ),
 });
 
 const app = (

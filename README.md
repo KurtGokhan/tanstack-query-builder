@@ -29,6 +29,13 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 - 🪶 Zero dependencies
 - 🚢 SSR and Router compatible
 
+## TODO
+
+- Strong typed customizable tags
+- QueryClient API on builders
+- Middlewares on builder
+- Context on builder
+
 ## Examples
 
 Following code loads a list of Posts from an API, and presents a Delete button to delete each one.

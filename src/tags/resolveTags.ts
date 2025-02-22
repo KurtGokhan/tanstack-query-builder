@@ -8,6 +8,12 @@ export type ResolveTagsParams<TVars = void, TData = unknown, TErr = unknown, TTa
   error?: unknown;
 };
 
+function normalizeTag<TTag extends QueryTag = QueryTag>(tag: TTag): Exclude<TTag, string> {
+  return typeof tag === 'string'
+    ? ({ type: tag, invalidate: 'both' } as unknown as Exclude<TTag, string>)
+    : (tag as Exclude<TTag, string>);
+}
+
 /**
  * Resolve a tags array or function to an array of tags based on passed data, error, and vars.
  */
@@ -17,7 +23,7 @@ export function resolveTags<TVars = void, TTag extends QueryTag = QueryTag>({
   vars,
   data,
   error,
-}: ResolveTagsParams<TVars, unknown, unknown, TTag> & { client: QueryClient }): TTag[] {
+}: ResolveTagsParams<TVars, unknown, unknown, TTag> & { client: QueryClient }) {
   const resolvedTags =
     typeof tags === 'function'
       ? (tags({ vars, error, client, data }) as TTag[])
@@ -30,7 +36,7 @@ export function resolveTags<TVars = void, TTag extends QueryTag = QueryTag>({
             ? ([tags] as TTag[])
             : [];
 
-  return resolvedTags || [];
+  return resolvedTags.map(normalizeTag) || [];
 }
 
 /**

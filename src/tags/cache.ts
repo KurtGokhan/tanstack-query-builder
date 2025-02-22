@@ -4,8 +4,13 @@ import { resolveTags } from './resolveTags';
 import type { QueryTagContext } from './types';
 import { type UpdateTagsUndoer, undoUpdateTags, updateTags } from './updateTags';
 
+type BuilderMutationCacheOptions = {
+  getQueryClient: () => QueryClient;
+  syncChannel?: BroadcastChannel;
+};
+
 export class BuilderMutationCache extends MutationCache {
-  constructor(config: MutationCache['config'], getQueryClient: () => QueryClient) {
+  constructor(config: MutationCache['config'], { getQueryClient, syncChannel }: BuilderMutationCacheOptions) {
     // onMutate does not allow returning a context value in global MutationCache.
     // So we store the undos in our own map based on the mutationId.
     // See: https://tanstack.com/query/latest/docs/reference/MutationCache#global-callbacks
@@ -26,15 +31,11 @@ export class BuilderMutationCache extends MutationCache {
         const undos = updateTags({ queryClient, tags: updates, ctx, optimistic: true });
         if (undos.length) mutationContexts.set(mutation.mutationId, { undos });
 
-        operateOnTags(
-          {
-            queryClient,
-            tags: updates.filter(
-              (tag) => typeof tag !== 'object' || ['pre', 'both'].includes(tag.invalidate || 'both'),
-            ),
-          },
-          { refetchType: 'none' },
+        const tags = updates.filter(
+          (tag) => typeof tag !== 'object' || ['pre', 'both'].includes(tag.invalidate || 'both'),
         );
+
+        operateOnTags({ queryClient, tags }, { refetchType: 'none' });
       },
       onSuccess: async (...args) => {
         await config?.onSuccess?.(...args);
@@ -63,24 +64,30 @@ export class BuilderMutationCache extends MutationCache {
         mutationContexts.delete(mutation.mutationId);
 
         const optUpdates = resolveTags({ client: queryClient, tags: mutation.meta?.optimisticUpdates, vars, data });
-        operateOnTags({
-          queryClient,
-          tags: optUpdates.filter(
-            (tag) => typeof tag !== 'object' || ['post', 'both'].includes(tag.invalidate || 'both'),
-          ),
-        });
+        const optUpdateTags = optUpdates.filter((tag) => ['post', 'both'].includes(tag.invalidate || 'both'));
+        operateOnTags({ queryClient, tags: optUpdateTags });
 
         const pesUpdates = resolveTags({ client: queryClient, tags: mutation.meta?.updates, vars, data });
-        operateOnTags({
-          queryClient,
-          tags: pesUpdates.filter(
-            (tag) => typeof tag !== 'object' || ['post', 'both'].includes(tag.invalidate || 'both'),
-          ),
-        });
+        const pesUpdateTags = pesUpdates.filter((tag) => ['post', 'both'].includes(tag.invalidate || 'both'));
+        operateOnTags({ queryClient, tags: pesUpdateTags });
 
         const tags = resolveTags({ client: queryClient, tags: mutation.meta?.invalidates, vars, data, error });
+
+        if (syncChannel) {
+          const tagsToSync = [...tags, ...optUpdateTags, ...pesUpdateTags].map(({ type, id }) => ({ type, id }));
+          syncChannel.postMessage({ type: 'invalidate', data: tagsToSync });
+        }
+
         return operateOnTags({ queryClient, tags });
       },
+    });
+
+    syncChannel?.addEventListener('message', (event) => {
+      const { type, data } = event.data;
+      if (type === 'invalidate') {
+        const queryClient = getQueryClient();
+        operateOnTags({ queryClient, tags: data });
+      }
     });
   }
 }
