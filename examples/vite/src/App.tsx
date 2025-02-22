@@ -2,27 +2,27 @@ import { useState } from 'react';
 import './App.css';
 import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 
-const qBuilder = new HttpQueryBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
-const mBuilder = new HttpMutationBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
+const baseQuery = new HttpQueryBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
+const baseMutation = new HttpMutationBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
 
 type PostData = { id: number; title: string; body: string; userId: number };
 type CommentData = { postId: number; id: number; name: string; email: string; body: string };
 
-const postsQuery = qBuilder
+const postsQuery = baseQuery
   .withConfig({ tags: 'refreshable' })
   .withConfig({ tags: { type: 'posts' as any, id: 'LIST' } })
   .withPath('/posts')
   .withData<PostData[]>();
 
-const postQuery = qBuilder.withConfig({ tags: 'refreshable' }).withPath('/posts/:id').withData<PostData>();
+const postQuery = baseQuery.withConfig({ tags: 'refreshable' }).withPath('/posts/:id').withData<PostData>();
 
-const commentsQuery = qBuilder
+const commentsQuery = baseQuery
   .withConfig({ tags: 'refreshable' })
   .withPath('/comments')
   .withSearch<{ postId: number | null }>()
   .withData<CommentData[]>();
 
-const deletePostMutation = mBuilder
+const deletePostMutation = baseMutation
   .withConfig({ invalidates: { type: 'posts' as any, id: 'LIST' } })
   .withVars({ method: 'delete' })
   .withPath('/posts/:id');

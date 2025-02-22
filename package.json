@@ -3,13 +3,13 @@
   "version": "2.4.0",
   "type": "commonjs",
   "private": true,
-  "description": "Toolkits for React Query",
+  "description": "Pragmatic utilities for Tanstack Query",
   "homepage": "https://gkurt.com/react-query-builder/",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/KurtGokhan/react-query-builder.git"
   },
-  "keywords": ["react", "react-query"],
+  "keywords": ["react", "react-query", "tanstack-query", "optimistic-updates", "tag-based-invalidation"],
   "license": "MIT",
   "author": {
     "name": "Gokhan Kurt",
