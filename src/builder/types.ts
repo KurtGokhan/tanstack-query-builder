@@ -1,3 +1,4 @@
+import { UseQueryResult } from '@tanstack/react-query';
 import { Prettify } from '../types/utils';
 
 export type PrettifyWithVars<T extends BuilderTypeTemplate, TVars> = Prettify<
@@ -51,3 +52,9 @@ type ExtractPathParamsInternal<TPath> = TPath extends string
           ? { [key in TParam]?: PathParam }
           : unknown
   : unknown;
+
+type QueriesResultItemType<T extends BuilderTypeTemplate> = UseQueryResult<T['data'], T['error']>;
+type QueriesResultMapType<T extends BuilderTypeTemplate> = Record<PropertyKey, QueriesResultItemType<T>>;
+export type BuilderQueriesResult<T extends BuilderTypeTemplate> = QueriesResultItemType<T>[] & {
+  queryMap: QueriesResultMapType<T>;
+};

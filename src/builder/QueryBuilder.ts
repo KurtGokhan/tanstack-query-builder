@@ -1,15 +1,30 @@
-import { QueryClient, QueryFunction, UseQueryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryFilters,
+  QueryFunction,
+  UseQueryOptions,
+  useIsFetching,
+  usePrefetchQuery,
+  useQueries,
+  useQuery,
+  useSuspenseQueries,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
 import { QueryTagOption } from '../tags/types';
 import { FunctionType, Prettify } from '../types/utils';
-import { BuilderMergeVarsFn } from './types';
+import { BuilderMergeVarsFn, BuilderQueriesResult } from './types';
 import { BuilderTypeTemplate, PrettifyWithVars } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
 export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
   constructor(protected config: QueryBuilderConfig<T>) {}
 
+  mergeVars: (list: [T['vars'], ...Partial<T['vars']>[]]) => T['vars'] = (list) => {
+    return mergeVars(list, this.config.mergeVars);
+  };
+
   getQueryKey: (vars: T['vars']) => [T['vars']] = (vars) => {
-    return [mergeVars([this.config.vars, vars], this.config.mergeVars)] as const;
+    return [this.mergeVars([this.config.vars, vars])] as const;
   };
 
   getQueryOptions: (
@@ -39,6 +54,55 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     opts?: QueryBuilderConfig<T>['options'],
   ) => ReturnType<typeof useSuspenseQuery<T['data'], T['error'], T['data'], [T['vars']]>> = (vars, opts) => {
     return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
+  };
+
+  usePrefetchQuery: (
+    vars: T['vars'],
+    opts?: QueryBuilderConfig<T>['options'],
+  ) => ReturnType<typeof usePrefetchQuery<T['data'], T['error'], T['data'], [T['vars']]>> = (vars, opts) => {
+    return usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
+  };
+
+  useIsFetching: (vars: T['vars'], filters?: QueryFilters) => number = (vars, filters) => {
+    return useIsFetching({ queryKey: this.getQueryKey(vars), ...filters }, this.config.queryClient);
+  };
+
+  private useQueriesInternal: (useHook: typeof useQueries | typeof useSuspenseQueries) => (
+    queries: {
+      vars: T['vars'];
+      options?: QueryBuilderConfig<T>['options'];
+      mapKey?: PropertyKey;
+    }[],
+    sharedVars?: T['vars'],
+    sharedOpts?: QueryBuilderConfig<T>['options'],
+  ) => BuilderQueriesResult<T> = (useHook) => (queries, sharedVars, sharedOpts) => {
+    type ResultType = BuilderQueriesResult<T>;
+
+    const mapKeys = queries.map((q) => q.mapKey);
+
+    const queryList = queries.map(({ vars, options }) =>
+      this.getQueryOptions(this.mergeVars([sharedVars, vars]), mergeQueryOptions([sharedOpts, options])),
+    );
+
+    const result = useHook({ queries: queryList }) as ResultType;
+
+    const queryMap: ResultType['queryMap'] = {};
+    for (let index = 0; index < mapKeys.length; index++) {
+      const key = mapKeys[index];
+      if (typeof key !== 'undefined') queryMap[key] = result[index];
+    }
+
+    result.queryMap = queryMap;
+
+    return result;
+  };
+
+  useQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
+    return this.useQueriesInternal(useQueries)(queries, sharedVars, sharedOpts);
+  };
+
+  useSuspenseQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
+    return this.useQueriesInternal(useSuspenseQueries)(queries, sharedVars, sharedOpts);
   };
 }
 
