@@ -1,0 +1,38 @@
+{
+  "folders": [
+    {
+      "name": "🌴 Root",
+      "path": ".."
+    },
+    {
+      "name": "🌐 Website",
+      "path": "../website"
+    },
+    {
+      "name": "🌩️ Vite Example",
+      "path": "../examples/vite"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "website": true,
+      "examples": true
+    },
+    "editor.codeActionsOnSave": {
+      "quickfix.biome": "explicit",
+      "source.organizeImports.biome": "explicit",
+      "source.fixAll.biome": "explicit"
+    },
+    "[js][jsx][ts][tsx][typescript][typescriptreact][javascript][javascriptreact][json][jsonc]": {
+      "editor.defaultFormatter": "biomejs.biome"
+    },
+    "[html][css][scss][markdown][mdx]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnSave": true,
+    "typescript.preferences.quoteStyle": "single",
+    "workbench.editor.labelFormat": "medium",
+    "typescript.tsdk": "🌴 Root/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
+  }
+}

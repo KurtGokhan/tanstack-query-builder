@@ -1,0 +1,84 @@
+{
+  "name": "react-query-builder",
+  "version": "2.4.0",
+  "type": "commonjs",
+  "private": true,
+  "description": "Toolkits for React Query",
+  "homepage": "https://gkurt.com/react-query-builder/",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/KurtGokhan/react-query-builder.git"
+  },
+  "keywords": ["react", "react-query"],
+  "license": "MIT",
+  "author": {
+    "name": "Gokhan Kurt",
+    "email": "krtgkn@gmail.com",
+    "url": "https://github.com/KurtGokhan"
+  },
+  "files": ["*", "!*.tsbuildinfo"],
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "react-query-builder@dev": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "start": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest",
+    "lint": "biome lint",
+    "format": "biome format",
+    "check": "biome check",
+    "prepare": "husky && npm run bundle",
+    "bundle": "npm run build && node scripts/copyPackageJson",
+    "publish": "npm run bundle && npm publish ./dist",
+    "attw": "npx --yes @arethetypeswrong/cli --pack dist",
+    "publint": "cd dist && npx publint --yes"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@changesets/cli": "^2.27.12",
+    "@tanstack/react-query": "^5.66.3",
+    "@types/react": "19.0.9",
+    "@vitejs/plugin-react": "^4.3.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "react": "^19.0.0",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.5"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.66.0",
+    "@types/react": ">=18",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    }
+  },
+  "overrides": {
+    "vite": "$vite"
+  },
+  "volta": {
+    "node": "22.12.0",
+    "npm": "10.9.1"
+  },
+  "lint-staged": {
+    "*": ["biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"]
+  },
+  "workspaces": [".", "packages/*", "examples/*", "website"]
+}

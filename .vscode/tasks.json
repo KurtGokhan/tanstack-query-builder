@@ -1,0 +1,22 @@
+{
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "start"
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build"
+    },
+    {
+      "type": "npm",
+      "script": "preview"
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "group": "test"
+    }
+  ]
+}
