@@ -6,6 +6,7 @@ import { Prettify } from '../src/types/utils';
 describe('HttpQueryBuilder', () => {
   it('should have correct types when types are explicitly passed', () => {
     const htp = new HttpQueryBuilder({})
+      .withData<{ name: string }>()
       .withBody<{ name: string }>()
       .withHeaders<{ 'x-token': string }>()
       .withParams<{ id: number }>()
@@ -21,6 +22,8 @@ describe('HttpQueryBuilder', () => {
         }
       >
     >();
+
+    expectTypeOf<ReturnType<typeof htp.useQuery>['data']>().toEqualTypeOf<{ name: string } | undefined>();
   });
 
   it('should have correct path params with url', () => {

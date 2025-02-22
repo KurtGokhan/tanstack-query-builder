@@ -123,8 +123,9 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
     return this as any;
   }
 
-  withConfig(config: Partial<QueryBuilderConfig<T>>): QueryBuilder<T> {
-    return new QueryBuilder<T>({ ...this.config, ...config });
+  withConfig(config: Partial<QueryBuilderConfig<T>>): this {
+    const ctor = this.constructor as typeof QueryBuilder;
+    return new ctor<T>({ ...this.config, ...config }) as this;
   }
 
   freeze(): QueryBuilderFrozen<T> {

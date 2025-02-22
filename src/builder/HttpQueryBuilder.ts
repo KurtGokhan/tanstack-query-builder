@@ -1,6 +1,6 @@
 import { httpRequest } from '../http/request';
 import { ExtractPathParams } from '../http/types';
-import { WithOptional } from '../types/utils';
+import { Prettify, WithOptional } from '../types/utils';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
@@ -59,7 +59,7 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
     return this.withVars({ baseUrl }) as any;
   }
 
-  withConfig(config: Partial<QueryBuilderConfig<T>>): HttpQueryBuilder<T> {
-    return new HttpQueryBuilder<T>({ ...this.config, ...config });
-  }
+  declare withData: <TData>() => HttpQueryBuilder<Prettify<T & { data: TData }>>;
+  declare withError: <TError>() => HttpQueryBuilder<Prettify<T & { error: TError }>>;
+  declare withVars: <TVars>(vars?: TVars) => HttpQueryBuilder<PrettifyWithVars<T, TVars>>;
 }
