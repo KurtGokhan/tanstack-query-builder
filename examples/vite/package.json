@@ -6,19 +6,24 @@
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "msw init"
   },
   "dependencies": {
-    "react-query-builder": "*",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-query-builder": "*"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "msw": "^2.7.1",
     "sass": "^1.85.0",
     "typescript": "^5.7.3",
     "vite": "^6.1.1"
+  },
+  "msw": {
+    "workerDirectory": "public"
   }
 }

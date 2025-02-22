@@ -1,12 +1,11 @@
+import './mocks';
 import { useState } from 'react';
+import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
 import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 
-const baseQuery = new HttpQueryBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
-const baseMutation = new HttpMutationBuilder().withBaseUrl('https://jsonplaceholder.typicode.com');
-
-type PostData = { id: number; title: string; body: string; userId: number };
-type CommentData = { postId: number; id: number; name: string; email: string; body: string };
+const baseQuery = new HttpQueryBuilder().withBaseUrl(baseUrl);
+const baseMutation = new HttpMutationBuilder().withBaseUrl(baseUrl);
 
 const postsQuery = baseQuery
   .withConfig({ tags: 'refreshable' })

@@ -8,7 +8,17 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "ignore": ["node_modules", "package-lock.json", "dist", "coverage", "build", "out", ".docusaurus", "*.gen.ts"]
+    "ignore": [
+      "node_modules",
+      "package-lock.json",
+      "dist",
+      "coverage",
+      "build",
+      "out",
+      ".docusaurus",
+      "*.gen.ts",
+      "mockServiceWorker.js"
+    ]
   },
   "organizeImports": {
     "enabled": true
