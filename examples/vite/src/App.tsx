@@ -7,6 +7,8 @@ import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-q
 const baseQuery = new HttpQueryBuilder().withBaseUrl(baseUrl);
 const baseMutation = new HttpMutationBuilder().withBaseUrl(baseUrl);
 
+const resetMutation = baseMutation.withPath('/reset').withConfig({ invalidates: ['posts' as any, 'refreshable'] });
+
 const postsQuery = baseQuery
   .withConfig({ tags: 'refreshable' })
   .withConfig({ tags: { type: 'posts' as any, id: 'LIST' } })
@@ -22,60 +24,37 @@ const commentsQuery = baseQuery
   .withData<CommentData[]>();
 
 const deletePostMutation = baseMutation
-  .withConfig({ invalidates: { type: 'posts' as any, id: 'LIST' } })
   .withVars({ method: 'delete' })
-  .withPath('/posts/:id');
+  .withPath('/posts/:id')
+  .withConfig({
+    optimisticUpdates: {
+      type: 'posts' as any,
+      id: 'LIST',
+      updater(ctx, target) {
+        return (target as PostData[]).filter((post) => post.id !== ctx.vars.params.id);
+      },
+    },
+  });
 
 function App() {
-  const [clickedPost, setClickedPost] = useState<number | null>(null);
+  const [postId, setPostId] = useState<number | null>(null);
 
-  const posts = postsQuery.useQuery({}, { enabled: !clickedPost });
-  const post = postQuery.useQuery({ params: { id: clickedPost } }, { enabled: !!clickedPost });
-  const comments = commentsQuery.useQuery({ search: { postId: clickedPost } }, { enabled: !!clickedPost });
-
+  const posts = postsQuery.useQuery({}, { enabled: !postId });
   const deletePost = deletePostMutation.useMutation();
+  const reset = resetMutation.useMutation();
 
   const [refresh] = useOperateOnTags({ tags: ['refreshable'], operation: 'refetch' });
 
-  if (clickedPost) {
-    return (
-      <>
-        <button onClick={() => refresh()} disabled={post.isFetching}>
-          Refresh
-        </button>
-
-        {post.isLoading ? (
-          'Loading...'
-        ) : post.isError ? (
-          post.error.message
-        ) : (
-          <div>
-            <h2>{post.data?.title}</h2>
-            <p>{post.data?.body}</p>
-            <button onClick={() => setClickedPost(null)}>Back</button>
-          </div>
-        )}
-
-        <h3>Comments</h3>
-
-        {comments.isLoading
-          ? 'Loading comments...'
-          : comments.isError
-            ? comments.error.message
-            : comments.data?.map((comment) => (
-                <div key={comment.id}>
-                  <h5>{comment.name}</h5>
-                  <p>{comment.body}</p>
-                </div>
-              ))}
-      </>
-    );
-  }
+  if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 
   return (
     <>
       <button onClick={() => refresh()} disabled={posts.isFetching}>
         Refresh
+      </button>
+
+      <button onClick={() => reset.mutateAsync({})} disabled={reset.isPending}>
+        Reset
       </button>
 
       {posts.isLoading
@@ -85,7 +64,7 @@ function App() {
           : posts.data?.map((post) => (
               <div key={post.id}>
                 <a>
-                  <h2 onClick={() => setClickedPost(post.id)}>{post.title}</h2>
+                  <h2 onClick={() => setPostId(post.id)}>{post.title}</h2>
                 </a>
 
                 <button
@@ -96,6 +75,40 @@ function App() {
                 </button>
 
                 <p>{post.body}</p>
+              </div>
+            ))}
+    </>
+  );
+}
+
+function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
+  const post = postQuery.useQuery({ params: { id: postId } });
+  const comments = commentsQuery.useQuery({ search: { postId: postId } });
+
+  return (
+    <>
+      {post.isLoading ? (
+        'Loading...'
+      ) : post.isError ? (
+        post.error.message
+      ) : (
+        <div>
+          <h2>{post.data?.title}</h2>
+          <p>{post.data?.body}</p>
+          <button onClick={onBack}>Back</button>
+        </div>
+      )}
+
+      <h3>Comments</h3>
+
+      {comments.isLoading
+        ? 'Loading comments...'
+        : comments.isError
+          ? comments.error.message
+          : comments.data?.map((comment) => (
+              <div key={comment.id}>
+                <h5>{comment.name}</h5>
+                <p>{comment.body}</p>
               </div>
             ))}
     </>
