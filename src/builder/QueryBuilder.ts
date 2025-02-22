@@ -4,7 +4,6 @@ import {
   InvalidateOptions,
   QueryClient,
   QueryFilters,
-  QueryFunction,
   RefetchOptions,
   ResetOptions,
   SetDataOptions,
@@ -19,7 +18,8 @@ import {
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryTagOption } from '../tags/types';
 import { FunctionType, Prettify } from '../types/utils';
-import { BuilderMergeVarsFn, BuilderQueriesResult } from './types';
+import { MutationBuilder } from './MutationBuilder';
+import { BuilderMergeVarsFn, BuilderQueriesResult, BuilderQueryFn } from './types';
 import { BuilderTypeTemplate, PrettifyWithVars } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
@@ -200,12 +200,21 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
   freeze(): QueryBuilderFrozen<T> {
     return this;
   }
+
+  asMutationBuilder(): MutationBuilder<T> {
+    return new MutationBuilder({
+      queryFn: this.config.queryFn,
+      queryClient: this.config.queryClient,
+      mergeVars: this.config.mergeVars,
+      vars: this.config.vars,
+    });
+  }
 }
 
 type Updater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);
 
 export type QueryBuilderConfig<T extends BuilderTypeTemplate> = {
-  queryFn: QueryFunction<T['data'], [T['vars']]>;
+  queryFn: BuilderQueryFn<T['data'], T['vars']>;
   vars?: Partial<T['vars']>;
   mergeVars?: BuilderMergeVarsFn<T['vars']>;
 

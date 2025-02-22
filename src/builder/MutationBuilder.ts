@@ -1,6 +1,5 @@
 import {
   MutationFilters,
-  MutationFunction,
   MutationKey,
   QueryClient,
   UseMutationOptions,
@@ -10,7 +9,7 @@ import {
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
 import { Prettify } from '../types/utils';
-import { BuilderMergeVarsFn } from './types';
+import { BuilderMergeVarsFn, BuilderQueryFn } from './types';
 import { BuilderTypeTemplate, PrettifyWithVars } from './types';
 import { mergeMutationOptions, mergeVars } from './utils';
 
@@ -53,7 +52,12 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   ) => UseMutationOptions<T['data'], T['error'], T['vars']> = (opts) => {
     return mergeMutationOptions([
       {
-        mutationFn: (vars) => this.config.mutationFn(this.mergeVars([this.config.vars, vars])),
+        mutationFn: async (vars) => {
+          return this.config.queryFn({
+            queryKey: [this.mergeVars([this.config.vars, vars])],
+            meta: opts?.meta as any,
+          });
+        },
         meta: {
           invalidates: this.config.invalidates,
           updates: this.config.updates,
@@ -127,7 +131,7 @@ export type MutationBuilderConfig<T extends BuilderTypeTemplate> = QueryInvalida
   T['data'],
   T['error']
 > & {
-  mutationFn: MutationFunction<T['data'], T['vars']>;
+  queryFn: BuilderQueryFn<T['data'], T['vars']>;
 
   vars?: Partial<T['vars']>;
   mergeVars?: BuilderMergeVarsFn<T['vars']>;

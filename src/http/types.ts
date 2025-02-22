@@ -50,11 +50,6 @@ export type HttpRequestOptions<
   baseUrl?: string;
 
   /**
-   * JWT token that will be added to the `Authorization` header.
-   */
-  token?: string;
-
-  /**
    * The request will be aborted after the specified number of milliseconds.
    */
   timeout?: number;

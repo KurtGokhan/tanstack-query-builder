@@ -32,7 +32,6 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 ## TODO
 
 - Strong typed customizable tags
-- QueryClient API on builders
 - Middlewares on builder
 - Context on builder
 

@@ -1,25 +1,17 @@
-import { httpRequest } from '../http/request';
 import { ExtractPathParams } from '../http/types';
 import { Prettify, WithOptional } from '../types/utils';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
-import { mergeHttpVars } from './utils';
+import { createHttpQueryFn, mergeHttpVars } from './utils';
 
 export class HttpMutationBuilder<
   T extends HttpBuilderTypeTemplate = HttpBuilderTypeTemplate,
 > extends MutationBuilder<T> {
-  constructor(config?: WithOptional<MutationBuilderConfig<T>, 'mutationFn'>) {
-    super({
-      mergeVars: mergeHttpVars,
-      mutationFn: async (vars) => {
-        const search = { ...vars?.search! };
-        const params = { ...vars?.params! } as any;
-
-        return httpRequest<T['data']>({ ...(vars as any), vars, search, params });
-      },
-      ...config,
-    });
+  constructor(config?: WithOptional<MutationBuilderConfig<T>, 'queryFn'>) {
+    const mergeVars = config?.mergeVars || mergeHttpVars;
+    const queryFn = config?.queryFn || createHttpQueryFn<T>(mergeVars);
+    super({ mergeVars, queryFn, ...config });
   }
 
   withBody<TBody>(body?: TBody): HttpMutationBuilder<PrettifyWithVars<T, { body: TBody }>> {

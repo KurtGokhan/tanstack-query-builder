@@ -63,7 +63,6 @@ export async function httpRequest<TData = unknown>(options: HttpRequestOptions) 
     params,
     method = 'get',
     search,
-    token,
     headers,
     credentials,
     timeout,
@@ -84,10 +83,7 @@ export async function httpRequest<TData = unknown>(options: HttpRequestOptions) 
   const hasBody = method !== 'get' && body != null;
   const bodySerialized = !hasBody ? undefined : prepareBody(body);
 
-  const resolvedHeaders = new Headers({
-    ...(!!token && { Authorization: `Bearer ${token}` }),
-    ...headers,
-  });
+  const resolvedHeaders = new Headers(headers as HeadersInit);
 
   const resolvedCredentials: RequestInit['credentials'] = resolveCredentials(credentials);
 

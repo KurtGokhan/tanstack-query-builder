@@ -1,8 +1,9 @@
 import type { DefaultError, QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import { httpRequest } from '../http/request';
 import { mergeQueryEnabled } from '../tags/mergeQueryEnabled';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { FunctionType } from '../types/utils';
-import { BuilderMergeVarsFn, HttpBuilderTypeTemplate } from './types';
+import { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderTypeTemplate } from './types';
 
 export function mergeQueryOptions<
   TQueryFnData = unknown,
@@ -79,3 +80,13 @@ export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> 
     },
   };
 };
+
+export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
+  mergeVarsFn: BuilderMergeVarsFn<T['vars']>,
+): BuilderQueryFn<T['data'], T['vars']> {
+  return async ({ queryKey, signal, meta, pageParam }: any) => {
+    const [vars] = queryKey || [];
+    const mergedVars = mergeVarsFn(vars, pageParam);
+    return httpRequest<T['data']>({ ...(mergedVars as any), meta, signal });
+  };
+}
