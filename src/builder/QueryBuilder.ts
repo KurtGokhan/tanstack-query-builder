@@ -1,9 +1,9 @@
 import { QueryClient, QueryFunction, UseQueryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { CreateQueryMergeVarsFn } from '../create/types';
-import { mergeQueryOptions, mergeVars } from '../create/utils';
 import { QueryTagOption } from '../tags/types';
 import { FunctionType, Prettify } from '../types/utils';
+import { BuilderMergeVarsFn } from './types';
 import { BuilderTypeTemplate, PrettifyWithVars } from './types';
+import { mergeQueryOptions, mergeVars } from './utils';
 
 export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
   constructor(protected config: QueryBuilderConfig<T>) {}
@@ -71,7 +71,7 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
 export type QueryBuilderConfig<T extends BuilderTypeTemplate> = {
   queryFn: QueryFunction<T['data'], [T['vars']]>;
   vars?: Partial<T['vars']>;
-  mergeVars?: CreateQueryMergeVarsFn<T['vars']>;
+  mergeVars?: BuilderMergeVarsFn<T['vars']>;
 
   tags?: QueryTagOption<T['vars'], T['data'], T['error']>;
 

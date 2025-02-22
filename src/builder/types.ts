@@ -14,7 +14,7 @@ export type HttpBaseHeaders = Record<string, string | string[]>;
 export type HttpBaseParams = Record<string | number, unknown>;
 export type HttpBaseSearch = Record<string | number, unknown>;
 
-export type HttpQueryBaseVars = {
+export type HttpBuilderBaseVars = {
   url?: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData';
@@ -26,10 +26,28 @@ export type HttpQueryBaseVars = {
 export interface HttpBuilderTypeTemplate extends BuilderTypeTemplate {
   data: unknown;
   error: unknown;
-  vars: HttpQueryBaseVars & {
+  vars: HttpBuilderBaseVars & {
     body?: unknown;
     headers?: unknown;
     params?: unknown;
     search?: unknown;
   };
 }
+
+export type BuilderMergeVarsFn<TVars> = (vars1: TVars, vars2: TVars | Partial<TVars>) => TVars;
+
+export type PathParam = string | number | null | undefined;
+
+export type ExtractPathParams<TPath> = Prettify<ExtractPathParamsInternal<TPath>>;
+
+type ExtractPathParamsInternal<TPath> = TPath extends string
+  ? string extends TPath
+    ? unknown
+    : TPath extends `${'http' | 'https'}://${infer TRest}`
+      ? ExtractPathParamsInternal<TRest>
+      : TPath extends `${string}:${infer TParam}/${infer TRest}`
+        ? { [key in TParam]?: PathParam } & ExtractPathParamsInternal<TRest>
+        : TPath extends `${string}:${infer TParam}`
+          ? { [key in TParam]?: PathParam }
+          : unknown
+  : unknown;

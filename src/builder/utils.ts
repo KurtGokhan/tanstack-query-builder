@@ -1,9 +1,8 @@
 import type { DefaultError, QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
-import { HttpBuilderTypeTemplate } from '../builder/types';
 import { mergeQueryEnabled } from '../tags/mergeQueryEnabled';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { FunctionType } from '../types/utils';
-import { CreateQueryMergeVarsFn } from './types';
+import { BuilderMergeVarsFn, HttpBuilderTypeTemplate } from './types';
 
 export function mergeQueryOptions<
   TQueryFnData = unknown,
@@ -57,12 +56,12 @@ export function mergeMutationOptions<TData = unknown, TError = DefaultError, TVa
   return opts;
 }
 
-export function mergeVars<T>(list: [T, ...Partial<T>[]], fn?: CreateQueryMergeVarsFn<T>): T {
+export function mergeVars<T>(list: [T, ...Partial<T>[]], fn?: BuilderMergeVarsFn<T>): T {
   if (list.length === 0) return {} as T;
   if (list.length === 1) return list[0];
   return list.reduce((acc, curr) => (fn ? fn(acc as T, curr) : { ...(acc as any), ...curr })) as T;
 }
-export const mergeHttpVars: CreateQueryMergeVarsFn<HttpBuilderTypeTemplate['vars']> = (v1, v2) => {
+export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> = (v1, v2) => {
   return {
     ...v1,
     ...v2,

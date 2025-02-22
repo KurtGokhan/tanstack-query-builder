@@ -1,9 +1,9 @@
-import { mergeHttpVars } from '../create/utils';
-import { ExtractPathParams } from '../http/types';
 import { WithOptional } from '../types/utils';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
+import { ExtractPathParams } from './types';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
+import { mergeHttpVars } from './utils';
 
 export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTypeTemplate> extends QueryBuilder<T> {
   constructor(config?: WithOptional<QueryBuilderConfig<T>, 'queryFn'>) {

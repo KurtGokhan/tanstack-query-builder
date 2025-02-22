@@ -1,9 +1,9 @@
 import { MutationFunction, QueryClient, UseMutationOptions, useMutation } from '@tanstack/react-query';
-import { CreateQueryMergeVarsFn } from '../create/types';
-import { mergeMutationOptions, mergeVars } from '../create/utils';
 import { QueryInvalidatesMetadata } from '../tags/types';
 import { Prettify } from '../types/utils';
+import { BuilderMergeVarsFn } from './types';
 import { BuilderTypeTemplate, PrettifyWithVars } from './types';
+import { mergeMutationOptions, mergeVars } from './utils';
 
 export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   constructor(protected config: MutationBuilderConfig<T>) {}
@@ -66,7 +66,7 @@ export type MutationBuilderConfig<T extends BuilderTypeTemplate> = QueryInvalida
   mutationFn: MutationFunction<T['data'], T['vars']>;
 
   vars?: Partial<T['vars']>;
-  mergeVars?: CreateQueryMergeVarsFn<T['vars']>;
+  mergeVars?: BuilderMergeVarsFn<T['vars']>;
 
   options?: UseMutationOptions<T['data'], T['error'], T['vars']>;
   queryClient?: QueryClient;

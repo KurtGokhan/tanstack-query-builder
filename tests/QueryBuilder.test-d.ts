@@ -5,13 +5,10 @@ describe('QueryBuilder', () => {
   type TVar = { readonly sym: unique symbol };
   type TErr = { readonly sym: unique symbol };
 
-  const testCreated = new QueryBuilder({ queryFn: () => null! as TData })
-    .withData<TData>()
-    .withVars<TVar>()
-    .withError<TErr>();
+  const qb = new QueryBuilder({ queryFn: () => 0 }).withData<TData>().withVars<TVar>().withError<TErr>();
 
   describe('useQuery', () => {
-    const query = testCreated.useQuery({} as TVar);
+    const query = qb.useQuery({} as TVar);
 
     it('data should have correct type', () => {
       expectTypeOf(query.data).toEqualTypeOf<TData | undefined>();

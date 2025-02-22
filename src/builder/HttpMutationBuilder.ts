@@ -1,9 +1,9 @@
-import { mergeHttpVars } from '../create/utils';
-import { ExtractPathParams } from '../http/types';
 import { WithOptional } from '../types/utils';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
+import { ExtractPathParams } from './types';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
+import { mergeHttpVars } from './utils';
 
 export class HttpMutationBuilder<
   T extends HttpBuilderTypeTemplate = HttpBuilderTypeTemplate,

@@ -5,13 +5,10 @@ describe('QueryBuilder', () => {
   type TVar = { readonly sym: unique symbol };
   type TErr = { readonly sym: unique symbol };
 
-  const testCreated = new MutationBuilder({ mutationFn: () => null! as Promise<TData> })
-    .withData<TData>()
-    .withVars<TVar>()
-    .withError<TErr>();
+  const mt = new MutationBuilder({ mutationFn: async () => 0 }).withData<TData>().withVars<TVar>().withError<TErr>();
 
   describe('useQuery', () => {
-    const query = testCreated.useMutation();
+    const query = mt.useMutation();
 
     it('data should have correct type', () => {
       expectTypeOf(query.data).toEqualTypeOf<TData | undefined>();
