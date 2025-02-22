@@ -65,7 +65,15 @@ function App() {
           : posts.data?.map((post) => (
               <div key={post.id}>
                 <a>
-                  <h2 onClick={() => setPostId(post.id)}>{post.title}</h2>
+                  <h2
+                    onClick={() => setPostId(post.id)}
+                    onMouseOver={() => {
+                      postQuery.client.ensureData({ params: { id: post.id } });
+                      commentsQuery.client.ensureData({ search: { postId: post.id } });
+                    }}
+                  >
+                    {post.title}
+                  </h2>
                 </a>
 
                 <button
