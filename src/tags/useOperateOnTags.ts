@@ -1,6 +1,7 @@
 import {
   type InvalidateOptions,
   type InvalidateQueryFilters,
+  MutationFunction,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
@@ -19,10 +20,11 @@ type OperateMutationOpts = {
  * It also returns the mutation object that can be used to track the state of the operation.
  * See `operateOnTags` for more information.
  */
-export function useOperateOnTags(opts?: OperateMutationOpts) {
+export function useOperateOnTags(opts?: OperateMutationOpts | void) {
   const queryClient = useQueryClient();
-  const mutationFn = ({ tags = [], operation = 'invalidate', filters, options } = opts || {}) =>
-    operateOnTags({ queryClient, tags, operation }, filters, options);
+  const mutationFn: MutationFunction<unknown, OperateMutationOpts | void> = (
+    { tags = [], operation = 'invalidate', filters, options } = opts || {},
+  ) => operateOnTags({ queryClient, tags, operation }, filters, options);
 
   const mutation = useMutation({ mutationFn });
   const operate = mutation.mutateAsync;

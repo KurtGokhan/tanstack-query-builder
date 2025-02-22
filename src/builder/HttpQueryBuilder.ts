@@ -1,6 +1,7 @@
+import { httpRequest } from '../http/request';
+import { ExtractPathParams } from '../http/types';
 import { WithOptional } from '../types/utils';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
-import { ExtractPathParams } from './types';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
 import { mergeHttpVars } from './utils';
@@ -9,8 +10,12 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
   constructor(config?: WithOptional<QueryBuilderConfig<T>, 'queryFn'>) {
     super({
       mergeVars: mergeHttpVars,
-      queryFn: async () => {
-        throw new Error('queryFn is not defined');
+      queryFn: async ({ queryKey, signal, meta, pageParam }) => {
+        const [vars] = queryKey || [''];
+        const search = { ...vars?.search!, ...pageParam! };
+        const params = { ...vars?.params! } as any;
+
+        return httpRequest<T['data']>({ ...(vars as any), meta, vars, search, params, signal });
       },
       ...config,
     });
@@ -42,10 +47,16 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
     return this.withVars({ search }) as any;
   }
 
-  withUrl<const TUrl extends string>(
-    url: TUrl,
-  ): HttpQueryBuilder<PrettifyWithVars<T, { params: ExtractPathParams<TUrl> }>> {
-    return this.withVars({ url }) as any;
+  withPath<const TPath extends string>(
+    path: TPath,
+  ): ExtractPathParams<TPath> extends void
+    ? HttpQueryBuilder<T>
+    : HttpQueryBuilder<PrettifyWithVars<T, { params: ExtractPathParams<TPath> }>> {
+    return this.withVars({ path }) as any;
+  }
+
+  withBaseUrl(baseUrl: string): HttpQueryBuilder<T> {
+    return this.withVars({ baseUrl }) as any;
   }
 
   withConfig(config: Partial<QueryBuilderConfig<T>>): HttpQueryBuilder<T> {

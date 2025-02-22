@@ -1,4 +1,5 @@
-import { HttpQueryBaseVars, HttpQueryBuilder } from '../src/builder/HttpQueryBuilder';
+import { HttpQueryBuilder } from '../src/builder/HttpQueryBuilder';
+import { HttpBuilderBaseVars } from '../src/builder/types';
 import { PathParam } from '../src/http/types';
 import { Prettify } from '../src/types/utils';
 
@@ -12,7 +13,7 @@ describe('HttpQueryBuilder', () => {
 
     expectTypeOf<Parameters<typeof htp.useQuery>[0]>().toEqualTypeOf<
       Prettify<
-        HttpQueryBaseVars & {
+        HttpBuilderBaseVars & {
           body: { name: string };
           headers: { 'x-token': string };
           params: { id: number };
@@ -23,12 +24,12 @@ describe('HttpQueryBuilder', () => {
   });
 
   it('should have correct path params with url', () => {
-    const htp = new HttpQueryBuilder().withUrl('/test/:id/:name/age/:age');
+    const htp = new HttpQueryBuilder().withPath('/test/:id/:name/age/:age');
 
     expectTypeOf<Parameters<typeof htp.useQuery>[0]['params']>().toEqualTypeOf<{
-      id?: PathParam;
-      name?: PathParam;
-      age?: PathParam;
+      id: PathParam;
+      name: PathParam;
+      age: PathParam;
     }>();
   });
 });

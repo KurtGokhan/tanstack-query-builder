@@ -5,8 +5,8 @@ const { themes } = require('prism-react-renderer');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'JSX Middlewares',
-  tagline: 'Hook into JSX rendering and transform it',
+  title: 'React Query Builder',
+  tagline: 'Pragmatic utilities for React Query',
 
   // Set the production url of your site here
   url: 'https://gkurt.com',
@@ -58,7 +58,7 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'JSX Middlewares',
+        title: 'React Query Builder',
         items: [
           {
             href: 'https://github.com/KurtGokhan/react-query-builder',
@@ -69,8 +69,8 @@ const config = {
       },
       footer: {},
       prism: {
-        theme: themes.light,
-        darkTheme: themes.dark,
+        theme: themes.vsLight,
+        darkTheme: themes.vsDark,
         magicComments: [
           {
             className: 'theme-code-block-highlighted-line',

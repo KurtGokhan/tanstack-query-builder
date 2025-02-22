@@ -1,43 +1,59 @@
-import { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
+import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 
-function Memoed({ children }: PropsWithChildren) {
-  const a = useRef(0);
+const builderBase = new HttpQueryBuilder({
+  vars: {
+    baseUrl: 'https://jsonplaceholder.typicode.com',
+  },
+});
 
-  return (
-    <p>
-      <span>{children}</span>
-      <span>Render count: {++a.current}</span>
-    </p>
-  );
-}
+type PostData = { title: string; id: string; body: string };
+const postsQuery = builderBase.withPath('/posts').withData<PostData[]>().withConfig({ tags: 'refreshable' }).freeze();
+const postQuery = builderBase.withPath('/posts/:id').withData<PostData>().withConfig({ tags: 'refreshable' }).freeze();
 
-function App({ children }: PropsWithChildren) {
-  const [count, setCount] = useState(0);
+function App() {
+  const [clickedPost, setClickedPost] = useState<string | null>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCount((count) => count + 1);
-    }, 1000);
+  const posts = postsQuery.useQuery({}, { enabled: !clickedPost });
+  const post = postQuery.useQuery({ params: { id: clickedPost } }, { enabled: !!clickedPost });
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+  const [refresh] = useOperateOnTags({ tags: ['refreshable'], operation: 'refetch' });
+
+  if (clickedPost) {
+    return (
+      <>
+        <button onClick={() => refresh()}>Refresh</button>
+
+        {post.isLoading ? (
+          'Loading...'
+        ) : post.isError ? (
+          post.error.message
+        ) : (
+          <div>
+            <h2>{post.data?.title}</h2>
+            <p>{post.data?.body}</p>
+            <button onClick={() => setClickedPost(null)}>Back</button>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
-      <h1>JSX Middlewares with Vite</h1>
-      <p className="read-the-docs" $tooltip="Hello there">
-        Hover here to see the tooltip
-      </p>
+      <button onClick={() => refresh()}>Refresh</button>
 
-      <p>Timer: {count}</p>
-
-      <Memoed>This is not memoed.</Memoed>
-      <Memoed $memo>This is memoed.</Memoed>
-
-      {children}
+      {posts.isLoading
+        ? 'Loading...'
+        : posts.isError
+          ? posts.error.message
+          : posts.data?.map((post) => (
+              <div key={post.id}>
+                <h2 onClick={() => setClickedPost(post.id)}>{post.title}</h2>
+                <p>{post.body}</p>
+              </div>
+            ))}
     </>
   );
 }
