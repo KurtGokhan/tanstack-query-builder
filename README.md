@@ -4,7 +4,7 @@
 
 # React Query Builder
 
-Pragmatic utilities for Tanstack Query.
+The simplest way to start building with Tanstack Query.
 
 This library builds on top of Tanstack Query to provide out-of-the-box functionality to help you get started faster, and keep the application code structured.
 
@@ -27,7 +27,7 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 - 🚀 Features out-of-the-box
 - ⚙️ Customizable
 - 🪶 Zero dependencies
-- 🚢 SSR compatible
+- 🚢 SSR and Router compatible
 
 ## Examples
 

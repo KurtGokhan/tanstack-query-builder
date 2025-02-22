@@ -3,7 +3,7 @@
   "version": "2.4.0",
   "type": "commonjs",
   "private": true,
-  "description": "Pragmatic utilities for Tanstack Query",
+  "description": "The simplest way to start building with Tanstack Query",
   "homepage": "https://gkurt.com/react-query-builder/",
   "repository": {
     "type": "git",
@@ -74,8 +74,8 @@
     "vite": "$vite"
   },
   "volta": {
-    "node": "22.12.0",
-    "npm": "10.9.1"
+    "node": "22.14.0",
+    "npm": "11.1.0"
   },
   "lint-staged": {
     "*": ["biome check --write --no-errors-on-unmatched --files-ignore-unknown=true"]

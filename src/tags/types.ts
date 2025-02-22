@@ -1,10 +1,11 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { StringLiteral } from '../types/utils';
 import type { QueryTagType } from './tag-types';
 
 /**
  * ID can be any value. But some values like `LIST` are reserved for special cases.
  */
-export type QueryTagId = 'LIST' | (string & {}) | number | null | undefined;
+export type QueryTagId = 'LIST' | StringLiteral | number | null | undefined;
 
 export type QueryTagObject = { type: QueryTagType; id?: QueryTagId };
 
