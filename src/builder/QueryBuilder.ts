@@ -208,8 +208,10 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
     return this;
   }
 
+  protected MutationBuilderConstructor: typeof MutationBuilder = MutationBuilder;
+
   asMutationBuilder(): MutationBuilder<T> {
-    return new MutationBuilder({
+    return new this.MutationBuilderConstructor({
       queryFn: this.config.queryFn,
       queryClient: this.config.queryClient,
       mergeVars: this.config.mergeVars,

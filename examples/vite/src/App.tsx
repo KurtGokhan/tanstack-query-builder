@@ -2,11 +2,11 @@ import './mocks';
 import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
-import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 import { queryClient } from './client';
 
 const baseQuery = new HttpQueryBuilder({ queryClient }).withBaseUrl(baseUrl);
-const baseMutation = new HttpMutationBuilder({ queryClient }).withBaseUrl(baseUrl);
+const baseMutation = baseQuery.asMutationBuilder();
 
 const resetMutation = baseMutation.withPath('/reset').withConfig({ invalidates: '*' });
 

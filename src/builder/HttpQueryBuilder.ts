@@ -1,6 +1,7 @@
 import { ExtractPathParams } from '../http/types';
 import { Prettify, WithOptional } from '../types/utils';
 import { HttpMutationBuilder } from './HttpMutationBuilder';
+import { MutationBuilder } from './MutationBuilder';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
 import { PrettifyWithVars } from './types';
@@ -55,4 +56,5 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
   declare withError: <TError>() => HttpQueryBuilder<Prettify<T & { error: TError }>>;
   declare withVars: <TVars = T['vars']>(vars?: TVars) => HttpQueryBuilder<PrettifyWithVars<T, Partial<TVars>>>;
   declare asMutationBuilder: () => HttpMutationBuilder<T>;
+  protected override MutationBuilderConstructor: typeof MutationBuilder = HttpMutationBuilder as typeof MutationBuilder;
 }

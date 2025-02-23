@@ -9,6 +9,7 @@ export function mergeTagOptions<TVars = void, TData = any, TErr = any, TTag exte
   tagsList = tagsList.filter(Boolean) as QueryTagOption<TVars, TData, TErr, TTag>[];
 
   if (tagsList.length === 0) return undefined;
+  if (tagsList.length === 1) return tagsList[0];
   if (tagsList.every((tag) => Array.isArray(tag) || typeof tag !== 'function')) return tagsList.flat() as TTag[];
 
   const callback: QueryTagCallback<TVars, TData, TErr, TTag> = (...args) =>
