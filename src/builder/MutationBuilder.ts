@@ -2,6 +2,7 @@ import {
   MutationFilters,
   MutationFunction,
   MutationKey,
+  MutationObserver,
   MutationState,
   QueryClient,
   UseMutationOptions,
@@ -134,23 +135,36 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     return useMutationState({ filters: this.getMutationFilters(vars, filters) }, this.config.queryClient)[0];
   };
 
-  private _client?: MutationBuilderClient<T>;
-  get client() {
-    return (this._client ??= new MutationBuilderClient(this));
-  }
+  readonly getMutation = (
+    vars?: T['vars'],
+    filters?: MutationFilters<T['data'], T['error'], T['vars']>,
+    queryClient?: QueryClient,
+  ) => {
+    const client = queryClient || this.config.queryClient!;
+    return client.getMutationCache().find(this.getMutationFilters(vars, filters));
+  };
+
+  readonly isMutating = (
+    vars?: T['vars'],
+    filters?: MutationFilters<T['data'], T['error'], T['vars']>,
+    queryClient?: QueryClient,
+  ) => {
+    const client = queryClient || this.config.queryClient!;
+    return client.isMutating(this.getMutationFilters(vars, filters));
+  };
+
+  readonly mutate = async (vars: T['vars'], opts?: MutationBuilderConfig<T>['options'], queryClient?: QueryClient) => {
+    const client = queryClient || this.config.queryClient!;
+    const options = this.getMutationOptions(client, opts);
+    const observer = new MutationObserver<T['data'], T['error'], T['vars']>(client, options);
+    return observer.mutate(vars, options).finally(() => observer.reset());
+  };
 }
 
 export type MutationStateHelper<T extends BuilderTypeTemplate> = {
   list: MutationState<T['data'], T['error'], T['vars']>[];
   getMutation(vars: T['vars']): MutationState<T['data'], T['error'], T['vars']> | undefined;
 };
-
-class MutationBuilderClient<T extends BuilderTypeTemplate> {
-  constructor(private builder: MutationBuilderFrozen<T>) {}
-
-  readonly isMutating = (vars: T['vars'], filters?: MutationFilters<T['data'], T['error'], T['vars']>) =>
-    this.builder.config.queryClient?.isMutating(this.builder.getMutationFilters(vars, filters));
-}
 
 export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends MutationBuilderFrozen<T> {
   withVars<TVars = T['vars'], const TReset extends boolean = false>(

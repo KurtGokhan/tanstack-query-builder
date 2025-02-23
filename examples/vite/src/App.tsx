@@ -64,7 +64,6 @@ function App() {
   const [postId, setPostId] = useState<number | null>(null);
 
   const posts = postsQuery.useQuery({}, { enabled: !postId });
-  const deletePost = deletePostMutation.useMutation();
   const reset = resetMutation.useMutation();
 
   const deleteMutations = deletePostMutation.useAllMutations();
@@ -102,8 +101,8 @@ function App() {
                 </a>
 
                 <button
-                  onClick={() => deletePost.mutateAsync({ params: { id: post.id } })}
-                  disabled={deletePost.isPending}
+                  onClick={() => deletePostMutation.mutate({ params: { id: post.id } })}
+                  disabled={deletePostMutation.isMutating() > 0}
                 >
                   Delete
                 </button>
