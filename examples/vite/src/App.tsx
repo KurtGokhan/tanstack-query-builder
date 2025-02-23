@@ -66,7 +66,11 @@ function App() {
   const posts = postsQuery.useQuery({}, { enabled: !postId });
   const reset = resetMutation.useMutation();
 
-  const deleteMutations = deletePostMutation.useAllMutations();
+  const deleteErrors = deletePostMutation.useMutationState(
+    undefined,
+    { status: 'error' },
+    (x) => x.state.variables?.params.id,
+  );
 
   const [refresh] = useOperateOnTags({ tags: ['refreshable'], operation: 'refetch' });
 
@@ -107,9 +111,7 @@ function App() {
                   Delete
                 </button>
 
-                {deleteMutations.getMutation({ params: { id: post.id } })?.error && (
-                  <span style={{ color: 'red' }}>Error deleting post</span>
-                )}
+                {deleteErrors.includes(post.id) && <span style={{ color: 'red' }}>Error deleting post</span>}
 
                 <p>{post.body}</p>
               </div>

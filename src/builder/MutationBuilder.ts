@@ -1,4 +1,5 @@
 import {
+  Mutation,
   MutationFilters,
   MutationFunction,
   MutationKey,
@@ -11,7 +12,6 @@ import {
   useMutationState,
   useQueryClient,
 } from '@tanstack/react-query';
-import { useStableCallback } from '../hooks/useStableCallback';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
 import { QueryBuilder } from './QueryBuilder';
@@ -115,24 +115,12 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     return useIsMutating(this.getMutationFilters(vars, filters), this.config.queryClient);
   };
 
-  useAllMutations: (filters?: MutationFilters<T['data'], T['error'], T['vars']>) => MutationStateHelper<T> = (
-    filters,
-  ) => {
-    const list = useMutationState({ filters: this.getMutationFilters(undefined, filters) }, this.config.queryClient);
-
-    const getMutation: MutationStateHelper<T>['getMutation'] = useStableCallback(
-      (vars, predicate?: (mutation: MutationState<T['data'], T['error'], T['vars']>) => boolean) =>
-        list.findLast((m) => areKeysEqual([m.variables], [vars]) && (!predicate || predicate(m))),
-    );
-
-    return { list, getMutation };
-  };
-
-  useMutationState: (
-    vars: T['vars'],
+  useMutationState: <TSelect = Mutation<T['data'], T['error'], T['vars']>>(
+    vars?: T['vars'],
     filters?: MutationFilters<T['data'], T['error'], T['vars']>,
-  ) => MutationState<T['data'], T['error'], T['vars']> | undefined = (vars, filters) => {
-    return useMutationState({ filters: this.getMutationFilters(vars, filters) }, this.config.queryClient)[0];
+    select?: (mt: Mutation<T['data'], T['error'], T['vars']>) => TSelect,
+  ) => TSelect[] = (vars, filters, select) => {
+    return useMutationState({ filters: this.getMutationFilters(vars, filters), select }, this.config.queryClient);
   };
 
   readonly getMutation = (
