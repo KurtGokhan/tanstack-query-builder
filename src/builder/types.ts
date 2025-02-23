@@ -3,8 +3,26 @@ import { RequestError } from '../http/errors';
 import { HttpRequestOptions } from '../http/types';
 import { Prettify } from '../types/utils';
 
-export type PrettifyWithVars<T extends BuilderTypeTemplate, TVars> = Prettify<
-  Omit<T, 'vars'> & { vars: Prettify<T['vars'] & TVars> }
+export type SetDataType<T extends BuilderTypeTemplate, TData> = Prettify<Omit<T, 'data'> & { data: TData }>;
+
+export type SetErrorType<T extends BuilderTypeTemplate, TError> = Prettify<Omit<T, 'error'> & { error: TError }>;
+
+export type AppendVarsType<T extends BuilderTypeTemplate, TVars, TResetVars extends boolean = false> = Prettify<
+  Omit<T, 'vars'> & { vars: Prettify<(TResetVars extends true ? unknown : T['vars']) & TVars> }
+>;
+
+export type SetAllTypes<
+  T extends BuilderTypeTemplate,
+  TData,
+  TError,
+  TVars,
+  TResetVars extends boolean = false,
+> = Prettify<
+  Omit<T, 'data' | 'error' | 'vars'> & {
+    data: TData;
+    error: TError;
+    vars: (TResetVars extends true ? unknown : T['vars']) & TVars;
+  }
 >;
 
 export interface BuilderTypeTemplate {

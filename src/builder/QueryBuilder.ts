@@ -18,10 +18,10 @@ import {
 } from '@tanstack/react-query';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryTagOption } from '../tags/types';
-import { FunctionType, Prettify } from '../types/utils';
+import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
-import { BuilderMergeVarsFn, BuilderQueriesResult, BuilderQueryFn } from './types';
-import { BuilderTypeTemplate, PrettifyWithVars } from './types';
+import { BuilderMergeVarsFn, BuilderQueriesResult, BuilderQueryFn, SetDataType, SetErrorType } from './types';
+import { AppendVarsType, BuilderTypeTemplate } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
 export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
@@ -182,19 +182,22 @@ class QueryBuilderClient<
 }
 
 export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends QueryBuilderFrozen<T> {
-  withVars<TVars = T['vars']>(vars?: TVars): QueryBuilder<PrettifyWithVars<T, Partial<TVars>>> {
+  withVars<TVars = T['vars'], const TReset extends boolean = false>(
+    vars?: TVars,
+    resetVars = false as TReset,
+  ): QueryBuilder<AppendVarsType<T, Partial<TVars>, TReset>> {
     if (!vars) return this as any;
 
     return this.withConfig({
-      vars: mergeVars([this.config.vars, vars], this.config.mergeVars),
+      vars: resetVars ? vars : mergeVars([this.config.vars, vars], this.config.mergeVars),
     }) as any;
   }
 
-  withData<TData>(): QueryBuilder<Prettify<T & { data: TData }>> {
+  withData<TData>(): QueryBuilder<SetDataType<T, TData>> {
     return this as any;
   }
 
-  withError<TError>(): QueryBuilder<Prettify<T & { error: TError }>> {
+  withError<TError>(): QueryBuilder<SetErrorType<T, TError>> {
     return this as any;
   }
 

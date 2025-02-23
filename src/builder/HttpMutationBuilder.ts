@@ -1,8 +1,17 @@
 import { ExtractPathParams } from '../http/types';
-import { Prettify, WithOptional } from '../types/utils';
+import { WithOptional } from '../types/utils';
+import { HttpQueryBuilder } from './HttpQueryBuilder';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
-import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderTypeTemplate } from './types';
-import { PrettifyWithVars } from './types';
+import { QueryBuilder } from './QueryBuilder';
+import {
+  HttpBaseHeaders,
+  HttpBaseParams,
+  HttpBaseSearch,
+  HttpBuilderTypeTemplate,
+  SetDataType,
+  SetErrorType,
+} from './types';
+import { AppendVarsType } from './types';
 import { createHttpQueryFn, mergeHttpVars } from './utils';
 
 export class HttpMutationBuilder<
@@ -22,28 +31,28 @@ export class HttpMutationBuilder<
     });
   }
 
-  withBody<TBody>(body?: TBody): HttpMutationBuilder<PrettifyWithVars<T, { body: TBody }>> {
+  withBody<TBody>(body?: TBody): HttpMutationBuilder<AppendVarsType<T, { body: TBody }>> {
     if (!body) return this as any;
     return this.withVars({ body }) as any;
   }
 
   withHeaders<THeaders extends HttpBaseHeaders>(
     headers?: THeaders,
-  ): HttpMutationBuilder<PrettifyWithVars<T, { headers: THeaders }>> {
+  ): HttpMutationBuilder<AppendVarsType<T, { headers: THeaders }>> {
     if (!headers) return this as any;
     return this.withVars({ headers }) as any;
   }
 
   withParams<TParams extends HttpBaseParams>(
     params?: TParams,
-  ): HttpMutationBuilder<PrettifyWithVars<T, { params: TParams }>> {
+  ): HttpMutationBuilder<AppendVarsType<T, { params: TParams }>> {
     if (!params) return this as any;
     return this.withVars({ params }) as any;
   }
 
   withSearch<TSearch extends HttpBaseSearch>(
     search?: TSearch,
-  ): HttpMutationBuilder<PrettifyWithVars<T, { search: TSearch }>> {
+  ): HttpMutationBuilder<AppendVarsType<T, { search: TSearch }>> {
     if (!search) return this as any;
     return this.withVars({ search }) as any;
   }
@@ -52,7 +61,7 @@ export class HttpMutationBuilder<
     path: TPath,
   ): ExtractPathParams<TPath> extends void
     ? this
-    : HttpMutationBuilder<PrettifyWithVars<T, { params: ExtractPathParams<TPath> }>> {
+    : HttpMutationBuilder<AppendVarsType<T, { params: ExtractPathParams<TPath> }>> {
     return this.withVars({ path }) as any;
   }
 
@@ -60,7 +69,12 @@ export class HttpMutationBuilder<
     return this.withVars({ baseUrl }) as any;
   }
 
-  declare withData: <TData>() => HttpMutationBuilder<Prettify<T & { data: TData }>>;
-  declare withError: <TError>() => HttpMutationBuilder<Prettify<T & { error: TError }>>;
-  declare withVars: <TVars = T['vars']>(vars?: TVars) => HttpMutationBuilder<PrettifyWithVars<T, Partial<TVars>>>;
+  declare withData: <TData>() => HttpMutationBuilder<SetDataType<T, TData>>;
+  declare withError: <TError>() => HttpMutationBuilder<SetErrorType<T, TError>>;
+  declare withVars: <TVars = T['vars'], const TReset extends boolean = false>(
+    vars?: TVars,
+    reset?: TReset,
+  ) => HttpMutationBuilder<AppendVarsType<T, Partial<TVars>, TReset>>;
+  declare asQueryBuilder: () => HttpQueryBuilder<T>;
+  protected override QueryBuilderConstructor: typeof QueryBuilder = HttpQueryBuilder as typeof QueryBuilder;
 }

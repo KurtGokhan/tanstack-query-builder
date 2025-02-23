@@ -10,9 +10,9 @@ import {
 } from '@tanstack/react-query';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
-import { Prettify } from '../types/utils';
-import { BuilderMergeVarsFn, BuilderQueryFn } from './types';
-import { BuilderTypeTemplate, PrettifyWithVars } from './types';
+import { QueryBuilder } from './QueryBuilder';
+import { BuilderMergeVarsFn, BuilderQueryFn, SetDataType, SetErrorType } from './types';
+import { AppendVarsType, BuilderTypeTemplate } from './types';
 import { mergeMutationOptions, mergeVars } from './utils';
 
 function getRandomKey() {
@@ -112,19 +112,22 @@ class MutationBuilderClient<
 }
 
 export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends MutationBuilderFrozen<T> {
-  withVars<TVars = T['vars']>(vars?: TVars): MutationBuilder<PrettifyWithVars<T, Partial<TVars>>> {
+  withVars<TVars = T['vars'], const TReset extends boolean = false>(
+    vars?: TVars,
+    resetVars = false as TReset,
+  ): MutationBuilder<AppendVarsType<T, Partial<TVars>, TReset>> {
     if (!vars) return this as any;
 
     return this.withConfig({
-      vars: this.mergeVars([this.config.vars, vars]),
+      vars: resetVars ? vars : mergeVars([this.config.vars, vars], this.config.mergeVars),
     }) as any;
   }
 
-  withData<TData>(): MutationBuilder<Prettify<T & { data: TData }>> {
+  withData<TData>(): MutationBuilder<SetDataType<T, TData>> {
     return this as any;
   }
 
-  withError<TError>(): MutationBuilder<Prettify<T & { error: TError }>> {
+  withError<TError>(): MutationBuilder<SetErrorType<T, TError>> {
     return this as any;
   }
 
@@ -136,6 +139,17 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
 
   freeze(): MutationBuilderFrozen<T> {
     return this;
+  }
+
+  protected QueryBuilderConstructor: typeof QueryBuilder = QueryBuilder;
+
+  asQueryBuilder(): QueryBuilder<T> {
+    return new this.QueryBuilderConstructor({
+      queryFn: this.config.queryFn,
+      queryClient: this.config.queryClient,
+      mergeVars: this.config.mergeVars,
+      vars: this.config.vars,
+    });
   }
 }
 
