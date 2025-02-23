@@ -67,9 +67,11 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
     vars?: TVars,
     reset?: TReset,
   ) => HttpQueryBuilder<AppendVarsType<T, Partial<TVars>, TReset>>;
-  declare asMutationBuilder: () => HttpMutationBuilder<T>;
+
   declare withMiddleware: <TVars = T['vars'], TData = T['data'], TError = T['error']>(
     middleware: MiddlewareFn<TVars, TData, TError, T>,
   ) => HttpQueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
+
+  declare asMutationBuilder: () => HttpMutationBuilder<T>;
   protected override MutationBuilderConstructor: typeof MutationBuilder = HttpMutationBuilder as typeof MutationBuilder;
 }

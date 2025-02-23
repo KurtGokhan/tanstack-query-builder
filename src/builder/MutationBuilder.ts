@@ -15,7 +15,8 @@ import {
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
 import { QueryBuilder } from './QueryBuilder';
-import { BuilderMergeVarsFn, BuilderQueryFn, SetDataType, SetErrorType } from './types';
+import { MiddlewareFn, applyMiddleware } from './middlewares';
+import { BuilderMergeVarsFn, BuilderQueryFn, SetAllTypes, SetDataType, SetErrorType } from './types';
 import { AppendVarsType, BuilderTypeTemplate } from './types';
 import { areKeysEqual, mergeMutationOptions, mergeVars } from './utils';
 
@@ -178,6 +179,14 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
     const ctor = this.constructor as typeof MutationBuilder;
     const newConfig = this.mergeConfigs(this.config, config);
     return new ctor<T>(newConfig) as this;
+  }
+
+  withMiddleware<TVars = T['vars'], TData = T['data'], TError = T['error']>(
+    middleware: MiddlewareFn<TVars, TData, TError, T>,
+  ): MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
+    const newBuilder = this as unknown as MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
+
+    return newBuilder.withConfig({ queryFn: applyMiddleware(this.config.queryFn, middleware) });
   }
 
   freeze(): MutationBuilderFrozen<T> {
