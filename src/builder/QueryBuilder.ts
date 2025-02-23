@@ -20,7 +20,15 @@ import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryTagOption } from '../tags/types';
 import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
-import { BuilderMergeVarsFn, BuilderQueriesResult, BuilderQueryFn, SetDataType, SetErrorType } from './types';
+import { MiddlewareFn, applyMiddleware } from './middlewares';
+import {
+  BuilderMergeVarsFn,
+  BuilderQueriesResult,
+  BuilderQueryFn,
+  SetAllTypes,
+  SetDataType,
+  SetErrorType,
+} from './types';
 import { AppendVarsType, BuilderTypeTemplate } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
@@ -205,6 +213,14 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
     const ctor = this.constructor as typeof QueryBuilder;
     const newConfig = this.mergeConfigs(this.config, config);
     return new ctor<T>(newConfig) as this;
+  }
+
+  withMiddleware<TVars = T['vars'], TData = T['data'], TError = T['error']>(
+    middleware: MiddlewareFn<TVars, TData, TError, T>,
+  ): QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
+    const newBuilder = this as unknown as QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
+
+    return newBuilder.withConfig({ queryFn: applyMiddleware(this.config.queryFn, middleware) });
   }
 
   freeze(): QueryBuilderFrozen<T> {

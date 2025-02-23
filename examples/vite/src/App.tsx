@@ -2,7 +2,7 @@ import './mocks';
 import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
-import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { HttpQueryBuilder, MiddlewareContext, useOperateOnTags } from 'react-query-builder';
 import { queryClient } from './client';
 
 const baseQuery = new HttpQueryBuilder({ queryClient }).withBaseUrl(baseUrl);
@@ -22,6 +22,14 @@ const postQuery = baseQuery
   .withData<PostData>()
   .withConfig({
     tags: (ctx) => [{ type: 'posts' as any, id: ctx.vars.params.id }],
+  })
+  .withMiddleware(async (ctx, next) => {
+    const res = await next(ctx);
+    return { ...res, titleUppercase: res.title.toUpperCase() };
+  })
+  .withMiddleware((ctx: MiddlewareContext<{ id: number }>, next) => {
+    const id = ctx.vars.id;
+    return next({ ...ctx, vars: { ...ctx.vars, params: { id } } });
   });
 
 const commentsQuery = baseQuery
@@ -96,7 +104,7 @@ function App() {
                   <h2
                     onClick={() => setPostId(post.id)}
                     onMouseOver={() => {
-                      postQuery.client.prefetch({ params: { id: post.id } });
+                      postQuery.client.prefetch({ id: post.id });
                       commentsQuery.client.prefetch({ search: { postId: post.id } });
                     }}
                   >
@@ -121,9 +129,8 @@ function App() {
 }
 
 function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
-  const post = postQuery.useQuery({ params: { id: postId } });
+  const post = postQuery.useQuery({ id: postId });
   const comments = commentsQuery.useQuery({ search: { postId: postId } });
-
   const [showEdit, setShowEdit] = useState(false);
   const editPost = editPostMutation.useMutation();
 
@@ -140,7 +147,7 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
             post.error.message
           ) : (
             <div>
-              <h2>{post.data?.title}</h2>
+              <h2>{post.data?.titleUppercase}</h2>
               <p>{post.data?.body}</p>
               <button onClick={onBack}>Back</button>
               <button onClick={() => setShowEdit(true)} disabled={editPost.isPending}>

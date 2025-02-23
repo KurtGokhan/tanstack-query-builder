@@ -3,11 +3,13 @@ import { WithOptional } from '../types/utils';
 import { HttpMutationBuilder } from './HttpMutationBuilder';
 import { MutationBuilder } from './MutationBuilder';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
+import { MiddlewareFn } from './middlewares';
 import {
   HttpBaseHeaders,
   HttpBaseParams,
   HttpBaseSearch,
   HttpBuilderTypeTemplate,
+  SetAllTypes,
   SetDataType,
   SetErrorType,
 } from './types';
@@ -66,5 +68,8 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
     reset?: TReset,
   ) => HttpQueryBuilder<AppendVarsType<T, Partial<TVars>, TReset>>;
   declare asMutationBuilder: () => HttpMutationBuilder<T>;
+  declare withMiddleware: <TVars = T['vars'], TData = T['data'], TError = T['error']>(
+    middleware: MiddlewareFn<TVars, TData, TError, T>,
+  ) => HttpQueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
   protected override MutationBuilderConstructor: typeof MutationBuilder = HttpMutationBuilder as typeof MutationBuilder;
 }
