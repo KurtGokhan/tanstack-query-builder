@@ -167,6 +167,9 @@ const handlers = [
   http.delete(`${baseUrl}/posts/:id`, async (req) => {
     await delay(1000);
     const { id } = req.params;
+    if (id === '7' && Math.random() > 0.1)
+      return HttpResponse.json({ error: '[Mock] Failed to delete' }, { status: 500 });
+
     const postIndex = posts.findIndex((post) => post.id === Number(id));
     if (postIndex === -1) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
 

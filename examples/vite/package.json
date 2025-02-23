@@ -10,6 +10,7 @@
     "postinstall": "msw init"
   },
   "dependencies": {
+    "@tanstack/react-query-devtools": "^5.66.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-query-builder": "*"

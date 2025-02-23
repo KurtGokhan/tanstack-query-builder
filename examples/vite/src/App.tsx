@@ -67,6 +67,8 @@ function App() {
   const deletePost = deletePostMutation.useMutation();
   const reset = resetMutation.useMutation();
 
+  const deleteMutations = deletePostMutation.useAllMutations();
+
   const [refresh] = useOperateOnTags({ tags: ['refreshable'], operation: 'refetch' });
 
   if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
@@ -105,6 +107,10 @@ function App() {
                 >
                   Delete
                 </button>
+
+                {deleteMutations.getMutation({ params: { id: post.id } })?.error && (
+                  <span style={{ color: 'red' }}>Error deleting post</span>
+                )}
 
                 <p>{post.body}</p>
               </div>

@@ -63,6 +63,8 @@ export type QueryTagsMetadata<TVars = void, TData = unknown, TErr = unknown> = {
    * Provides tags for the query, which can be used by mutations to invalidate or optimistically update the query data.
    */
   tags?: QueryTagOption<TVars, TData, TErr>;
+
+  updated?: 'optimistic' | 'pessimistic' | 'undone';
 };
 
 export type QueryInvalidatesMetadata<TVars = void, TData = unknown, TErr = unknown> = {

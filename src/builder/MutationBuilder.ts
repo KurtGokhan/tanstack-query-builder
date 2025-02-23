@@ -2,18 +2,21 @@ import {
   MutationFilters,
   MutationFunction,
   MutationKey,
+  MutationState,
   QueryClient,
   UseMutationOptions,
   useIsMutating,
   useMutation,
+  useMutationState,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useStableCallback } from '../hooks/useStableCallback';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryInvalidatesMetadata } from '../tags/types';
 import { QueryBuilder } from './QueryBuilder';
 import { BuilderMergeVarsFn, BuilderQueryFn, SetDataType, SetErrorType } from './types';
 import { AppendVarsType, BuilderTypeTemplate } from './types';
-import { mergeMutationOptions, mergeVars } from './utils';
+import { areKeysEqual, mergeMutationOptions, mergeVars } from './utils';
 
 function getRandomKey() {
   return Math.random().toString(36).substring(7);
@@ -58,9 +61,8 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     };
   };
 
-  getMutationKey: (vars: T['vars']) => MutationKey = (vars) => {
-    const mergedVars = this.mergeVars([this.config.vars, vars]);
-    return [this.mutationKeyPrefix, mergedVars];
+  getMutationKey: () => MutationKey = () => {
+    return [this.mutationKeyPrefix];
   };
 
   getMutationOptions: (
@@ -69,6 +71,7 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   ) => UseMutationOptions<T['data'], T['error'], T['vars']> = (queryClient, opts) => {
     return mergeMutationOptions([
       {
+        mutationKey: this.getMutationKey(),
         mutationFn: this.getMutationFn(queryClient, opts?.meta),
         meta: {
           invalidates: this.config.invalidates,
@@ -79,6 +82,22 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
       this.config.options,
       opts,
     ]);
+  };
+
+  getMutationFilters: (
+    vars?: T['vars'],
+    filters?: MutationFilters<T['data'], T['error'], T['vars']>,
+  ) => MutationFilters<T['data'], T['error'], T['vars']> = (vars, filters) => {
+    return {
+      mutationKey: this.getMutationKey(),
+      ...filters,
+      predicate: (m) => {
+        if (filters?.predicate && !filters.predicate(m)) return false;
+        if (vars == null) return true;
+        if (!m.state.variables) return false;
+        return areKeysEqual([m.state.variables], [vars]);
+      },
+    };
   };
 
   useMutation: (
@@ -92,7 +111,27 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     vars,
     filters,
   ) => {
-    return useIsMutating({ mutationKey: this.getMutationKey(vars), ...filters }, this.config.queryClient);
+    return useIsMutating(this.getMutationFilters(vars, filters), this.config.queryClient);
+  };
+
+  useAllMutations: (filters?: MutationFilters<T['data'], T['error'], T['vars']>) => MutationStateHelper<T> = (
+    filters,
+  ) => {
+    const list = useMutationState({ filters: this.getMutationFilters(undefined, filters) }, this.config.queryClient);
+
+    const getMutation: MutationStateHelper<T>['getMutation'] = useStableCallback(
+      (vars, predicate?: (mutation: MutationState<T['data'], T['error'], T['vars']>) => boolean) =>
+        list.findLast((m) => areKeysEqual([m.variables], [vars]) && (!predicate || predicate(m))),
+    );
+
+    return { list, getMutation };
+  };
+
+  useMutationState: (
+    vars: T['vars'],
+    filters?: MutationFilters<T['data'], T['error'], T['vars']>,
+  ) => MutationState<T['data'], T['error'], T['vars']> | undefined = (vars, filters) => {
+    return useMutationState({ filters: this.getMutationFilters(vars, filters) }, this.config.queryClient)[0];
   };
 
   private _client?: MutationBuilderClient<T>;
@@ -101,14 +140,16 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   }
 }
 
-class MutationBuilderClient<
-  T extends BuilderTypeTemplate,
-  TFilters = MutationFilters<T['data'], T['error'], T['vars']>,
-> {
+export type MutationStateHelper<T extends BuilderTypeTemplate> = {
+  list: MutationState<T['data'], T['error'], T['vars']>[];
+  getMutation(vars: T['vars']): MutationState<T['data'], T['error'], T['vars']> | undefined;
+};
+
+class MutationBuilderClient<T extends BuilderTypeTemplate> {
   constructor(private builder: MutationBuilderFrozen<T>) {}
 
-  readonly isMutating = (vars: T['vars'], filters?: TFilters) =>
-    this.builder.config.queryClient?.isMutating({ mutationKey: this.builder.getMutationKey(vars), ...filters });
+  readonly isMutating = (vars: T['vars'], filters?: MutationFilters<T['data'], T['error'], T['vars']>) =>
+    this.builder.config.queryClient?.isMutating(this.builder.getMutationFilters(vars, filters));
 }
 
 export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends MutationBuilderFrozen<T> {

@@ -26,12 +26,12 @@ export class BuilderMutationCache extends MutationCache {
         const queryClient = getQueryClient();
 
         const data = !vars || typeof vars !== 'object' ? undefined : Reflect.get(vars, 'body');
-        const updates = resolveTags({ client: queryClient, tags: mutation.meta?.optimisticUpdates, vars, data });
+        const optUpdates = resolveTags({ client: queryClient, tags: mutation.meta?.optimisticUpdates, vars, data });
         const ctx: QueryTagContext<unknown> = { client: queryClient, vars, data };
-        const undos = updateTags({ queryClient, tags: updates, ctx, optimistic: true });
+        const undos = updateTags({ queryClient, tags: optUpdates, ctx, optimistic: true });
         if (undos.length) mutationContexts.set(mutation.mutationId, { undos });
 
-        const tags = updates.filter(
+        const tags = optUpdates.filter(
           (tag) => typeof tag !== 'object' || ['pre', 'both'].includes(tag.invalidate || 'both'),
         );
 

@@ -1,4 +1,11 @@
-import type { DefaultError, QueryKey, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import {
+  DefaultError,
+  MutationKey,
+  QueryKey,
+  UseMutationOptions,
+  UseQueryOptions,
+  hashKey,
+} from '@tanstack/react-query';
 import { httpRequest } from '../http/request';
 import { mergeQueryEnabled } from '../tags/mergeQueryEnabled';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
@@ -48,11 +55,13 @@ export function mergeMutationOptions<TData = unknown, TError = DefaultError, TVa
     opts.meta = {
       ...opts.meta,
       ...meta,
-      invalidates: mergeTagOptions([opts.meta?.invalidates, meta?.invalidates]),
-      updates: mergeTagOptions([opts.meta?.updates, meta?.updates]),
-      optimisticUpdates: mergeTagOptions([opts.meta?.optimisticUpdates, meta?.optimisticUpdates]),
     };
   }
+
+  opts.meta ??= {};
+  opts.meta.invalidates = mergeTagOptions(filtered.map((f) => f.meta?.invalidates));
+  opts.meta.updates = mergeTagOptions(filtered.map((f) => f.meta?.updates));
+  opts.meta.optimisticUpdates = mergeTagOptions(filtered.map((f) => f.meta?.optimisticUpdates));
 
   return opts;
 }
@@ -89,4 +98,12 @@ export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
     const mergedVars = mergeVarsFn(vars, pageParam);
     return httpRequest<T['data']>({ ...(mergedVars as any), meta, signal });
   };
+}
+
+export function areKeysEqual(
+  a: QueryKey | MutationKey,
+  b: QueryKey | MutationKey,
+  hashFn: typeof hashKey = hashKey,
+): boolean {
+  return hashFn(a) === hashFn(b);
 }

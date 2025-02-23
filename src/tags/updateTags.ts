@@ -44,13 +44,14 @@ export function updateTags({
     const willInvalidate = typeof tag !== 'object' || ['post', 'both'].includes(tag.invalidate || 'both');
 
     for (const q of list) {
+      undos.push({ hash: q.queryHash, data: q.state.data });
       setDataToExistingQuery(
         queryClient,
         q.queryHash,
         updater(ctx, q.state.data),
         willInvalidate ? { isInvalidated: true } : undefined,
+        { updated: optimistic ? 'optimistic' : 'pessimistic' },
       );
-      undos.push({ hash: q.queryHash, data: q.state.data });
     }
   }
 
@@ -59,7 +60,7 @@ export function updateTags({
 
 export function undoUpdateTags(undos: UpdateTagsUndoer[], queryClient: QueryClient) {
   for (const { hash, data } of undos) {
-    setDataToExistingQuery(queryClient, hash, data);
+    setDataToExistingQuery(queryClient, hash, data, {}, { updated: 'undone' });
   }
 }
 
@@ -68,10 +69,18 @@ export function undoUpdateTags(undos: UpdateTagsUndoer[], queryClient: QueryClie
  * It creates duplicate queries even though the query key is the same.
  * So we find the exact query and update it manually.
  */
-function setDataToExistingQuery(queryClient: QueryClient, hash: string, newData: unknown, state?: Partial<QueryState>) {
+function setDataToExistingQuery(
+  queryClient: QueryClient,
+  hash: string,
+  newData: unknown,
+  state?: Partial<QueryState>,
+  meta?: {
+    updated?: 'optimistic' | 'pessimistic' | 'undone';
+  },
+) {
   const query = queryClient.getQueryCache().get(hash);
   query?.setData(newData);
-  if (state) query?.setState(state);
+  if (state || meta) query?.setState(state || {}, { meta });
 }
 
 /**
