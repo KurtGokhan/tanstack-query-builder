@@ -1,23 +1,26 @@
 import type { Query, QueryClient } from '@tanstack/react-query';
-import type { QueryTag, QueryTagOption } from './types';
+import type { QueryTag, QueryTagObject, QueryTagOption } from './types';
 
-export type ResolveTagsParams<TVars = void, TData = unknown, TErr = unknown, TTag extends QueryTag = QueryTag> = {
-  tags?: QueryTagOption<TVars, TData, TErr, TTag> | null;
+export type ResolveTagsParams<
+  TVars = void,
+  TData = unknown,
+  TErr = unknown,
+  TTag extends QueryTagObject = QueryTagObject,
+> = {
+  tags?: QueryTagOption<TVars, TData, TErr, TTag> | QueryTagOption<TVars, TData, TErr, TTag>[] | null;
   vars: TVars;
   data?: TData;
   error?: unknown;
 };
 
-function normalizeTag<TTag extends QueryTag = QueryTag>(tag: TTag): Exclude<TTag, string> {
-  return typeof tag === 'string'
-    ? ({ type: tag, invalidate: 'both' } as unknown as Exclude<TTag, string>)
-    : (tag as Exclude<TTag, string>);
+function normalizeTag<TTag extends QueryTagObject = QueryTagObject>(tag: TTag | QueryTag): TTag {
+  return typeof tag === 'string' ? ({ type: tag, invalidate: 'both' } as unknown as TTag) : (tag as TTag);
 }
 
 /**
  * Resolve a tags array or function to an array of tags based on passed data, error, and vars.
  */
-export function resolveTags<TVars = void, TTag extends QueryTag = QueryTag>({
+export function resolveTags<TVars = void, TTag extends QueryTagObject = QueryTagObject>({
   client,
   tags,
   vars,

@@ -8,11 +8,10 @@ import { queryClient } from './client';
 const baseQuery = new HttpQueryBuilder({ queryClient }).withBaseUrl(baseUrl);
 const baseMutation = baseQuery.asMutationBuilder();
 
-const resetMutation = baseMutation.withPath('/reset').withConfig({ invalidates: '*' });
+const resetMutation = baseMutation.withPath('/reset').withUpdates('*');
 
 const postsQuery = baseQuery
-  .withConfig({ tags: 'refreshable' })
-  .withConfig({ tags: { type: 'posts' as any, id: 'LIST' } })
+  .withTags('refreshable', { type: 'posts' as any, id: 'LIST' })
   .withPath('/posts')
   .withData<PostData[]>();
 
@@ -21,7 +20,7 @@ const postQuery = baseQuery
   .withPath('/posts/:id')
   .withData<PostData>()
   .withConfig({
-    tags: (ctx) => [{ type: 'posts' as any, id: ctx.vars.params.id }],
+    tags: (ctx) => [{ type: 'posts' as any, id: ctx.data.id }],
   })
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);
@@ -42,29 +41,31 @@ const editPostMutation = baseMutation
   .withPath('/posts/:id')
   .withVars({ method: 'put' })
   .withBody<Partial<PostData>>()
-  .withConfig({
-    invalidates: () => [{ type: 'posts' as any, id: 'LIST' }],
-    optimisticUpdates: (ctx) => [
-      {
-        type: 'posts' as any,
-        id: ctx.vars.params.id,
-        updater(ctx, target) {
-          return { ...target!, ...ctx.vars.body };
-        },
-      },
-    ],
+  .withUpdates({ type: 'posts' as any, id: 'LIST' }, (ctx) => ({
+    type: 'posts' as any,
+    id: ctx.vars.params.id,
+    optimistic: true,
+    updater(ctx, target) {
+      return { ...target!, ...(ctx.vars as any).body };
+    },
+  }))
+  .withMiddleware(async (ctx, next) => {
+    const res = await next({
+      ...ctx,
+      vars: { ...ctx.vars, body: { ...ctx.vars.body, body: `${ctx.vars.body.body} \n Last updated ${new Date()}` } },
+    });
+    return res;
   });
 
 const deletePostMutation = baseMutation
   .withVars({ method: 'delete' })
   .withPath('/posts/:id')
-  .withConfig({
-    optimisticUpdates: {
-      type: 'posts' as any,
-      id: 'LIST',
-      updater(ctx, target) {
-        return (target as PostData[]).filter((post) => post.id !== ctx.vars.params.id);
-      },
+  .withUpdates({
+    type: 'posts' as any,
+    id: 'LIST',
+    optimistic: true,
+    updater(ctx, target) {
+      return (target as PostData[]).filter((post) => post.id !== (ctx.vars as any).params.id);
     },
   });
 

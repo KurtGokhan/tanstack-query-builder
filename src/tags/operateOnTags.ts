@@ -5,6 +5,7 @@ import type {
   QueryClient,
   QueryFilters,
 } from '@tanstack/react-query';
+import { BuilderMutationCache } from './cache';
 import { resolveQueryTags } from './resolveTags';
 import type { QueryTag } from './types';
 
@@ -26,6 +27,13 @@ function tagMatchesTag(queryTag: QueryTag, comparedTag: QueryTag) {
 }
 
 export function queryMatchesTag(client: QueryClient, query: Query, tag: QueryTag) {
+  const cache = client.getMutationCache() as BuilderMutationCache;
+  const tagsInCache = cache.tagsCache
+    ?.filter((t) => t.hash === query.queryHash)
+    .map((t) => t.tag)
+    .filter((t) => tagMatchesTag(t, tag));
+  if (tagsInCache?.length) return true;
+
   const queryTags = resolveQueryTags({ query, client });
   return queryTags.some((queryTag) => tagMatchesTag(queryTag, tag));
 }

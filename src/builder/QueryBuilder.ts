@@ -21,6 +21,7 @@ import { QueryTagOption } from '../tags/types';
 import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
 import { MiddlewareFn, applyMiddleware } from './middlewares';
+import { createTagMiddleware } from './tags';
 import {
   BuilderMergeVarsFn,
   BuilderQueriesResult,
@@ -221,6 +222,10 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
     const newBuilder = this as unknown as QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
     return newBuilder.withConfig({ queryFn: applyMiddleware(this.config.queryFn, middleware) });
+  }
+
+  withTags(...tags: QueryTagOption<T['vars'], T['data'], T['error']>[]): this {
+    return this.withMiddleware(createTagMiddleware<T>(tags)) as unknown as this;
   }
 
   freeze(): QueryBuilderFrozen<T> {

@@ -33,7 +33,8 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 
 - Strong typed customizable tags
 - Middlewares on builder
-- Context on builder
+- Tags and updates as middlewares - withUpdates, withTags
+- Predefined update functions - clear, merge, replace, insert-by-id, delete-by-id, update-by-id, upsert-by-id
 
 ## Examples
 

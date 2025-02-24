@@ -13,11 +13,12 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { mergeTagOptions } from '../tags/mergeTagOptions';
-import { QueryInvalidatesMetadata } from '../tags/types';
+import { QueryInvalidatesMetadata, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { QueryBuilder } from './QueryBuilder';
 import { MiddlewareFn, applyMiddleware } from './middlewares';
 import { BuilderMergeVarsFn, BuilderQueryFn, SetAllTypes, SetDataType, SetErrorType } from './types';
 import { AppendVarsType, BuilderTypeTemplate } from './types';
+import { createUpdateMiddleware } from './updates';
 import { areKeysEqual, mergeMutationOptions, mergeVars } from './utils';
 
 function getRandomKey() {
@@ -105,7 +106,7 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   useMutation: (
     opts?: MutationBuilderConfig<T>['options'],
   ) => ReturnType<typeof useMutation<T['data'], T['error'], T['vars']>> = (opts) => {
-    const queryClient = useQueryClient();
+    const queryClient = useQueryClient(this.config.queryClient);
     return useMutation(this.getMutationOptions(queryClient, opts), this.config.queryClient);
   };
 
@@ -187,6 +188,10 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
     const newBuilder = this as unknown as MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
     return newBuilder.withConfig({ queryFn: applyMiddleware(this.config.queryFn, middleware) });
+  }
+
+  withUpdates(...tags: QueryTagOption<T['vars'], T['data'], T['error'], QueryUpdateTagObject>[]): this {
+    return this.withMiddleware(createUpdateMiddleware<T>(tags)) as unknown as this;
   }
 
   freeze(): MutationBuilderFrozen<T> {
