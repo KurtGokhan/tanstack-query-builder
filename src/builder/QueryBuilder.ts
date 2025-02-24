@@ -16,12 +16,11 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { mergeTagOptions } from '../tags/mergeTagOptions';
 import { QueryTagOption } from '../tags/types';
 import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
-import { MiddlewareFn, applyMiddleware } from './middlewares';
-import { createTagMiddleware } from './tags';
+import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
+import { createTagMiddleware } from './createTagMiddleware';
 import {
   BuilderMergeVarsFn,
   BuilderQueriesResult,
@@ -43,7 +42,6 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     return {
       ...config,
       ...other,
-      tags: mergeTagOptions([config.tags, other.tags]),
       vars: mergeVars([config.vars, other.vars], other.mergeVars || config.mergeVars),
       options: mergeQueryOptions([config.options, other.options]),
     };
@@ -71,7 +69,6 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
       {
         queryFn: this.getQueryFn(),
         queryKey: this.getQueryKey(vars),
-        meta: { tags: this.config.tags },
       },
       this.config.options,
       opts,
@@ -221,7 +218,7 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
   ): QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
     const newBuilder = this as unknown as QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
-    return newBuilder.withConfig({ queryFn: applyMiddleware(this.config.queryFn, middleware) });
+    return newBuilder.withConfig({ queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
   }
 
   withTags(...tags: QueryTagOption<T['vars'], T['data'], T['error']>[]): this {
@@ -250,8 +247,6 @@ export type QueryBuilderConfig<T extends BuilderTypeTemplate> = {
   queryFn: BuilderQueryFn<T>;
   vars?: Partial<T['vars']>;
   mergeVars?: BuilderMergeVarsFn<T['vars']>;
-
-  tags?: QueryTagOption<T['vars'], T['data'], T['error']>;
 
   options?: Partial<UseQueryOptions<T['data'], T['error'], T['data'], [T['vars']]> & { queryFn: FunctionType }>;
 

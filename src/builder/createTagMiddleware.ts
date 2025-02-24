@@ -2,7 +2,7 @@ import { hashKey } from '@tanstack/react-query';
 import { BuilderMutationCache } from '../tags/cache';
 import { resolveTags } from '../tags/resolveTags';
 import { QueryTagObject, QueryTagOption } from '../tags/types';
-import { MiddlewareFn } from './middlewares';
+import { MiddlewareFn } from './createMiddlewareFunction';
 import { BuilderTypeTemplate } from './types';
 
 type CreateTagMiddleware = <T extends BuilderTypeTemplate>(

@@ -15,7 +15,7 @@ export type MiddlewareNextFn<T extends BuilderTypeTemplate> = (
   context: Omit<MiddlewareContext<T['vars']>, 'queryKey'>,
 ) => Promise<T['data']>;
 
-export const createMiddlewareContext = <TVars>(context: QueryFunctionContext<[TVars]>): MiddlewareContext<TVars> => {
+const createMiddlewareContext = <TVars>(context: QueryFunctionContext<[TVars]>): MiddlewareContext<TVars> => {
   return {
     ...context,
     vars: context.queryKey[0],
@@ -26,7 +26,7 @@ const throwError = (error: any): never => {
   throw error;
 };
 
-export const applyMiddleware = <TVars, TData, TError, TOriginalTemplate extends BuilderTypeTemplate>(
+export const createMiddlewareFunction = <TVars, TData, TError, TOriginalTemplate extends BuilderTypeTemplate>(
   originalFn: BuilderQueryFn<TOriginalTemplate>,
   middleware: MiddlewareFn<TVars, TData, TError, TOriginalTemplate>,
 ): QueryFunction<TData, [TVars]> => {

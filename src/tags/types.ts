@@ -60,32 +60,3 @@ export type QueryUpdateTagObject<
 export type QueryUpdateTag<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = QueryTag<
   QueryUpdateTagObject<TVars, TData, TErr, TTarget>
 >;
-
-export type QueryTagsMetadata<TVars = void, TData = unknown, TErr = unknown> = {
-  /**
-   * Provides tags for the query, which can be used by mutations to invalidate or optimistically update the query data.
-   */
-  tags?: QueryTagOption<TVars, TData, TErr>;
-
-  updated?: 'optimistic' | 'pessimistic' | 'undone';
-};
-
-export type QueryInvalidatesMetadata<TVars = void, TData = unknown, TErr = unknown> = {
-  /**
-   * Invalidates queries with the matching tags.
-   */
-  invalidates?: QueryTagOption<TVars, TData, TErr>;
-
-  /**
-   * Updates the matching tags with the data returned by the mutation, or a custom updater.
-   * This is called after the mutation has succeeded, so it is not instantaneous.
-   */
-  updates?: QueryTagOption<TVars, TData, TErr, QueryUpdateTagObject<TVars, TData, TErr, unknown>>;
-
-  /**
-   * Updates the matching tags with the body passed to the mutation, or a custom updater.
-   * Unlike `updates`, this doesn't wait for the mutation to succeed, so the data is not available in the updater.
-   * If the mutation fails, the data will be rolled back.
-   */
-  optimisticUpdates?: QueryTagOption<TVars, unknown, TErr, QueryUpdateTagObject<TVars, unknown, TErr, unknown>>;
-};

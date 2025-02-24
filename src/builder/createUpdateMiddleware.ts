@@ -3,7 +3,7 @@ import { operateOnTags } from '../tags/operateOnTags';
 import { resolveTags } from '../tags/resolveTags';
 import { QueryTagContext, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { UpdateTagsUndoer, undoUpdateTags, updateTags } from '../tags/updateTags';
-import { MiddlewareFn } from './middlewares';
+import { MiddlewareFn } from './createMiddlewareFunction';
 import { BuilderTypeTemplate } from './types';
 
 type CreateUpdateMiddleware = <T extends BuilderTypeTemplate>(

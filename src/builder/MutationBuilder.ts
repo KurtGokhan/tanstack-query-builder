@@ -12,13 +12,12 @@ import {
   useMutationState,
   useQueryClient,
 } from '@tanstack/react-query';
-import { mergeTagOptions } from '../tags/mergeTagOptions';
-import { QueryInvalidatesMetadata, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
+import { QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { QueryBuilder } from './QueryBuilder';
-import { MiddlewareFn, applyMiddleware } from './middlewares';
+import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
+import { createUpdateMiddleware } from './createUpdateMiddleware';
 import { BuilderMergeVarsFn, BuilderQueryFn, SetAllTypes, SetDataType, SetErrorType } from './types';
 import { AppendVarsType, BuilderTypeTemplate } from './types';
-import { createUpdateMiddleware } from './updates';
 import { areKeysEqual, mergeMutationOptions, mergeVars } from './utils';
 
 function getRandomKey() {
@@ -38,9 +37,6 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     return {
       ...config,
       ...other,
-      invalidates: mergeTagOptions([config.invalidates, other.invalidates]),
-      updates: mergeTagOptions([config.updates, other.updates]),
-      optimisticUpdates: mergeTagOptions([config.optimisticUpdates, other.optimisticUpdates]),
       vars: mergeVars([config.vars, other.vars], other.mergeVars || config.mergeVars),
       options: mergeMutationOptions([config.options, other.options]),
     };
@@ -76,11 +72,6 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
       {
         mutationKey: this.getMutationKey(),
         mutationFn: this.getMutationFn(queryClient, opts?.meta),
-        meta: {
-          invalidates: this.config.invalidates,
-          updates: this.config.updates,
-          optimisticUpdates: this.config.optimisticUpdates,
-        },
       },
       this.config.options,
       opts,
@@ -90,7 +81,7 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
   getMutationFilters: (
     vars?: T['vars'],
     filters?: MutationFilters<T['data'], T['error'], T['vars']>,
-  ) => MutationFilters<T['data'], T['error'], T['vars']> = (vars, filters) => {
+  ) => MutationFilters<any, any, any> = (vars, filters) => {
     return {
       mutationKey: this.getMutationKey(),
       ...filters,
@@ -122,7 +113,10 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     filters?: MutationFilters<T['data'], T['error'], T['vars']>,
     select?: (mt: Mutation<T['data'], T['error'], T['vars']>) => TSelect,
   ) => TSelect[] = (vars, filters, select) => {
-    return useMutationState({ filters: this.getMutationFilters(vars, filters), select }, this.config.queryClient);
+    return useMutationState(
+      { filters: this.getMutationFilters(vars, filters), select: select as any },
+      this.config.queryClient,
+    );
   };
 
   readonly getMutation = (
@@ -187,7 +181,7 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
   ): MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
     const newBuilder = this as unknown as MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
-    return newBuilder.withConfig({ queryFn: applyMiddleware(this.config.queryFn, middleware) });
+    return newBuilder.withConfig({ queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
   }
 
   withUpdates(...tags: QueryTagOption<T['vars'], T['data'], T['error'], QueryUpdateTagObject>[]): this {
@@ -210,11 +204,7 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
   }
 }
 
-export type MutationBuilderConfig<T extends BuilderTypeTemplate> = QueryInvalidatesMetadata<
-  T['vars'],
-  T['data'],
-  T['error']
-> & {
+export type MutationBuilderConfig<T extends BuilderTypeTemplate> = {
   queryFn: BuilderQueryFn<T>;
 
   vars?: Partial<T['vars']>;

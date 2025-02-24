@@ -1,16 +1,22 @@
 import {
-  DefaultError,
-  MutationKey,
-  QueryKey,
-  UseMutationOptions,
-  UseQueryOptions,
+  type DefaultError,
+  type MutationKey,
+  type QueryKey,
+  type UseMutationOptions,
+  type UseQueryOptions,
   hashKey,
 } from '@tanstack/react-query';
 import { httpRequest } from '../http/request';
-import { mergeQueryEnabled } from '../tags/mergeQueryEnabled';
-import { mergeTagOptions } from '../tags/mergeTagOptions';
-import { FunctionType } from '../types/utils';
-import { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderTypeTemplate } from './types';
+import type { FunctionType } from '../types/utils';
+import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderTypeTemplate } from './types';
+
+export function mergeQueryEnabled(
+  opts: (UseQueryOptions<any, any, any, any>['enabled'] | undefined | null)[],
+): UseQueryOptions<any, any, any, any>['enabled'] {
+  if (opts.some((opt) => typeof opt === 'function'))
+    return (q) => opts.every((opt) => (typeof opt === 'function' ? opt(q) : opt !== false));
+  return opts.every((x) => x !== false);
+}
 
 export function mergeQueryOptions<
   TQueryFnData = unknown,
@@ -30,11 +36,7 @@ export function mergeQueryOptions<
   for (const { enabled, meta, ...opt } of filtered) {
     Object.assign(opts, opt);
     opts.enabled = mergeQueryEnabled([opts.enabled, enabled]) as TOpt['enabled'];
-    opts.meta = {
-      ...opts.meta,
-      ...meta,
-      tags: mergeTagOptions([opts.meta?.tags, meta?.tags]),
-    };
+    opts.meta = { ...opts.meta, ...meta };
   }
 
   return opts;
@@ -52,16 +54,10 @@ export function mergeMutationOptions<TData = unknown, TError = DefaultError, TVa
 
   for (const { meta, ...opt } of filtered) {
     Object.assign(opts, opt);
-    opts.meta = {
-      ...opts.meta,
-      ...meta,
-    };
+    opts.meta = { ...opts.meta, ...meta };
   }
 
   opts.meta ??= {};
-  opts.meta.invalidates = mergeTagOptions(filtered.map((f) => f.meta?.invalidates));
-  opts.meta.updates = mergeTagOptions(filtered.map((f) => f.meta?.updates));
-  opts.meta.optimisticUpdates = mergeTagOptions(filtered.map((f) => f.meta?.optimisticUpdates));
 
   return opts;
 }

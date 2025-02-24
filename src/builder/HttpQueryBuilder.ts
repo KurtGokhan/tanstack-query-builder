@@ -3,7 +3,7 @@ import { WithOptional } from '../types/utils';
 import { HttpMutationBuilder } from './HttpMutationBuilder';
 import { MutationBuilder } from './MutationBuilder';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
-import { MiddlewareFn } from './middlewares';
+import { MiddlewareFn } from './createMiddlewareFunction';
 import {
   HttpBaseHeaders,
   HttpBaseParams,
