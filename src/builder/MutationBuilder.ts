@@ -181,7 +181,7 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
   ): MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
     const newBuilder = this as unknown as MutationBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
-    return newBuilder.withConfig({ queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
+    return newBuilder.withConfig({ queryFn: createMiddlewareFunction(this.config.queryFn, middleware, this.config) });
   }
 
   withUpdates<TTarget = unknown>(
@@ -207,6 +207,7 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
       queryClient: this.config.queryClient,
       mergeVars: this.config.mergeVars,
       vars: this.config.vars,
+      syncChannel: this.config.syncChannel,
     });
   }
 }
@@ -219,4 +220,5 @@ export type MutationBuilderConfig<T extends BuilderTypeTemplate> = {
 
   options?: UseMutationOptions<T['data'], T['error'], T['vars']>;
   queryClient?: QueryClient;
+  syncChannel?: BroadcastChannel;
 };

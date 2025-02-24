@@ -16,6 +16,7 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { operateOnTags } from '../tags/operateOnTags';
 import { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
 import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
@@ -219,7 +220,10 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
   ): QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
     const newBuilder = this as unknown as QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
-    return newBuilder.withConfig({ ...config, queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
+    return newBuilder.withConfig({
+      ...config,
+      queryFn: createMiddlewareFunction(this.config.queryFn, middleware, this.config),
+    });
   }
 
   static tagCacheId = 0;
@@ -227,6 +231,16 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
   withTags(...tags: QueryTagOption<T['vars'], T['data'], T['error']>[]): this {
     const tagCache: QueryTagCache = { tags: [] };
     const setTags = (tags: QueryTagObject[]) => (tagCache.tags = tags);
+
+    if (this.config.queryClient) {
+      this.config.syncChannel?.addEventListener('message', (event) => {
+        const { type, data } = event.data;
+        if (type === 'invalidate') {
+          const queryClient = this.config.queryClient;
+          if (queryClient) operateOnTags({ queryClient, tags: data });
+        }
+      });
+    }
 
     return this.withMiddleware(createTagMiddleware<T>(tags, setTags), {
       options: { meta: { tagCaches: { [QueryBuilder.tagCacheId++]: tagCache } } },
@@ -245,6 +259,7 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
       queryClient: this.config.queryClient,
       mergeVars: this.config.mergeVars,
       vars: this.config.vars,
+      syncChannel: this.config.syncChannel,
     });
   }
 }
@@ -259,4 +274,5 @@ export type QueryBuilderConfig<T extends BuilderTypeTemplate> = {
   options?: Partial<UseQueryOptions<T['data'], T['error'], T['data'], [T['vars']]> & { queryFn: FunctionType }>;
 
   queryClient?: QueryClient;
+  syncChannel?: BroadcastChannel;
 };

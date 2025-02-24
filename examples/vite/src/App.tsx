@@ -5,7 +5,10 @@ import './App.css';
 import { HttpQueryBuilder, MiddlewareContext, useOperateOnTags } from 'react-query-builder';
 import { queryClient } from './client';
 
-const baseQuery = new HttpQueryBuilder({ queryClient }).withBaseUrl(baseUrl);
+const baseQuery = new HttpQueryBuilder({
+  queryClient,
+  syncChannel: new BroadcastChannel('react-query-builder'),
+}).withBaseUrl(baseUrl);
 const baseMutation = baseQuery.asMutationBuilder();
 
 const resetMutation = baseMutation.withPath('/reset').withUpdates('*');

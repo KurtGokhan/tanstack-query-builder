@@ -1,4 +1,3 @@
-import { BuilderMutationCache } from '../tags/cache';
 import { operateOnTags } from '../tags/operateOnTags';
 import { resolveTags } from '../tags/resolveTags';
 import { QueryTagContext, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
@@ -11,10 +10,7 @@ type CreateUpdateMiddleware = <T extends BuilderTypeTemplate>(
 ) => MiddlewareFn<T['vars'], T['data'], T['error'], T>;
 
 export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
-  async function updateMiddleware(ctx, next) {
-    const cache = ctx.client.getMutationCache();
-    if (!(cache instanceof BuilderMutationCache)) return next(ctx);
-
+  async function updateMiddleware(ctx, next, throwError, config) {
     let undos: UpdateTagsUndoer[] | null = null;
     const invalidates: QueryUpdateTagObject[] = [];
     const optCtx: QueryTagContext<unknown> = { client: ctx.client, vars: ctx.vars, data: undefined };
@@ -53,9 +49,9 @@ export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
 
       operateOnTags({ tags: tagsToInvalidate, queryClient: ctx.client });
 
-      if (cache.syncChannel) {
+      if (config.syncChannel) {
         const tagsToSync = tagsToInvalidate.map(({ type, id }) => ({ type, id }));
-        cache.syncChannel.postMessage({ type: 'invalidate', data: tagsToSync });
+        config.syncChannel.postMessage({ type: 'invalidate', data: tagsToSync });
       }
     }
   };
