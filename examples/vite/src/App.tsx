@@ -16,23 +16,21 @@ const postsQuery = baseQuery
   .withData<PostData[]>();
 
 const postQuery = baseQuery
-  .withConfig({ tags: 'refreshable' })
+  .withTags('refreshable')
   .withPath('/posts/:id')
   .withData<PostData>()
-  .withConfig({
-    tags: (ctx) => [{ type: 'posts' as any, id: ctx.data.id }],
-  })
+  .withTags((ctx) => ({ type: 'posts' as any, id: ctx.data.id }))
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);
     return { ...res, titleUppercase: res.title.toUpperCase() };
   })
   .withMiddleware((ctx: MiddlewareContext<{ id: number }>, next) => {
-    const id = ctx.vars.id;
-    return next({ ...ctx, vars: { ...ctx.vars, params: { id } } });
+    const { id, ...vars } = ctx.vars;
+    return next({ ...ctx, vars: { ...vars, params: { id } } });
   });
 
 const commentsQuery = baseQuery
-  .withConfig({ tags: 'refreshable' })
+  .withTags('refreshable')
   .withPath('/comments')
   .withSearch<{ postId: number | null }>()
   .withData<CommentData[]>();
@@ -41,12 +39,12 @@ const editPostMutation = baseMutation
   .withPath('/posts/:id')
   .withVars({ method: 'put' })
   .withBody<Partial<PostData>>()
-  .withUpdates({ type: 'posts' as any, id: 'LIST' }, (ctx) => ({
+  .withUpdates<PostData>({ type: 'posts' as any, id: 'LIST' }, (ctx) => ({
     type: 'posts' as any,
     id: ctx.vars.params.id,
     optimistic: true,
     updater(ctx, target) {
-      return { ...target!, ...(ctx.vars as any).body };
+      return { ...target!, ...ctx.vars.body };
     },
   }))
   .withMiddleware(async (ctx, next) => {
@@ -81,7 +79,7 @@ function App() {
     (x) => x.state.variables?.params.id,
   );
 
-  const [refresh] = useOperateOnTags({ tags: ['refreshable'], operation: 'refetch' });
+  const [refresh] = useOperateOnTags({ tags: ['refreshable'] });
 
   if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 

@@ -16,7 +16,7 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { QueryTagOption } from '../tags/types';
+import { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
 import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
 import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
@@ -215,14 +215,22 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
 
   withMiddleware<TVars = T['vars'], TData = T['data'], TError = T['error']>(
     middleware: MiddlewareFn<TVars, TData, TError, T>,
+    config?: Partial<QueryBuilderConfig<SetAllTypes<T, TData, TError, TVars, true>>>,
   ): QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
     const newBuilder = this as unknown as QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
 
-    return newBuilder.withConfig({ queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
+    return newBuilder.withConfig({ ...config, queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
   }
 
+  static tagCacheId = 0;
+
   withTags(...tags: QueryTagOption<T['vars'], T['data'], T['error']>[]): this {
-    return this.withMiddleware(createTagMiddleware<T>(tags)) as unknown as this;
+    const tagCache: QueryTagCache = { tags: [] };
+    const setTags = (tags: QueryTagObject[]) => (tagCache.tags = tags);
+
+    return this.withMiddleware(createTagMiddleware<T>(tags, setTags), {
+      options: { meta: { tagCaches: { [QueryBuilder.tagCacheId++]: tagCache } } },
+    }) as unknown as this;
   }
 
   freeze(): QueryBuilderFrozen<T> {

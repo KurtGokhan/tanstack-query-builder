@@ -36,7 +36,11 @@ export function mergeQueryOptions<
   for (const { enabled, meta, ...opt } of filtered) {
     Object.assign(opts, opt);
     opts.enabled = mergeQueryEnabled([opts.enabled, enabled]) as TOpt['enabled'];
-    opts.meta = { ...opts.meta, ...meta };
+    opts.meta = {
+      ...opts.meta,
+      ...meta,
+      tagCaches: { ...opts.meta?.tagCaches!, ...meta?.tagCaches! },
+    };
   }
 
   return opts;
@@ -71,18 +75,9 @@ export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> 
   return {
     ...v1,
     ...v2,
-    headers: {
-      ...v1?.headers!,
-      ...v2?.headers!,
-    },
-    params: {
-      ...v1?.params!,
-      ...v2?.params!,
-    },
-    search: {
-      ...v1?.search!,
-      ...v2?.search!,
-    },
+    ...(v1?.headers || v2?.headers ? { headers: { ...v1?.headers!, ...v2?.headers! } } : {}),
+    ...(v1?.params || v2?.params ? { params: { ...v1?.params!, ...v2?.params! } } : {}),
+    ...(v1?.search || v2?.search ? { search: { ...v1?.search!, ...v2?.search! } } : {}),
   };
 };
 

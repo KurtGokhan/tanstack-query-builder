@@ -2,11 +2,7 @@ import { type QueryClient, type QueryState, useQueryClient } from '@tanstack/rea
 import { useStableCallback } from '../hooks/useStableCallback';
 import type { WithOptional } from '../types/utils';
 import { queryMatchesTag } from './operateOnTags';
-import type { QueryTagContext, QueryUpdateTag, QueryUpdater } from './types';
-
-const defaultPessimisticUpdater: QueryUpdater = (ctx) => ctx.data;
-const defaultOptimisticUpdater: QueryUpdater = (ctx, data) =>
-  typeof data !== 'object' || typeof ctx.data !== 'object' ? ctx.data : { ...data, ...ctx.data };
+import type { QueryTagContext, QueryUpdateTag } from './types';
 
 export type UpdateTagsUndoer = { hash: string; data: unknown };
 
@@ -27,15 +23,17 @@ export function updateTags({
   if (!tags?.length) return [];
 
   const undos: UpdateTagsUndoer[] = [];
-  const defaultUpdater = optimistic ? defaultOptimisticUpdater : defaultPessimisticUpdater;
 
-  for (const tag of tags) {
+  for (let i = 0; i < tags.length; i++) {
+    const tag = tags[i];
+
     const list = queryClient.getQueryCache().findAll({
-      predicate: (query) => queryMatchesTag(queryClient, query, tag),
+      predicate: (query) => queryMatchesTag(query, tag),
       type: 'all',
     });
 
-    const updater = (typeof tag === 'object' && tag.updater) || defaultUpdater;
+    const updater = typeof tag === 'object' && tag.updater;
+    if (!updater) continue;
 
     /**
      * If the tag has an invalidate property, we will set the fetchStatus to 'fetching' to indicate that the query is being updated.

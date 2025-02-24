@@ -5,9 +5,7 @@ import type {
   QueryClient,
   QueryFilters,
 } from '@tanstack/react-query';
-import { BuilderMutationCache } from './cache';
-import { resolveQueryTags } from './resolveTags';
-import type { QueryTag } from './types';
+import type { QueryTag, QueryTagCache } from './types';
 
 /**
  * Based on the behavior described in https://redux-toolkit.js.org/rtk-query/usage/automated-refetching#tag-invalidation-behavior
@@ -26,16 +24,11 @@ function tagMatchesTag(queryTag: QueryTag, comparedTag: QueryTag) {
   return cId === qId;
 }
 
-export function queryMatchesTag(client: QueryClient, query: Query, tag: QueryTag) {
-  const cache = client.getMutationCache() as BuilderMutationCache;
-  const tagsInCache = cache.tagsCache
-    ?.filter((t) => t.hash === query.queryHash)
-    .map((t) => t.tag)
-    .filter((t) => tagMatchesTag(t, tag));
-  if (tagsInCache?.length) return true;
-
-  const queryTags = resolveQueryTags({ query, client });
-  return queryTags.some((queryTag) => tagMatchesTag(queryTag, tag));
+export function queryMatchesTag(query: Query, tag: QueryTag) {
+  const tagCaches = query.meta?.tagCaches as Record<string, QueryTagCache>;
+  const tagsInMeta = Object.values(tagCaches)?.flatMap((t) => t.tags || []);
+  if (tagsInMeta?.length) return tagsInMeta.some((t: QueryTag) => tagMatchesTag(t, tag));
+  return false;
 }
 
 export type OperateOnTagsOperation = 'invalidate' | 'refetch' | 'reset' | 'cancel' | 'remove';
@@ -64,7 +57,7 @@ export function operateOnTags(
     ...(operation === 'refetch' && { type: 'active' }),
     ...filters,
     predicate: (query) =>
-      tags.some((tag) => queryMatchesTag(queryClient, query, tag)) && (!filters?.predicate || filters.predicate(query)),
+      tags.some((tag) => queryMatchesTag(query, tag)) && (!filters?.predicate || filters.predicate(query)),
   };
 
   if (operation === 'refetch') return queryClient.refetchQueries(filtersObj, options);

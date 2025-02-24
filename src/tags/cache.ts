@@ -1,6 +1,5 @@
 import { MutationCache, QueryClient } from '@tanstack/react-query';
 import { operateOnTags } from './operateOnTags';
-import type { QueryTagObject } from './types';
 
 type BuilderMutationCacheOptions = {
   getQueryClient: () => QueryClient;
@@ -9,7 +8,6 @@ type BuilderMutationCacheOptions = {
 
 export class BuilderMutationCache extends MutationCache {
   syncChannel?: BroadcastChannel;
-  tagsCache: { hash: string; tag: QueryTagObject }[] = [];
 
   constructor(config: MutationCache['config'], { getQueryClient, syncChannel }: BuilderMutationCacheOptions) {
     super(config);

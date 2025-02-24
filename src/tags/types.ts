@@ -60,3 +60,5 @@ export type QueryUpdateTagObject<
 export type QueryUpdateTag<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = QueryTag<
   QueryUpdateTagObject<TVars, TData, TErr, TTarget>
 >;
+
+export type QueryTagCache = { tags: QueryTagObject[] };

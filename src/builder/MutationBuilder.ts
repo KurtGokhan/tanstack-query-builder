@@ -184,7 +184,14 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
     return newBuilder.withConfig({ queryFn: createMiddlewareFunction(this.config.queryFn, middleware) });
   }
 
-  withUpdates(...tags: QueryTagOption<T['vars'], T['data'], T['error'], QueryUpdateTagObject>[]): this {
+  withUpdates<TTarget = unknown>(
+    ...tags: QueryTagOption<
+      T['vars'],
+      T['data'],
+      T['error'],
+      QueryUpdateTagObject<T['vars'], T['data'], T['error'], TTarget>
+    >[]
+  ): this {
     return this.withMiddleware(createUpdateMiddleware<T>(tags)) as unknown as this;
   }
 

@@ -7,7 +7,7 @@ import { MiddlewareFn } from './createMiddlewareFunction';
 import { BuilderTypeTemplate } from './types';
 
 type CreateUpdateMiddleware = <T extends BuilderTypeTemplate>(
-  tags: QueryTagOption<T['vars'], T['data'], T['error'], QueryUpdateTagObject>[],
+  tags: QueryTagOption<T['vars'], T['data'], T['error'], QueryUpdateTagObject<T['vars'], T['data'], T['error'], any>>[],
 ) => MiddlewareFn<T['vars'], T['data'], T['error'], T>;
 
 export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
