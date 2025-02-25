@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { StringLiteral } from '../types/utils';
+import { KeysOfValue, StringLiteral } from '../types/utils';
 import type { QueryTagType } from './tag-types';
 
 /**
@@ -29,10 +29,30 @@ export type QueryTagOption<
   TTag extends QueryTagObject = QueryTagObject,
 > = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[] | QueryTagCallback<TVars, TData, TErr, TTag>;
 
-export type QueryUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = (
+export type QueryUpdaterFn<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = (
   ctx: QueryTagContext<TVars, TData, TErr>,
   target: TTarget,
 ) => TTarget;
+
+export type QueryUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> =
+  | QueryUpdaterFn<TVars, TData, TErr, TTarget>
+  | PredefinedUpdater<TVars, TData, TErr, TTarget>;
+
+export type PredefinedUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> =
+  | `clear-${UpdaterSelector<TVars>}`
+  | `merge-${UpdaterSelector<TVars>}`
+  | `replace-${UpdaterSelector<TVars>}`
+  | `${'create' | 'update' | 'upsert' | 'delete' | 'switch'}-${UpdaterSelector<TVars>}-by-${KeyOfTarget<TTarget>}`;
+
+type UpdaterSelector<TVars> = 'data' | 'vars' | (KeysOfValue<TVars, Record<string, any>> & string);
+type KeyOfTarget<TTarget> = string & KeyOfItem<TTarget>;
+type KeyOfItem<TTarget> = TTarget extends readonly (infer TItem)[]
+  ? keyof TItem
+  : TTarget extends Record<string, infer TItem>
+    ? TItem extends Record<string, any>
+      ? keyof TItem
+      : never
+    : never;
 
 export type QueryUpdateTagObject<
   TVars = unknown,

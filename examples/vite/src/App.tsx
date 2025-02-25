@@ -42,18 +42,27 @@ const editPostMutation = baseMutation
   .withPath('/posts/:id')
   .withVars({ method: 'put' })
   .withBody<Partial<PostData>>()
-  .withUpdates<PostData>({ type: 'posts' as any, id: 'LIST' }, (ctx) => ({
-    type: 'posts' as any,
-    id: ctx.vars.params.id,
-    optimistic: true,
-    updater(ctx, target) {
-      return { ...target!, ...ctx.vars.body };
+  .withUpdates<PostData | PostData[]>(
+    {
+      type: 'posts' as any,
+      id: 'LIST',
+      optimistic: true,
+      updater: 'update-body-by-id',
     },
-  }))
+    (ctx) => ({
+      type: 'posts' as any,
+      id: ctx.vars.params.id,
+      optimistic: true,
+      updater: 'merge-body',
+    }),
+  )
   .withMiddleware(async (ctx, next) => {
     const res = await next({
       ...ctx,
-      vars: { ...ctx.vars, body: { ...ctx.vars.body, body: `${ctx.vars.body.body} \n Last updated ${new Date()}` } },
+      vars: {
+        ...ctx.vars,
+        body: { ...ctx.vars.body, body: `${ctx.vars.body.body} \n Last updated ${new Date().toISOString()}` },
+      },
     });
     return res;
   });
@@ -61,13 +70,11 @@ const editPostMutation = baseMutation
 const deletePostMutation = baseMutation
   .withVars({ method: 'delete' })
   .withPath('/posts/:id')
-  .withUpdates({
+  .withUpdates<PostData[]>({
     type: 'posts' as any,
     id: 'LIST',
     optimistic: true,
-    updater(ctx, target) {
-      return (target as PostData[]).filter((post) => post.id !== (ctx.vars as any).params.id);
-    },
+    updater: 'delete-params-by-id',
   });
 
 function App() {
@@ -170,7 +177,11 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
             onClick={() => {
               editPost.mutateAsync({
                 params: { id: postId },
-                body: { title: titleRef.current!.value, body: bodyRef.current!.value },
+                body: {
+                  id: postId,
+                  title: titleRef.current!.value,
+                  body: bodyRef.current!.value,
+                },
               });
 
               setShowEdit(false);

@@ -3,6 +3,7 @@ import { useStableCallback } from '../hooks/useStableCallback';
 import type { WithOptional } from '../types/utils';
 import { queryMatchesTag } from './operateOnTags';
 import type { QueryTagContext, QueryUpdateTag } from './types';
+import { getUpdater } from './updaters';
 
 export type UpdateTagsUndoer = { hash: string; data: unknown };
 
@@ -34,6 +35,8 @@ export function updateTags({
 
     const updater = typeof tag === 'object' && tag.updater;
     if (!updater) continue;
+    const updaterFn = getUpdater(updater, tag);
+    if (!updaterFn) continue;
 
     /**
      * If the tag has an invalidate property, we will set the fetchStatus to 'fetching' to indicate that the query is being updated.
@@ -46,7 +49,7 @@ export function updateTags({
       setDataToExistingQuery(
         queryClient,
         q.queryHash,
-        updater(ctx, q.state.data),
+        updaterFn(ctx, q.state.data),
         willInvalidate ? { isInvalidated: true } : undefined,
         { updated: optimistic ? 'optimistic' : 'pessimistic' },
       );
