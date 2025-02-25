@@ -32,6 +32,7 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 ## TODO
 
 - Strong typed customizable tags
+- Infinite queries
 
 ## Examples
 

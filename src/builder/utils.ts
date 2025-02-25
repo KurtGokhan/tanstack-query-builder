@@ -36,11 +36,7 @@ export function mergeQueryOptions<
   for (const { enabled, meta, ...opt } of filtered) {
     Object.assign(opts, opt);
     opts.enabled = mergeQueryEnabled([opts.enabled, enabled]) as TOpt['enabled'];
-    opts.meta = {
-      ...opts.meta,
-      ...meta,
-      tagCaches: { ...opts.meta?.tagCaches!, ...meta?.tagCaches! },
-    };
+    opts.meta = { ...opts.meta, ...meta };
   }
 
   return opts;

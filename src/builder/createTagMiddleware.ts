@@ -1,14 +1,15 @@
+import { hashKey } from '@tanstack/react-query';
 import { resolveTags } from '../tags/resolveTags';
-import { QueryTagObject, QueryTagOption } from '../tags/types';
+import { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
 import { MiddlewareFn } from './createMiddlewareFunction';
 import { BuilderTypeTemplate } from './types';
 
 type CreateTagMiddleware = <T extends BuilderTypeTemplate>(
   tags: QueryTagOption[],
-  setTags: (tags: QueryTagObject[]) => void,
+  cacheId: string | number,
 ) => MiddlewareFn<T['vars'], T['data'], T['error'], T>;
 
-export const createTagMiddleware: CreateTagMiddleware = (tags, setTags) =>
+export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
   async function tagMiddlware(ctx, next) {
     let resolvedTags: QueryTagObject[] = [];
 
@@ -23,6 +24,9 @@ export const createTagMiddleware: CreateTagMiddleware = (tags, setTags) =>
 
       throw error;
     } finally {
-      setTags(resolvedTags);
+      const hash = hashKey(ctx.originalQueryKey);
+      const tagCache = ((ctx.client as any).tagCache ??= {}) as QueryTagCache;
+      const tags = (tagCache[hash] ??= {});
+      tags[cacheId] = resolvedTags;
     }
   };

@@ -81,4 +81,4 @@ export type QueryUpdateTag<TVars = unknown, TData = unknown, TErr = unknown, TTa
   QueryUpdateTagObject<TVars, TData, TErr, TTarget>
 >;
 
-export type QueryTagCache = { tags: QueryTagObject[] };
+export type QueryTagCache = Record<string | number, Record<string, QueryTagObject[]>>;

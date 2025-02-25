@@ -1,4 +1,4 @@
-import type { QueryFunction, UseQueryResult } from '@tanstack/react-query';
+import type { QueryFunctionContext, UseQueryResult } from '@tanstack/react-query';
 import type { RequestError } from '../http/errors';
 import type { HttpRequestOptions } from '../http/types';
 import type { Prettify } from '../types/utils';
@@ -34,7 +34,13 @@ export type BuilderQueriesResult<T extends BuilderTypeTemplate> = QueriesResultI
   queryMap: QueriesResultMapType<T>;
 };
 
-export type BuilderQueryFn<T extends BuilderTypeTemplate> = QueryFunction<T['data'], [T['vars']]>;
+export type BuilderQueryContext<TVars> = QueryFunctionContext<[TVars], never> & {
+  originalQueryKey: unknown[];
+};
+
+export type BuilderQueryFn<T extends BuilderTypeTemplate> = (
+  context: BuilderQueryContext<T['vars']>,
+) => T['data'] | Promise<T['data']>;
 
 export type SetDataType<T extends BuilderTypeTemplate, TData> = Prettify<Omit<T, 'data'> & { data: TData }>;
 

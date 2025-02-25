@@ -38,4 +38,4 @@ yarn-error.log*
 next-env.d.ts
 
 # vite/vitest
-tsconfig.vitest-temp.json
+*.vitest-temp.json

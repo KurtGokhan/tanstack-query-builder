@@ -1,7 +1,6 @@
-import { QueryFunction, QueryFunctionContext } from '@tanstack/react-query';
 import { MutationBuilderConfig } from './MutationBuilder';
 import { QueryBuilderConfig } from './QueryBuilder';
-import { BuilderQueryFn, BuilderTypeTemplate } from './types';
+import type { BuilderQueryContext, BuilderQueryFn, BuilderTypeTemplate, SetAllTypes } from './types';
 
 export type MiddlewareFn<TVars, TData, TError, TOriginalTemplate extends BuilderTypeTemplate> = (
   context: MiddlewareContext<TVars>,
@@ -10,7 +9,7 @@ export type MiddlewareFn<TVars, TData, TError, TOriginalTemplate extends Builder
   config: QueryBuilderConfig<TOriginalTemplate> | MutationBuilderConfig<TOriginalTemplate>,
 ) => TData | Promise<TData>;
 
-export type MiddlewareContext<TVars> = QueryFunctionContext<[TVars]> & {
+export type MiddlewareContext<TVars> = BuilderQueryContext<TVars> & {
   vars: TVars;
 };
 
@@ -18,7 +17,7 @@ export type MiddlewareNextFn<T extends BuilderTypeTemplate> = (
   context: Omit<MiddlewareContext<T['vars']>, 'queryKey'>,
 ) => Promise<T['data']>;
 
-const createMiddlewareContext = <TVars>(context: QueryFunctionContext<[TVars]>): MiddlewareContext<TVars> => {
+const createMiddlewareContext = <TVars>(context: BuilderQueryContext<TVars>): MiddlewareContext<TVars> => {
   return {
     ...context,
     vars: context.queryKey[0],
@@ -33,7 +32,7 @@ export const createMiddlewareFunction = <TVars, TData, TError, TOriginalTemplate
   originalFn: BuilderQueryFn<TOriginalTemplate>,
   middleware: MiddlewareFn<TVars, TData, TError, TOriginalTemplate>,
   config: QueryBuilderConfig<TOriginalTemplate> | MutationBuilderConfig<TOriginalTemplate>,
-): QueryFunction<TData, [TVars]> => {
+): BuilderQueryFn<SetAllTypes<TOriginalTemplate, TData, TError, TVars, true>> => {
   return async (context) =>
     middleware(
       createMiddlewareContext<TVars>(context),

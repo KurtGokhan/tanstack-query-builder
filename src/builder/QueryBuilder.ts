@@ -17,7 +17,7 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import { operateOnTags } from '../tags/operateOnTags';
-import { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
+import { QueryTagOption } from '../tags/types';
 import { FunctionType } from '../types/utils';
 import { MutationBuilder } from './MutationBuilder';
 import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
@@ -54,7 +54,7 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
 
   getQueryFn: () => QueryFunction<T['data'], [T['vars']]> = () => {
     return ({ client, meta, queryKey, signal, pageParam }) => {
-      return this.config.queryFn({ client, meta, queryKey, signal, pageParam });
+      return this.config.queryFn({ client, meta, queryKey, signal, pageParam, originalQueryKey: queryKey });
     };
   };
 
@@ -229,9 +229,6 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
   static tagCacheId = 0;
 
   withTags(...tags: QueryTagOption<T['vars'], T['data'], T['error']>[]): this {
-    const tagCache: QueryTagCache = { tags: [] };
-    const setTags = (tags: QueryTagObject[]) => (tagCache.tags = tags);
-
     if (this.config.queryClient) {
       this.config.syncChannel?.addEventListener('message', (event) => {
         const { type, data } = event.data;
@@ -242,9 +239,7 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
       });
     }
 
-    return this.withMiddleware(createTagMiddleware<T>(tags, setTags), {
-      options: { meta: { tagCaches: { [QueryBuilder.tagCacheId++]: tagCache } } },
-    }) as unknown as this;
+    return this.withMiddleware(createTagMiddleware<T>(tags, QueryBuilder.tagCacheId++)) as unknown as this;
   }
 
   freeze(): QueryBuilderFrozen<T> {

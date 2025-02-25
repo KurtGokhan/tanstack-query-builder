@@ -29,7 +29,7 @@ export function updateTags({
     const tag = tags[i];
 
     const list = queryClient.getQueryCache().findAll({
-      predicate: (query) => queryMatchesTag(query, tag),
+      predicate: (query) => queryMatchesTag(queryClient, query, tag),
       type: 'all',
     });
 

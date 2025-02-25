@@ -1,11 +1,12 @@
-import type {
-  InvalidateOptions,
-  InvalidateQueryFilters,
-  Query,
-  QueryClient,
-  QueryFilters,
+import {
+  type InvalidateOptions,
+  type InvalidateQueryFilters,
+  type Query,
+  type QueryClient,
+  type QueryFilters,
+  hashKey,
 } from '@tanstack/react-query';
-import type { QueryTag, QueryTagCache } from './types';
+import type { QueryTag } from './types';
 
 /**
  * Based on the behavior described in https://redux-toolkit.js.org/rtk-query/usage/automated-refetching#tag-invalidation-behavior
@@ -24,9 +25,11 @@ function tagMatchesTag(queryTag: QueryTag, comparedTag: QueryTag) {
   return cId === qId;
 }
 
-export function queryMatchesTag(query: Query, tag: QueryTag) {
-  const tagCaches = query.meta?.tagCaches as Record<string, QueryTagCache>;
-  const tagsInMeta = Object.values(tagCaches)?.flatMap((t) => t.tags || []);
+export function queryMatchesTag(queryClient: QueryClient, query: Query, tag: QueryTag) {
+  const hash = hashKey(query.queryKey);
+  const tagCaches = (queryClient as any)?.tagCache?.[hash] as Record<string, QueryTag[]>;
+  if (!tagCaches) return false;
+  const tagsInMeta = Object.values(tagCaches)?.flatMap((t) => t || []);
   if (tagsInMeta?.length) return tagsInMeta.some((t: QueryTag) => tagMatchesTag(t, tag));
   return false;
 }
@@ -57,7 +60,7 @@ export function operateOnTags(
     ...(operation === 'refetch' && { type: 'active' }),
     ...filters,
     predicate: (query) =>
-      tags.some((tag) => queryMatchesTag(query, tag)) && (!filters?.predicate || filters.predicate(query)),
+      tags.some((tag) => queryMatchesTag(queryClient, query, tag)) && (!filters?.predicate || filters.predicate(query)),
   };
 
   if (operation === 'refetch') return queryClient.refetchQueries(filtersObj, options);
