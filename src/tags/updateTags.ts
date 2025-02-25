@@ -16,7 +16,7 @@ export function updateTags({
   ctx,
   optimistic,
 }: {
-  tags: readonly QueryUpdateTag[];
+  tags: readonly QueryUpdateTag<any, any, any>[];
   queryClient: QueryClient;
   ctx: QueryTagContext<unknown>;
   optimistic?: boolean;

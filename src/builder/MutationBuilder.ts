@@ -51,11 +51,13 @@ export class MutationBuilderFrozen<T extends BuilderTypeTemplate> {
     meta,
   ) => {
     return async (vars) => {
+      const queryKey = [this.mergeVars([this.config.vars, vars])] as [T['vars']];
       return this.config.queryFn({
-        queryKey: [this.mergeVars([this.config.vars, vars])],
+        queryKey,
         meta,
         client: this.config.queryClient || queryClient,
         signal: new AbortController().signal,
+        originalQueryKey: queryKey,
       });
     };
   };

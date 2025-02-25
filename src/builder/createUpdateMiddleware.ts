@@ -11,12 +11,15 @@ type CreateUpdateMiddleware = <T extends BuilderTypeTemplate>(
 
 export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
   async function updateMiddleware(ctx, next, throwError, config) {
+    type TagObj = QueryUpdateTagObject<any, any, any, any>;
+    type TagCtx = QueryTagContext<any>;
+
     let undos: UpdateTagsUndoer[] | null = null;
-    const invalidates: QueryUpdateTagObject[] = [];
-    const optCtx: QueryTagContext<unknown> = { client: ctx.client, vars: ctx.vars, data: undefined };
+    const invalidates: TagObj[] = [];
+    const optCtx: TagCtx = { client: ctx.client, vars: ctx.vars, data: undefined };
 
     try {
-      const optUpdates = resolveTags<any, QueryUpdateTagObject>({ tags, ...optCtx }).filter((u) => u.optimistic);
+      const optUpdates = resolveTags<any, TagObj>({ tags, ...optCtx }).filter((u) => u.optimistic);
       undos = updateTags({
         queryClient: ctx.client,
         tags: optUpdates.filter((x) => x.updater),
@@ -30,8 +33,8 @@ export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
 
       const data = await next(ctx);
 
-      const pesCtx: QueryTagContext<unknown> = { ...optCtx, data };
-      const pesUpdates = resolveTags<any, QueryUpdateTagObject>({ tags, ...pesCtx }).filter((u) => !u.optimistic);
+      const pesCtx: TagCtx = { ...optCtx, data };
+      const pesUpdates = resolveTags<any, TagObj>({ tags, ...pesCtx }).filter((u) => !u.optimistic);
       updateTags({ queryClient: ctx.client, tags: pesUpdates.filter((x) => x.updater), ctx: pesCtx });
       invalidates.push(...pesUpdates);
 
@@ -39,8 +42,8 @@ export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
     } catch (error) {
       if (undos?.length) undoUpdateTags(undos, ctx.client);
 
-      const pesCtx: QueryTagContext<unknown> = { ...optCtx, error };
-      const pesUpdates = resolveTags<any, QueryUpdateTagObject>({ tags, ...pesCtx }).filter((u) => !u.optimistic);
+      const pesCtx: TagCtx = { ...optCtx, error };
+      const pesUpdates = resolveTags<any, TagObj>({ tags, ...pesCtx }).filter((u) => !u.optimistic);
       invalidates.push(...pesUpdates);
 
       throw error;
