@@ -22,12 +22,17 @@ export type QueryTagCallback<TVars = void, TData = unknown, TErr = unknown, TTag
   ctx: QueryTagContext<TVars, TData, TErr>,
 ) => TTag | readonly TTag[];
 
+export type QueryTagStaticOption<TTag extends QueryTagObject = QueryTagObject> =
+  | '*'
+  | QueryTag<TTag>
+  | readonly QueryTag<TTag>[];
+
 export type QueryTagOption<
   TVars = void,
   TData = unknown,
   TErr = unknown,
   TTag extends QueryTagObject = QueryTagObject,
-> = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[] | QueryTagCallback<TVars, TData, TErr, TTag>;
+> = QueryTagStaticOption<TTag> | QueryTagCallback<TVars, TData, TErr, TTag>;
 
 export type QueryUpdaterFn<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = (
   ctx: QueryTagContext<TVars, TData, TErr>,

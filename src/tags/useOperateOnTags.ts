@@ -6,10 +6,10 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { type OperateOnTagsOperation, operateOnTags } from './operateOnTags';
-import type { QueryTag } from './types';
+import type { QueryTagStaticOption } from './types';
 
 type OperateMutationOpts = {
-  tags?: QueryTag[];
+  tags?: QueryTagStaticOption;
   operation?: OperateOnTagsOperation;
   filters?: InvalidateQueryFilters;
   options?: InvalidateOptions;

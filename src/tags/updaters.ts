@@ -14,6 +14,7 @@ export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTa
     if (updaterKey === 'body') return ctx.vars?.body;
     if (updaterKey === 'params') return ctx.vars?.params;
     if (updaterKey === 'search') return ctx.vars?.search;
+    if (updaterKey === 'meta') return ctx.vars?.meta;
     return undefined;
   };
 
@@ -34,8 +35,8 @@ export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTa
       if (!target) return target;
 
       const data = getFromCtx(ctx);
-      const dataKey = data[byKey];
-      if (!dataKey) return target;
+      const dataKey = data?.[byKey];
+      if (dataKey == null) return target;
 
       if (Array.isArray(target)) {
         const foundIndex = target.findIndex((item) => item[byKey] === dataKey);
@@ -53,8 +54,8 @@ export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTa
       if (!target) return target;
 
       const data = getFromCtx(ctx);
-      const dataKey = data[byKey];
-      if (!dataKey) return target;
+      const dataKey = data?.[byKey];
+      if (dataKey == null) return target;
 
       if (Array.isArray(target)) {
         const foundIndex = target.findIndex((item) => item[byKey] === dataKey);
@@ -71,8 +72,8 @@ export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTa
       if (!target) return target;
 
       const data = getFromCtx(ctx);
-      const dataKey = data[byKey];
-      if (!dataKey) return target;
+      const dataKey = data?.[byKey];
+      if (dataKey == null) return target;
 
       if (Array.isArray(target)) {
         const foundIndex = target.findIndex((item) => item[byKey] === dataKey);
@@ -88,8 +89,8 @@ export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTa
       if (!target || typeof target !== 'object') return target;
 
       const data = getFromCtx(ctx);
-      const dataKey = data[byKey];
-      if (!dataKey) return target;
+      const dataKey = data?.[byKey];
+      if (dataKey == null) return target;
 
       if (Array.isArray(target)) {
         return target.filter((item) => item[byKey] !== dataKey);
@@ -105,8 +106,8 @@ export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTa
       if (!target) return target;
 
       const data = getFromCtx(ctx);
-      const dataKey = data[byKey];
-      if (!dataKey) return target;
+      const dataKey = data?.[byKey];
+      if (dataKey == null) return target;
 
       if (Array.isArray(target)) {
         const foundIndex = target.findIndex((item) => item[byKey] === dataKey);

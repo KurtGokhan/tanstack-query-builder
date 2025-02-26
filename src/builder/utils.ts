@@ -80,10 +80,10 @@ export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> 
 export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
   mergeVarsFn: BuilderMergeVarsFn<T['vars']>,
 ): BuilderQueryFn<T> {
-  return async ({ queryKey, signal, meta, pageParam }: any) => {
+  return async ({ queryKey, signal, pageParam }) => {
     const [vars] = queryKey || [];
-    const mergedVars = mergeVarsFn(vars, pageParam);
-    return httpRequest<T['data']>({ ...(mergedVars as any), meta, signal });
+    const mergedVars = mergeVarsFn(vars, pageParam as Partial<T['vars']>);
+    return httpRequest<T['data']>({ ...(mergedVars as any), signal });
   };
 }
 

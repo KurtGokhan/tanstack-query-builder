@@ -1,4 +1,4 @@
-import { ExtractPathParams } from '../http/types';
+import { ExtractPathParams, HttpMethod } from '../http/types';
 import { WithOptional } from '../types/utils';
 import { HttpQueryBuilder } from './HttpQueryBuilder';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
@@ -59,6 +59,11 @@ export class HttpMutationBuilder<
     return this.withVars({ search }) as any;
   }
 
+  withMeta<TMeta>(meta?: TMeta): HttpMutationBuilder<AppendVarsType<T, { meta: TMeta }>> {
+    if (!meta) return this as any;
+    return this.withVars({ meta }) as any;
+  }
+
   withPath<const TPath extends string>(
     path: TPath,
   ): ExtractPathParams<TPath> extends void
@@ -69,6 +74,10 @@ export class HttpMutationBuilder<
 
   withBaseUrl(baseUrl: string): this {
     return this.withVars({ baseUrl }) as any;
+  }
+
+  withMethod(method: HttpMethod): this {
+    return this.withVars({ method }) as any;
   }
 
   declare withData: <TData>() => HttpMutationBuilder<SetDataType<T, TData>>;

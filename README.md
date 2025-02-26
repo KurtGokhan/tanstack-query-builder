@@ -16,16 +16,17 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 
 - REST client using fetch API
 - Automaticly created query keys and easy invalidation
+- Customizable with middlewares
 - Tag based invalidation
 - Declarative optimistic updates
-- Ability to strongly type everything, from parameters to tags
+- Ability to strongly type everything
 
 ## Advantages
 
 - 💪 Strong-typed
 - 🧩 Consistently structured
 - 🚀 Features out-of-the-box
-- ⚙️ Customizable
+- ⚙️ Customizable and extendable
 - 🪶 Zero dependencies
 - 🚢 SSR and Router compatible
 
@@ -33,6 +34,7 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 
 - Strong typed customizable tags
 - Infinite queries
+- OOTB Query Hash function
 
 ## Examples
 
@@ -48,20 +50,15 @@ const baseMutation = new HttpMutationBuilder().withBaseUrl(baseUrl);
 
 type PostData = { id: number; title: string; body: string; userId: number };
 
-const postsQuery = baseQuery
-  .withConfig({ tags: "refreshable" })
-  .withConfig({ tags: { type: "posts", id: "LIST" } })
-  .withPath("/posts")
-  .withData<PostData[]>();
+const postsQuery = baseQuery.withTags("refreshable", "posts").withPath("/posts").withData<PostData[]>();
 
-const deletePostMutation = baseMutation
-  .withConfig({ invalidates: { type: "posts", id: "LIST" } })
-  .withVars({ method: "delete" })
-  .withPath("/posts/:id");
+const deletePostMutation = baseMutation.withUpdates("posts").withMethod("delete").withPath("/posts/:id");
 
 export function MyApp() {
   const posts = postsQuery.useQuery({});
   const deletePost = deletePostMutation.useMutation();
+
+  const [refresh] = useOperateOnTags({ tags: "refreshable" });
 
   const onDelete = (id: number) => deletePost.mutateAsync({ params: { id } });
 
@@ -79,6 +76,8 @@ export function MyApp() {
           </button>
         </div>
       ))}
+
+      <button onClick={() => refresh()}>Refresh all posts</button>
     </>
   );
 }

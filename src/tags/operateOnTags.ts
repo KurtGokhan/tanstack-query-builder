@@ -6,7 +6,8 @@ import {
   type QueryFilters,
   hashKey,
 } from '@tanstack/react-query';
-import type { QueryTag } from './types';
+import { resolveTags } from './resolveTags';
+import type { QueryTag, QueryTagStaticOption } from './types';
 
 /**
  * Based on the behavior described in https://redux-toolkit.js.org/rtk-query/usage/automated-refetching#tag-invalidation-behavior
@@ -47,20 +48,22 @@ export function operateOnTags(
     queryClient,
     operation = 'invalidate',
   }: {
-    tags: readonly QueryTag[];
+    tags: QueryTagStaticOption;
     queryClient: QueryClient;
     operation?: OperateOnTagsOperation;
   },
   filters?: InvalidateQueryFilters,
   options?: InvalidateOptions,
 ) {
-  if (!tags?.length) return Promise.resolve();
+  const resolvedTags = resolveTags({ tags, client: queryClient, vars: undefined });
+  if (!resolvedTags?.length) return Promise.resolve();
 
   const filtersObj: QueryFilters = {
     ...(operation === 'refetch' && { type: 'active' }),
     ...filters,
     predicate: (query) =>
-      tags.some((tag) => queryMatchesTag(queryClient, query, tag)) && (!filters?.predicate || filters.predicate(query)),
+      resolvedTags.some((tag) => queryMatchesTag(queryClient, query, tag)) &&
+      (!filters?.predicate || filters.predicate(query)),
   };
 
   if (operation === 'refetch') return queryClient.refetchQueries(filtersObj, options);

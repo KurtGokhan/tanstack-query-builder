@@ -40,7 +40,7 @@ const commentsQuery = baseQuery
 
 const editPostMutation = baseMutation
   .withPath('/posts/:id')
-  .withVars({ method: 'put' })
+  .withMethod('put')
   .withBody<Partial<PostData>>()
   .withUpdates<PostData | PostData[]>(
     {
@@ -68,7 +68,7 @@ const editPostMutation = baseMutation
   });
 
 const deletePostMutation = baseMutation
-  .withVars({ method: 'delete' })
+  .withMethod('delete')
   .withPath('/posts/:id')
   .withUpdates<PostData[]>({
     type: 'posts' as any,
@@ -89,7 +89,7 @@ function App() {
     (x) => x.state.variables?.params.id,
   );
 
-  const [refresh] = useOperateOnTags({ tags: ['refreshable'] });
+  const [refresh] = useOperateOnTags({ tags: 'refreshable' });
 
   if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 
