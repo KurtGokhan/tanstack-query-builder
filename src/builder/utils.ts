@@ -74,6 +74,7 @@ export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> 
     ...(v1?.headers || v2?.headers ? { headers: { ...v1?.headers!, ...v2?.headers! } } : {}),
     ...(v1?.params || v2?.params ? { params: { ...v1?.params!, ...v2?.params! } } : {}),
     ...(v1?.search || v2?.search ? { search: { ...v1?.search!, ...v2?.search! } } : {}),
+    ...(v1?.meta || v2?.meta ? { meta: { ...v1?.meta!, ...v2?.meta! } } : {}),
   };
 };
 
