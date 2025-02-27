@@ -2,11 +2,13 @@ import {
   type DefaultError,
   type MutationKey,
   type QueryKey,
+  QueryKeyHashFunction,
   type UseMutationOptions,
   type UseQueryOptions,
   hashKey,
 } from '@tanstack/react-query';
 import { httpRequest } from '../http/request';
+import { createHttpUrl } from '../http/utils';
 import type { FunctionType } from '../types/utils';
 import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderTypeTemplate } from './types';
 
@@ -86,6 +88,24 @@ export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
     const mergedVars = mergeVarsFn(vars, pageParam as Partial<T['vars']>);
     return httpRequest<T['data']>({ ...(mergedVars as any), signal });
   };
+}
+
+/**
+ * A query key hash function that normalizes the query key
+ * and removes irrelevant options which do not affect the query result.
+ */
+
+export function createHttpQueryHashFn<T extends HttpBuilderTypeTemplate>(): QueryKeyHashFunction<T['queryKey']> {
+  const httpQueryHashFn: QueryKeyHashFunction<T['queryKey']> = function httpQueryKeyHashFn(queryKey) {
+    const [vars] = queryKey || [];
+
+    const { baseUrl, params, search, path, method, body, headers, key } = vars;
+    const url = createHttpUrl({ path, params, baseUrl, search });
+
+    return hashKey([url, method, body, headers, key].filter((x) => x != null));
+  };
+
+  return httpQueryHashFn;
 }
 
 export function areKeysEqual(

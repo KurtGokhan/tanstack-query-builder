@@ -2,35 +2,10 @@ import { requestConcurrency } from './concurrency';
 import { Deferred } from './deferred';
 import { AbortError, RequestError, TimeoutError } from './errors';
 import { HttpRequestOptions } from './types';
-import { createFinalUrl, inferErrorMessage, resolveCredentials } from './utils';
+import { createHttpUrl, inferErrorMessage, resolveCredentials } from './utils';
 
 const CONTENT_TYPE_HEADER = 'content-type';
 const CONTENT_LENGTH_HEADER = 'content-length';
-
-function prepareParams(params: Record<string, unknown>): Record<string, string> {
-  const newParams: Record<string, string> = {};
-
-  for (const key in params) {
-    if (Object.prototype.hasOwnProperty.call(params, key)) {
-      let value = params[key];
-      if (typeof value === 'undefined') continue;
-
-      if (value instanceof Date) {
-        value = value.toISOString();
-      }
-
-      if (Array.isArray(value)) {
-        newParams[key] = value.join(',');
-      } else if (typeof value === 'object') {
-        newParams[key] = JSON.stringify(value);
-      } else {
-        newParams[key] = String(value);
-      }
-    }
-  }
-
-  return newParams;
-}
 
 function prepareBody(body: any): BodyInit | null | undefined {
   if (body == null) return undefined;
@@ -74,11 +49,7 @@ export async function httpRequest<TData = unknown>(options: HttpRequestOptions) 
     signal,
   } = options;
 
-  const searchParams = prepareParams(search || {});
-
-  const resolvedUrl = createFinalUrl(path || '', params, baseUrl);
-  const finalUrl = new URL(resolvedUrl);
-  finalUrl.search = new URLSearchParams(searchParams).toString();
+  const finalUrl = createHttpUrl({ baseUrl, path, params, search });
 
   const hasBody = method !== 'get' && body != null;
   const bodySerialized = !hasBody ? undefined : prepareBody(body);

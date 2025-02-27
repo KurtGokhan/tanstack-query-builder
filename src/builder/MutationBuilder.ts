@@ -13,10 +13,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { QueryTagOption, QueryUpdateTagObject } from '../tags/types';
-import { QueryBuilder } from './QueryBuilder';
 import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
 import { createUpdateMiddleware } from './createUpdateMiddleware';
-import { BuilderMergeVarsFn, BuilderQueryFn, SetAllTypes, SetDataType, SetErrorType } from './types';
+import { BuilderConfig, SetAllTypes, SetDataType, SetErrorType } from './types';
 import { AppendVarsType, BuilderTypeTemplate } from './types';
 import { areKeysEqual, mergeMutationOptions, mergeVars } from './utils';
 
@@ -200,27 +199,8 @@ export class MutationBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate
   freeze(): MutationBuilderFrozen<T> {
     return this;
   }
-
-  protected QueryBuilderConstructor: typeof QueryBuilder = QueryBuilder;
-
-  asQueryBuilder(): QueryBuilder<T> {
-    return new this.QueryBuilderConstructor({
-      queryFn: this.config.queryFn,
-      queryClient: this.config.queryClient,
-      mergeVars: this.config.mergeVars,
-      vars: this.config.vars,
-      syncChannel: this.config.syncChannel,
-    });
-  }
 }
 
-export type MutationBuilderConfig<T extends BuilderTypeTemplate> = {
-  queryFn: BuilderQueryFn<T>;
-
-  vars?: Partial<T['vars']>;
-  mergeVars?: BuilderMergeVarsFn<T['vars']>;
-
+export type MutationBuilderConfig<T extends BuilderTypeTemplate> = BuilderConfig<T> & {
   options?: UseMutationOptions<T['data'], T['error'], T['vars']>;
-  queryClient?: QueryClient;
-  syncChannel?: BroadcastChannel;
 };

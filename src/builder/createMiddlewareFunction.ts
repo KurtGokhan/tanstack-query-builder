@@ -3,21 +3,23 @@ import { QueryBuilderConfig } from './QueryBuilder';
 import type { BuilderQueryContext, BuilderQueryFn, BuilderTypeTemplate, SetAllTypes } from './types';
 
 export type MiddlewareFn<TVars, TData, TError, TOriginalTemplate extends BuilderTypeTemplate> = (
-  context: MiddlewareContext<TVars>,
+  context: MiddlewareContext<TOriginalTemplate['queryKey']>,
   next: MiddlewareNextFn<TOriginalTemplate>,
   throwError: (error: TError) => never,
   config: QueryBuilderConfig<TOriginalTemplate> | MutationBuilderConfig<TOriginalTemplate>,
 ) => TData | Promise<TData>;
 
-export type MiddlewareContext<TVars> = BuilderQueryContext<TVars> & {
-  vars: TVars;
+export type MiddlewareContext<TKey extends unknown[]> = BuilderQueryContext<TKey> & {
+  vars: TKey[0];
 };
 
 export type MiddlewareNextFn<T extends BuilderTypeTemplate> = (
-  context: Omit<MiddlewareContext<T['vars']>, 'queryKey'>,
+  context: Omit<MiddlewareContext<T['queryKey']>, 'queryKey'>,
 ) => Promise<T['data']>;
 
-const createMiddlewareContext = <TVars>(context: BuilderQueryContext<TVars>): MiddlewareContext<TVars> => {
+const createMiddlewareContext = <TKey extends unknown[]>(
+  context: BuilderQueryContext<TKey>,
+): MiddlewareContext<TKey> => {
   return {
     ...context,
     vars: context.queryKey[0],
@@ -35,7 +37,7 @@ export const createMiddlewareFunction = <TVars, TData, TError, TOriginalTemplate
 ): BuilderQueryFn<SetAllTypes<TOriginalTemplate, TData, TError, TVars, true>> => {
   return async (context) =>
     middleware(
-      createMiddlewareContext<TVars>(context),
+      createMiddlewareContext<TOriginalTemplate['queryKey']>(context),
       async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }),
       throwError,
       config,

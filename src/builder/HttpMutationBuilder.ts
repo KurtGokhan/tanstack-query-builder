@@ -1,8 +1,6 @@
 import { ExtractPathParams, HttpMethod } from '../http/types';
 import { WithOptional } from '../types/utils';
-import { HttpQueryBuilder } from './HttpQueryBuilder';
 import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
-import { QueryBuilder } from './QueryBuilder';
 import { MiddlewareFn } from './createMiddlewareFunction';
 import {
   HttpBaseHeaders,
@@ -90,7 +88,4 @@ export class HttpMutationBuilder<
   declare withMiddleware: <TVars = T['vars'], TData = T['data'], TError = T['error']>(
     middleware: MiddlewareFn<TVars, TData, TError, T>,
   ) => HttpMutationBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
-
-  declare asQueryBuilder: () => HttpQueryBuilder<T>;
-  protected override QueryBuilderConstructor: typeof QueryBuilder = HttpQueryBuilder as typeof QueryBuilder;
 }

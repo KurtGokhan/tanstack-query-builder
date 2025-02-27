@@ -4,6 +4,7 @@ import { HttpMutationBuilder } from './HttpMutationBuilder';
 import { MutationBuilder } from './MutationBuilder';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
 import { MiddlewareFn } from './createMiddlewareFunction';
+import { PreprocessorFn } from './createPreprocessorFunction';
 import {
   HttpBaseHeaders,
   HttpBaseParams,
@@ -14,13 +15,14 @@ import {
   SetErrorType,
 } from './types';
 import { AppendVarsType } from './types';
-import { createHttpQueryFn, mergeHttpVars } from './utils';
+import { createHttpQueryFn, createHttpQueryHashFn, mergeHttpVars } from './utils';
 
 export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTypeTemplate> extends QueryBuilder<T> {
   constructor(config?: WithOptional<QueryBuilderConfig<T>, 'queryFn'>) {
     const mergeVars = config?.mergeVars || mergeHttpVars;
     const queryFn = config?.queryFn || createHttpQueryFn<T>(mergeVars);
-    super({ mergeVars, queryFn, ...config });
+    const queryKeyHashFn = config?.queryKeyHashFn || createHttpQueryHashFn();
+    super({ mergeVars, queryFn, queryKeyHashFn, ...config });
   }
 
   withBody<TBody>(body?: TBody): HttpQueryBuilder<AppendVarsType<T, { body: TBody }>> {
@@ -76,6 +78,10 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
     vars?: TVars,
     reset?: TReset,
   ) => HttpQueryBuilder<AppendVarsType<T, Partial<TVars>, TReset>>;
+
+  declare withPreprocessor: <TVars = T['vars']>(
+    preprocessor: PreprocessorFn<TVars, T['vars']>,
+  ) => HttpQueryBuilder<AppendVarsType<T, TVars, true, true>>;
 
   declare withMiddleware: <TVars = T['vars'], TData = T['data'], TError = T['error']>(
     middleware: MiddlewareFn<TVars, TData, TError, T>,

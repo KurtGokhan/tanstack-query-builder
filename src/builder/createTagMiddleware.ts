@@ -10,7 +10,7 @@ type CreateTagMiddleware = <T extends BuilderTypeTemplate>(
 ) => MiddlewareFn<T['vars'], T['data'], T['error'], T>;
 
 export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
-  async function tagMiddlware(ctx, next) {
+  async function tagMiddlware(ctx, next, _, config) {
     let resolvedTags: QueryTagObject[] = [];
 
     try {
@@ -24,7 +24,8 @@ export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
 
       throw error;
     } finally {
-      const hash = hashKey(ctx.originalQueryKey);
+      const hashFn = config?.queryKeyHashFn ?? hashKey;
+      const hash = hashFn(ctx.originalQueryKey as any);
       const tagCache = ((ctx.client as any).tagCache ??= {}) as QueryTagCache;
       const tags = (tagCache[hash] ??= {});
       tags[cacheId] = resolvedTags;

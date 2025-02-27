@@ -4,7 +4,6 @@ import {
   type Query,
   type QueryClient,
   type QueryFilters,
-  hashKey,
 } from '@tanstack/react-query';
 import { resolveTags } from './resolveTags';
 import type { QueryTag, QueryTagStaticOption } from './types';
@@ -27,7 +26,7 @@ function tagMatchesTag(queryTag: QueryTag, comparedTag: QueryTag) {
 }
 
 export function queryMatchesTag(queryClient: QueryClient, query: Query, tag: QueryTag) {
-  const hash = hashKey(query.queryKey);
+  const hash = query.queryHash;
   const tagCaches = (queryClient as any)?.tagCache?.[hash] as Record<string, QueryTag[]>;
   if (!tagCaches) return false;
   const tagsInMeta = Object.values(tagCaches)?.flatMap((t) => t || []);

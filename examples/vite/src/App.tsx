@@ -2,7 +2,7 @@ import './mocks';
 import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
-import { HttpQueryBuilder, MiddlewareContext, useOperateOnTags } from 'react-query-builder';
+import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 import { queryClient } from './client';
 
 const baseQuery = new HttpQueryBuilder({
@@ -23,13 +23,10 @@ const postQuery = baseQuery
   .withPath('/posts/:id')
   .withData<PostData>()
   .withTags((ctx) => ({ type: 'posts' as any, id: ctx.data.id }))
+  .withPreprocessor<{ id: number }>((vars) => ({ ...vars, params: { id: vars.id } }))
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);
     return { ...res, titleUppercase: res.title.toUpperCase() };
-  })
-  .withMiddleware((ctx: MiddlewareContext<{ id: number }>, next) => {
-    const { id, ...vars } = ctx.vars;
-    return next({ ...ctx, vars: { ...vars, params: { id } } });
   });
 
 const commentsQuery = baseQuery
@@ -114,7 +111,6 @@ function App() {
                     onClick={() => setPostId(post.id)}
                     onMouseOver={() => {
                       postQuery.client.prefetch({ id: post.id });
-                      commentsQuery.client.prefetch({ search: { postId: post.id } });
                     }}
                   >
                     {post.title}

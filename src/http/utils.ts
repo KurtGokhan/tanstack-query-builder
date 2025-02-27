@@ -1,7 +1,50 @@
 import { RequestError } from './errors';
 import { HttpRequestOptions, HttpRequestPathParams } from './types';
 
-export function createFinalUrl(path: string, pathParams: HttpRequestPathParams = {}, baseUrl?: string) {
+function prepareParams(params: Record<string, unknown>): Record<string, string> {
+  const newParams: Record<string, string> = {};
+
+  for (const key in params) {
+    if (Object.prototype.hasOwnProperty.call(params, key)) {
+      let value = params[key];
+      if (typeof value === 'undefined') continue;
+
+      if (value instanceof Date) {
+        value = value.toISOString();
+      }
+
+      if (Array.isArray(value)) {
+        newParams[key] = value.join(',');
+      } else if (typeof value === 'object') {
+        newParams[key] = JSON.stringify(value);
+      } else {
+        newParams[key] = String(value);
+      }
+    }
+  }
+
+  return newParams;
+}
+
+export function createHttpUrl({
+  baseUrl,
+  params,
+  path,
+  search,
+}: {
+  baseUrl?: string;
+  params?: unknown;
+  path?: string;
+  search?: unknown;
+}) {
+  const searchParams = prepareParams((search as Record<string, unknown>) || {});
+  const resolvedUrl = assembleUrlWithParams(path || '', params as HttpRequestPathParams, baseUrl);
+  const finalUrl = new URL(resolvedUrl);
+  finalUrl.search = new URLSearchParams(searchParams).toString();
+  return finalUrl;
+}
+
+function assembleUrlWithParams(path: string, pathParams: HttpRequestPathParams = {}, baseUrl?: string) {
   let finalUrl = path;
 
   for (const [key, value] of Object.entries(pathParams)) {
