@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { httpRequest } from '../http/request';
 import { createHttpUrl } from '../http/utils';
-import type { FunctionType } from '../types/utils';
+import type { FunctionType } from '../type-utils';
 import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from './types';
 
 export function mergeQueryEnabled(

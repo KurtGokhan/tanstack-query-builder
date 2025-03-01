@@ -1,6 +1,6 @@
 import type { QueryClient, QueryFunctionContext, QueryKeyHashFunction, UseQueryResult } from '@tanstack/react-query';
 import type { HttpRequestOptions } from '../http/types';
-import { Prettify } from '../types/utils';
+import { Prettify } from '../type-utils';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   queryFn: BuilderQueryFn<TVars, TData, TError, TKey>;

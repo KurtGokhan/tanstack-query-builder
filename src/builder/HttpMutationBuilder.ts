@@ -1,6 +1,6 @@
 import { RequestError } from '../http/errors';
 import { ExtractPathParams, HttpMethod } from '../http/types';
-import { WithOptional } from '../types/utils';
+import { WithOptional } from '../type-utils';
 import { MutationBuilder } from './MutationBuilder';
 import { MutationBuilderConfig } from './MutationBuilderFrozen';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';

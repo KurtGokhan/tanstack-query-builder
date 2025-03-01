@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { FunctionType } from '../types/utils';
+import type { FunctionType } from '../type-utils';
 import { useStableValue } from './useStableValue';
 
 /**

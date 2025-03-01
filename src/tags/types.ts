@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { KeysOfValue, StringLiteral } from '../types/utils';
+import { KeysOfValue, StringLiteral } from '../type-utils';
 
 export type TagMap = Record<string, unknown>;
 

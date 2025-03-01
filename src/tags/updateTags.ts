@@ -1,6 +1,6 @@
 import { type InfiniteData, InfiniteQueryObserver, type QueryClient, type QueryState, useQueryClient } from '@tanstack/react-query';
 import { useStableCallback } from '../hooks/useStableCallback';
-import type { WithOptional } from '../types/utils';
+import type { WithOptional } from '../type-utils';
 import { queryMatchesTag } from './operateOnTags';
 import type { QueryTagContext, QueryUpdateTag } from './types';
 import { getUpdater } from './updaters';

@@ -18,7 +18,7 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { FunctionType, TODO } from '../types/utils';
+import { FunctionType, TODO } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { BuilderConfig, BuilderQueriesResult } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';

@@ -1,7 +1,7 @@
 import { HttpQueryBuilder } from '../src/builder/HttpQueryBuilder';
 import { HttpBuilderBaseVars } from '../src/builder/types';
 import { PathParam } from '../src/http/types';
-import { Prettify } from '../src/types/utils';
+import { Prettify } from '../src/type-utils';
 
 describe('HttpQueryBuilder', () => {
   it('should have correct types when types are explicitly passed', () => {

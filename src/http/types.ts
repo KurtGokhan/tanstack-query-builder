@@ -1,4 +1,4 @@
-import { Prettify } from '../types/utils';
+import { Prettify } from '../type-utils';
 import { RequestConcurrencyOptions } from './concurrency';
 
 export type HttpRequestHeaders = {

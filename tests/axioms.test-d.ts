@@ -1,4 +1,4 @@
-import { Prettify } from '../src/types/utils';
+import { Prettify } from '../src/type-utils';
 
 describe('playground', () => {
   it('unknown & type', () => {
