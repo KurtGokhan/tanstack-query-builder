@@ -8,9 +8,9 @@ export type StringOr<T extends string> = StringLiteral | T;
 /** See: https://www.totaltypescript.com/concepts/the-prettify-helper */
 export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
-export type WithOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type WithOptional<T, K extends keyof T> = Omit<T, K> & { [P in K]?: T[P] };
 
-export type WithRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export type WithRequired<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: T[P] };
 
 export type FunctionType = (...args: any[]) => any;
 
@@ -31,6 +31,4 @@ type RequiredKeys<T extends Record<string, any>> = {
   [K in keyof T]: IsRequired<T[K], never, K>;
 }[keyof T];
 
-type MakeRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
-export type MakeRequiredIfNecessary<T extends Record<string, any>> = MakeRequired<T, RequiredKeys<T>>;
+export type MakeRequiredIfNecessary<T extends Record<string, any>> = WithRequired<T, RequiredKeys<T>>;
