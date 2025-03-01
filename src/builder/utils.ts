@@ -9,7 +9,6 @@ import {
 } from '@tanstack/react-query';
 import { httpRequest } from '../http/request';
 import { createHttpUrl } from '../http/utils';
-import type { FunctionType } from '../type-utils';
 import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from './types';
 
 export function mergeQueryEnabled(
@@ -18,30 +17,6 @@ export function mergeQueryEnabled(
   if (opts.some((opt) => typeof opt === 'function'))
     return (q) => opts.every((opt) => (typeof opt === 'function' ? opt(q) : opt !== false));
   return opts.every((x) => x !== false);
-}
-
-export function mergeQueryOptions<
-  TQueryFnData = unknown,
-  TError = DefaultError,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
->(
-  optsList: (Partial<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>> | undefined | null)[],
-): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> & { queryFn: FunctionType } {
-  type TOpt = UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> & { queryFn: FunctionType };
-  const filtered = optsList.filter(Boolean) as TOpt[];
-
-  if (filtered.length === 1) return filtered[0];
-
-  const opts = {} as TOpt;
-
-  for (const { enabled, meta, ...opt } of filtered) {
-    Object.assign(opts, opt);
-    opts.enabled = mergeQueryEnabled([opts.enabled, enabled]) as TOpt['enabled'];
-    opts.meta = { ...opts.meta, ...meta };
-  }
-
-  return opts;
 }
 
 export function mergeMutationOptions<TData = unknown, TError = DefaultError, TVars = unknown>(

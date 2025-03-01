@@ -1,10 +1,8 @@
 import { RequestError } from '../http/errors';
 import { ExtractPathParams, HttpMethod } from '../http/types';
 import { WithOptional } from '../type-utils';
-import { HttpMutationBuilder } from './HttpMutationBuilder';
-import { MutationBuilder } from './MutationBuilder';
 import { QueryBuilder } from './QueryBuilder';
-import { QueryBuilderConfig } from './QueryBuilderFrozen';
+import { BuilderConfig } from './types';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
 import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryHashFn } from './utils';
 
@@ -20,7 +18,7 @@ export class HttpQueryBuilder<
   TKey extends [HttpBuilderVars] = [HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>],
 > extends QueryBuilder<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey, TTags> {
   constructor(
-    config?: WithOptional<QueryBuilderConfig<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>, 'queryFn'>,
+    config?: WithOptional<BuilderConfig<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>, 'queryFn'>,
   ) {
     const mergeVars = config?.mergeVars || createHttpMergeVarsFn();
     const queryFn = config?.queryFn || createHttpQueryFn(mergeVars);
@@ -102,12 +100,5 @@ export class HttpQueryBuilder<
   >;
   withTagTypes(): this {
     return this as any;
-  }
-
-  protected MutationBuilderConstructor = HttpMutationBuilder as typeof MutationBuilder;
-
-  asMutationBuilder(): HttpMutationBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TKey> {
-    const { options, ...restConfig } = this.config;
-    return new this.MutationBuilderConstructor(restConfig) as any;
   }
 }

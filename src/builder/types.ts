@@ -1,6 +1,7 @@
 import type { QueryClient, QueryFunctionContext, QueryKeyHashFunction, UseQueryResult } from '@tanstack/react-query';
 import type { HttpRequestOptions } from '../http/types';
 import { Prettify } from '../type-utils';
+import { BuilderOptions } from './options';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   queryFn: BuilderQueryFn<TVars, TData, TError, TKey>;
@@ -10,6 +11,7 @@ export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   queryClient?: QueryClient;
   syncChannel?: BroadcastChannel;
   preprocessorFn?: (vars: TVars) => TKey[0];
+  options?: BuilderOptions<TVars, TData, TError, TKey>;
 };
 
 export type HttpBaseHeaders = Record<string, string | string[]>;
@@ -47,6 +49,7 @@ export type BuilderQueriesResult<TVars, TData, TError, TKey> = QueriesResultItem
 
 export type BuilderQueryContext<TQueryKey extends unknown[]> = QueryFunctionContext<TQueryKey, never> & {
   originalQueryKey: unknown[];
+  // TODO: add function type, e.g. query, mutation, infiniteQuery, queries
 };
 
 export type BuilderQueryFn<TVars, TData, TError, TKey extends unknown[]> = (context: BuilderQueryContext<TKey>) => TData | Promise<TData>;

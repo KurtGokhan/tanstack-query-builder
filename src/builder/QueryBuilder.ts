@@ -1,10 +1,11 @@
 import { operateOnTags } from '../tags/operateOnTags';
-import { QueryTagObject, QueryTagOption } from '../tags/types';
-import { MutationBuilder } from './MutationBuilder';
-import { QueryBuilderConfig, QueryBuilderFrozen } from './QueryBuilderFrozen';
+import { QueryTagObject, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
+import { QueryBuilderFrozen } from './QueryBuilderFrozen';
 import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
 import { PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from './createPreprocessorFunction';
 import { createTagMiddleware } from './createTagMiddleware';
+import { createUpdateMiddleware } from './createUpdateMiddleware';
+import { BuilderConfig } from './types';
 import { mergeVars } from './utils';
 
 export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> extends QueryBuilderFrozen<
@@ -33,7 +34,7 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
     return this as any;
   }
 
-  withConfig(config: Partial<typeof this._config>): this {
+  withConfig(config: Partial<typeof this.config>): this {
     const ctor = this.constructor as typeof QueryBuilder;
     const newConfig = this.mergeConfigs(this.config, config);
     return new ctor(newConfig) as this;
@@ -57,7 +58,7 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
 
   withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
     middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
-    config?: Partial<QueryBuilderConfig<TVars$, TData$, TError$, TKey>>,
+    config?: Partial<BuilderConfig<TVars$, TData$, TError$, TKey>>,
   ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags> {
     const newBuilder = this as unknown as QueryBuilder<TVars$, TData$, TError$, TKey, TTags>;
 
@@ -83,6 +84,10 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
     return this.withMiddleware(createTagMiddleware(tags.flat(), QueryBuilder.tagCacheId++)) as unknown as this;
   }
 
+  withUpdates(...tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, TTags>>[]): this {
+    return this.withMiddleware(createUpdateMiddleware<TVars, TData, TError, TKey, TTags>(tags)) as unknown as this;
+  }
+
   withTagTypes<TTag extends string, T = unknown>(): QueryBuilder<TVars, TData, TError, TKey, TTags & Record<TTag, T>>;
   withTagTypes<TTags$ extends Record<string, unknown>>(): QueryBuilder<TVars, TData, TError, TKey, TTags$>;
   withTagTypes(): this {
@@ -91,12 +96,5 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
 
   freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags> {
     return this;
-  }
-
-  protected MutationBuilderConstructor: typeof MutationBuilder = MutationBuilder;
-
-  asMutationBuilder(): MutationBuilder<TVars, TData, TError, TKey, TTags> {
-    const { options, ...restConfig } = this.config;
-    return new this.MutationBuilderConstructor(restConfig);
   }
 }

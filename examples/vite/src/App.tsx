@@ -5,7 +5,7 @@ import './App.css';
 import { HttpQueryBuilder } from 'react-query-builder';
 import { queryClient } from './client';
 
-const baseQuery = new HttpQueryBuilder({
+const builder = new HttpQueryBuilder({
   queryClient,
   syncChannel: new BroadcastChannel('react-query-builder'),
 })
@@ -17,23 +17,21 @@ const baseQuery = new HttpQueryBuilder({
     refreshable: unknown;
   }>();
 
-const baseMutation = baseQuery.asMutationBuilder();
+const resetMutation = builder.withPath('/reset').withMethod('post').withUpdates('*');
 
-const resetMutation = baseMutation.withPath('/reset').withUpdates('*');
-
-const postsQuery = baseQuery
+const postsQuery = builder
   .withTags('refreshable', 'posts')
   .withPath('/posts')
   .withData<PostData[]>()
   .withSearch<{ page?: number }>()
   .withConfig({
     options: {
-      initialPageParam: { search: { page: 0 } },
+      getInitialPageParam: { search: { page: 0 } },
       getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
     },
   });
 
-const postQuery = baseQuery
+const postQuery = builder
   .withTags('refreshable')
   .withPath('/posts/:id')
   .withData<PostData>()
@@ -44,13 +42,13 @@ const postQuery = baseQuery
     return { ...res, titleUppercase: res.title.toUpperCase() };
   });
 
-const commentsQuery = baseQuery
+const commentsQuery = builder
   .withTags('refreshable')
   .withPath('/comments')
   .withSearch<{ postId: number | null }>()
   .withData<CommentData[]>();
 
-const editPostMutation = baseMutation
+const editPostMutation = builder
   .withPath('/posts/:id')
   .withMethod('put')
   .withBody<Partial<PostData>>()
@@ -78,7 +76,7 @@ const editPostMutation = baseMutation
     return res;
   });
 
-const deletePostMutation = baseMutation.withMethod('delete').withPath('/posts/:id').withUpdates({
+const deletePostMutation = builder.withMethod('delete').withPath('/posts/:id').withUpdates({
   type: 'posts',
   optimistic: true,
   updater: 'delete-params-by-id',
@@ -92,7 +90,7 @@ function App() {
 
   const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
 
-  const refresh = () => baseQuery.client.operateTags({ tags: 'refreshable', operation: 'reset' });
+  const refresh = () => builder.client.operateTags({ tags: 'refreshable', operation: 'reset' });
 
   if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 
@@ -124,8 +122,8 @@ function App() {
                 </a>
 
                 <button
-                  onClick={() => deletePostMutation.mutate({ params: { id: post.id } })}
-                  disabled={deletePostMutation.isMutating() > 0}
+                  onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } })}
+                  disabled={deletePostMutation.client.isMutating() > 0}
                 >
                   Delete
                 </button>

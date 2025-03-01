@@ -23,6 +23,17 @@ describe('playground', () => {
     expectTypeOf<number & never>().toEqualTypeOf<number & never>();
   });
 
+  it('never | type', () => {
+    type T = { readonly sym: unique symbol };
+    type TTest = T | never;
+
+    expectTypeOf<TTest>().toEqualTypeOf<T>();
+    expectTypeOf<Prettify<TTest>>().toEqualTypeOf<T>();
+    expectTypeOf<number | never>().toEqualTypeOf<number>();
+    expectTypeOf<number | never>().toMatchTypeOf<number>();
+    expectTypeOf<number | never>().toEqualTypeOf<number | never>();
+  });
+
   it('Record<string,unknown> & type', () => {
     type TRec = Record<string, unknown>;
 

@@ -1,12 +1,11 @@
-import { MutationBuilderConfig } from './MutationBuilderFrozen';
-import { QueryBuilderConfig } from './QueryBuilderFrozen';
+import { BuilderConfig } from './types';
 import type { BuilderQueryContext, BuilderQueryFn } from './types';
 
 export type MiddlewareFn<TVars, TData, TError, TKey extends unknown[]> = (
   context: MiddlewareContext<TKey>,
   next: MiddlewareNextFn<any, any, any, any>,
   throwError: (error: TError) => never,
-  config: QueryBuilderConfig<TVars, TData, TError, TKey> | MutationBuilderConfig<TVars, TData, TError, TKey>,
+  config: BuilderConfig<TVars, TData, TError, TKey>,
 ) => TData | Promise<TData>;
 
 export type MiddlewareContext<TKey extends unknown[]> = BuilderQueryContext<TKey> & {
@@ -31,7 +30,7 @@ const throwError = (error: any): never => {
 export const createMiddlewareFunction = <TVars, TData, TError, TKey extends unknown[]>(
   originalFn: BuilderQueryFn<any, any, any, any>,
   middleware: MiddlewareFn<TVars, TData, TError, TKey>,
-  config: QueryBuilderConfig<TVars, TData, TError, TKey> | MutationBuilderConfig<TVars, TData, TError, TKey>,
+  config: BuilderConfig<TVars, TData, TError, TKey>,
 ): BuilderQueryFn<TVars, TData, TError, TKey> => {
   return async (context) =>
     middleware(createMiddlewareContext<TKey>(context), async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }), throwError, config);

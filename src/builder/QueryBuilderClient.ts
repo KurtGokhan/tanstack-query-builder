@@ -1,9 +1,20 @@
-import type { CancelOptions, InvalidateOptions, QueryFilters, RefetchOptions, ResetOptions, SetDataOptions } from '@tanstack/react-query';
+import type {
+  CancelOptions,
+  InvalidateOptions,
+  MutationFilters,
+  QueryClient,
+  QueryFilters,
+  RefetchOptions,
+  ResetOptions,
+  SetDataOptions,
+} from '@tanstack/react-query';
+import { MutationObserver } from '@tanstack/react-query';
 import { operateOnTags } from '../tags/operateOnTags';
 import { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../tags/types';
 import { updateTags } from '../tags/updateTags';
 import { WithOptional } from '../type-utils';
-import { QueryBuilderConfig, QueryBuilderFrozen } from './QueryBuilderFrozen';
+import { QueryBuilderFrozen } from './QueryBuilderFrozen';
+import { BuilderConfig } from './types';
 
 export class QueryBuilderClient<
   TVars,
@@ -13,7 +24,7 @@ export class QueryBuilderClient<
   TTags extends Record<string, unknown>,
   TFilters = QueryFilters<TData, TError, TData, TKey>,
 > {
-  private declare _options: QueryBuilderConfig<TVars, TData, TError, TKey>['options'];
+  private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];
   constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags>) {}
 
   readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
@@ -58,6 +69,23 @@ export class QueryBuilderClient<
     this.builder.config.queryClient?.setQueryData<TData>(this.builder.getQueryKey(vars), updater, opts);
 
   readonly getState = (vars: TVars) => this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
+
+  readonly getMutation = (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) => {
+    const client = queryClient || this.builder.config.queryClient!;
+    return client.getMutationCache().find(this.builder.getMutationFilters(vars, filters));
+  };
+
+  readonly isMutating = (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) => {
+    const client = queryClient || this.builder.config.queryClient!;
+    return client.isMutating(this.builder.getMutationFilters(vars, filters));
+  };
+
+  readonly mutate = async (vars: TVars, opts?: typeof this._options, queryClient?: QueryClient) => {
+    const client = queryClient || this.builder.config.queryClient!;
+    const options = this.builder.getMutationOptions(client, opts);
+    const observer = new MutationObserver<TData, TError, TVars>(client, options);
+    return observer.mutate(vars, options).finally(() => observer.reset());
+  };
 
   readonly operateTags = ({ tags = [], operation = 'invalidate', filters, options }: TagOperationOptions<TTags>) =>
     operateOnTags({ queryClient: this.builder.config.queryClient!, tags, operation }, filters, options);

@@ -6,16 +6,16 @@
 
 The simplest way to start building with Tanstack Query.
 
-This library builds on top of Tanstack Query to provide out-of-the-box functionality to help you get started faster, and keep the application code structured.
+This library builds on top of Tanstack Query to provide out-of-the-box functionality to help you get started faster, and keep the application code well-structured.
 
-It uses the builder pattern, the best pattern that works with complex Typescript types.
+It uses the builder pattern, the best pattern for working with complex Typescript types.
 
 [Visit the docs →](https://gkurt.com/react-query-builder/)
 
 ## Features
 
 - REST client using fetch API
-- Automaticly created query keys and easy invalidation
+- Automatically created query keys and easy invalidation
 - Customizable with middlewares
 - Tag based invalidation
 - Declarative optimistic updates
@@ -24,16 +24,10 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 ## Advantages
 
 - 💪 Strong-typed
-- 🧩 Consistently structured
 - 🚀 Features out-of-the-box
 - ⚙️ Customizable and extendable
 - 🪶 Zero dependencies
 - 🚢 SSR and Router compatible
-
-## TODO
-
-- Infinite queries
-- Single interface for mutations and queries
 
 ## Examples
 
@@ -49,9 +43,15 @@ const baseMutation = new HttpMutationBuilder().withBaseUrl(baseUrl);
 
 type PostData = { id: number; title: string; body: string; userId: number };
 
-const postsQuery = baseQuery.withTags("refreshable", "posts").withPath("/posts").withData<PostData[]>();
+const postsQuery = baseQuery
+  .withTags("refreshable", "posts")
+  .withPath("/posts")
+  .withData<PostData[]>();
 
-const deletePostMutation = baseMutation.withUpdates("posts").withMethod("delete").withPath("/posts/:id");
+const deletePostMutation = baseMutation
+  .withUpdates("posts")
+  .withMethod("delete")
+  .withPath("/posts/:id");
 
 export function MyApp() {
   const posts = postsQuery.useQuery({});
@@ -70,7 +70,10 @@ export function MyApp() {
           <h2>{post.title}</h2>
           <p>{post.body}</p>
 
-          <button onClick={() => onDelete(post.id)} disabled={deletePost.isPending}>
+          <button
+            onClick={() => onDelete(post.id)}
+            disabled={deletePost.isPending}
+          >
             Delete
           </button>
         </div>
