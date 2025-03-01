@@ -15,12 +15,7 @@ import { QueryBuilderClient } from './QueryBuilderClient';
 import { BuilderConfig, BuilderQueriesResult } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
-export type QueryBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = BuilderConfig<
-  TVars,
-  TData,
-  TError,
-  TKey
-> & {
+export type QueryBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = BuilderConfig<TVars, TData, TError, TKey> & {
   options?: Partial<UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType }>;
 };
 
@@ -31,10 +26,7 @@ export class QueryBuilderFrozen<TVars, TData, TError, TKey extends unknown[]> {
 
   constructor(public config: typeof this._config) {}
 
-  protected mergeConfigs: (config: typeof this._config, other: Partial<typeof this._config>) => typeof this._config = (
-    config,
-    other,
-  ) => {
+  protected mergeConfigs: (config: typeof this._config, other: Partial<typeof this._config>) => typeof this._config = (config, other) => {
     return {
       ...config,
       ...other,
@@ -62,10 +54,10 @@ export class QueryBuilderFrozen<TVars, TData, TError, TKey extends unknown[]> {
     return [this.preprocessVars(this.mergeVars([this.config.vars, vars]))] as DataTag<TKey, TData, TError>;
   };
 
-  getQueryOptions: (
-    vars: TVars,
-    opts?: typeof this._options,
-  ) => UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType } = (vars, opts) => {
+  getQueryOptions: (vars: TVars, opts?: typeof this._options) => UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType } = (
+    vars,
+    opts,
+  ) => {
     return mergeQueryOptions([
       {
         queryFn: this.getQueryFn(),
@@ -77,24 +69,21 @@ export class QueryBuilderFrozen<TVars, TData, TError, TKey extends unknown[]> {
     ]);
   };
 
-  useQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useQuery<TData, TError, TData, TKey>> = (
-    vars,
-    opts,
-  ) => {
+  useQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useQuery<TData, TError, TData, TKey>> = (vars, opts) => {
     return useQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 
-  useSuspenseQuery: (
-    vars: TVars,
-    opts?: typeof this._options,
-  ) => ReturnType<typeof useSuspenseQuery<TData, TError, TData, TKey>> = (vars, opts) => {
+  useSuspenseQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useSuspenseQuery<TData, TError, TData, TKey>> = (
+    vars,
+    opts,
+  ) => {
     return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 
-  usePrefetchQuery: (
-    vars: TVars,
-    opts?: typeof this._options,
-  ) => ReturnType<typeof usePrefetchQuery<TData, TError, TData, TKey>> = (vars, opts) => {
+  usePrefetchQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof usePrefetchQuery<TData, TError, TData, TKey>> = (
+    vars,
+    opts,
+  ) => {
     return usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 

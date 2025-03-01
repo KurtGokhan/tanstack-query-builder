@@ -1,20 +1,7 @@
-import type {
-  CancelOptions,
-  InvalidateOptions,
-  QueryFilters,
-  RefetchOptions,
-  ResetOptions,
-  SetDataOptions,
-} from '@tanstack/react-query';
+import type { CancelOptions, InvalidateOptions, QueryFilters, RefetchOptions, ResetOptions, SetDataOptions } from '@tanstack/react-query';
 import { QueryBuilderConfig, QueryBuilderFrozen } from './QueryBuilderFrozen';
 
-export class QueryBuilderClient<
-  TVars,
-  TData,
-  TError,
-  TKey extends unknown[],
-  TFilters = QueryFilters<TData, TError, TData, TKey>,
-> {
+export class QueryBuilderClient<TVars, TData, TError, TKey extends unknown[], TFilters = QueryFilters<TData, TError, TData, TKey>> {
   private declare _options: QueryBuilderConfig<TVars, TData, TError, TKey>['options'];
   constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey>) {}
 
@@ -45,14 +32,12 @@ export class QueryBuilderClient<
   readonly invalidate = (vars: TVars, filters?: TFilters, opts?: InvalidateOptions) =>
     this.builder.config.queryClient?.invalidateQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
 
-  readonly getData = (vars: TVars) =>
-    this.builder.config.queryClient?.getQueryData<TData>(this.builder.getQueryKey(vars));
+  readonly getData = (vars: TVars) => this.builder.config.queryClient?.getQueryData<TData>(this.builder.getQueryKey(vars));
 
   readonly setData = (vars: TVars, updater: SetDataUpdater<TData>, opts?: SetDataOptions) =>
     this.builder.config.queryClient?.setQueryData<TData>(this.builder.getQueryKey(vars), updater, opts);
 
-  readonly getState = (vars: TVars) =>
-    this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
+  readonly getState = (vars: TVars) => this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
 }
 
 type SetDataUpdater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);

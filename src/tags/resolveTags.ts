@@ -1,12 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { QueryTag, QueryTagContext, QueryTagObject, QueryTagOption } from './types';
 
-export type ResolveTagsParams<
-  TVars = void,
-  TData = unknown,
-  TErr = unknown,
-  TTag extends QueryTagObject = QueryTagObject,
-> = {
+export type ResolveTagsParams<TVars = void, TData = unknown, TErr = unknown, TTag extends QueryTagObject = QueryTagObject> = {
   tags?: QueryTagOption<TVars, TData, TErr, TTag> | QueryTagOption<TVars, TData, TErr, TTag>[] | null;
   vars: TVars;
   data?: TData;

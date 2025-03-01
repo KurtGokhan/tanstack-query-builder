@@ -42,9 +42,7 @@ const config = {
           // Remove this to remove the "edit this page" links.
           // editUrl: 'https://github.com/KurtGokhan/react-query-builder/',
 
-          remarkPlugins: [
-            [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true, converters: ['yarn', 'pnpm', 'bun'] }],
-          ],
+          remarkPlugins: [[require('@docusaurus/remark-plugin-npm2yarn'), { sync: true, converters: ['yarn', 'pnpm', 'bun'] }]],
         },
         blog: false,
         theme: {

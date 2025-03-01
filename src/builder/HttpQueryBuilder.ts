@@ -19,10 +19,7 @@ export class HttpQueryBuilder<
   protected declare _vars: HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>;
 
   constructor(
-    config?: WithOptional<
-      QueryBuilderConfig<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>,
-      'queryFn'
-    >,
+    config?: WithOptional<QueryBuilderConfig<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>, 'queryFn'>,
   ) {
     const mergeVars = config?.mergeVars || createHttpMergeVarsFn();
     const queryFn = config?.queryFn || createHttpQueryFn(mergeVars);

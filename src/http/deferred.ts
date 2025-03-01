@@ -1,7 +1,4 @@
-export type DeferredExecutor<T> = (
-  resolve: (value: T | PromiseLike<T>) => void,
-  reject: (reason?: unknown) => void,
-) => void;
+export type DeferredExecutor<T> = (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: unknown) => void) => void;
 
 /**
  * A Promise that can be resolved or rejected by external code.

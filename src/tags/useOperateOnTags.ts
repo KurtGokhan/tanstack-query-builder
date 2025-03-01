@@ -1,10 +1,4 @@
-import {
-  type InvalidateOptions,
-  type InvalidateQueryFilters,
-  MutationFunction,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { type InvalidateOptions, type InvalidateQueryFilters, MutationFunction, useMutation, useQueryClient } from '@tanstack/react-query';
 import { type OperateOnTagsOperation, operateOnTags } from './operateOnTags';
 import type { QueryTagStaticOption } from './types';
 

@@ -46,13 +46,9 @@ export function updateTags({
 
     for (const q of list) {
       undos.push({ hash: q.queryHash, data: q.state.data });
-      setDataToExistingQuery(
-        queryClient,
-        q.queryHash,
-        updaterFn(ctx, q.state.data),
-        willInvalidate ? { isInvalidated: true } : undefined,
-        { updated: optimistic ? 'optimistic' : 'pessimistic' },
-      );
+      setDataToExistingQuery(queryClient, q.queryHash, updaterFn(ctx, q.state.data), willInvalidate ? { isInvalidated: true } : undefined, {
+        updated: optimistic ? 'optimistic' : 'pessimistic',
+      });
     }
   }
 

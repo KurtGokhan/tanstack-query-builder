@@ -10,13 +10,7 @@ const CONTENT_LENGTH_HEADER = 'content-length';
 function prepareBody(body: any): BodyInit | null | undefined {
   if (body == null) return undefined;
 
-  if (
-    body instanceof ArrayBuffer ||
-    body instanceof Blob ||
-    body instanceof URLSearchParams ||
-    body instanceof FormData
-  )
-    return body;
+  if (body instanceof ArrayBuffer || body instanceof Blob || body instanceof URLSearchParams || body instanceof FormData) return body;
 
   if (typeof body === 'object') return JSON.stringify(body);
 
@@ -82,11 +76,7 @@ export async function httpRequest<TData = unknown>(options: HttpRequestOptions) 
     async function handleBody(response: Response) {
       const contentType = response.headers.get(CONTENT_TYPE_HEADER);
 
-      const resolvedContentType = contentType?.includes('json')
-        ? 'json'
-        : contentType?.includes('octet-stream')
-          ? 'blob'
-          : undefined;
+      const resolvedContentType = contentType?.includes('json') ? 'json' : contentType?.includes('octet-stream') ? 'blob' : undefined;
 
       const resolvedType = responseType || resolvedContentType || 'json';
 
@@ -125,9 +115,7 @@ export async function httpRequest<TData = unknown>(options: HttpRequestOptions) 
 
     const fetchPromise = fetch(request).then(handleResponse, handleError);
 
-    const timeoutPromise = Deferred.timeout(timeout).then(() =>
-      Promise.reject(new TimeoutError(timeout, { options, request })),
-    );
+    const timeoutPromise = Deferred.timeout(timeout).then(() => Promise.reject(new TimeoutError(timeout, { options, request })));
 
     return await Promise.race([fetchPromise, timeoutPromise]);
   } finally {

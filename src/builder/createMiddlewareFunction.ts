@@ -17,9 +17,7 @@ export type MiddlewareNextFn<TVars, TData, TError, TKey extends unknown[]> = (
   context: Omit<MiddlewareContext<TKey>, 'queryKey'>,
 ) => Promise<TData>;
 
-const createMiddlewareContext = <TKey extends unknown[]>(
-  context: BuilderQueryContext<TKey>,
-): MiddlewareContext<TKey> => {
+const createMiddlewareContext = <TKey extends unknown[]>(context: BuilderQueryContext<TKey>): MiddlewareContext<TKey> => {
   return {
     ...context,
     vars: context.queryKey[0],
@@ -36,10 +34,5 @@ export const createMiddlewareFunction = <TVars, TData, TError, TKey extends unkn
   config: QueryBuilderConfig<TVars, TData, TError, TKey> | MutationBuilderConfig<TVars, TData, TError, TKey>,
 ): BuilderQueryFn<TVars, TData, TError, TKey> => {
   return async (context) =>
-    middleware(
-      createMiddlewareContext<TKey>(context),
-      async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }),
-      throwError,
-      config,
-    );
+    middleware(createMiddlewareContext<TKey>(context), async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }), throwError, config);
 };

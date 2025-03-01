@@ -115,11 +115,7 @@ export function createHttpQueryHashFn<TKey extends [HttpBuilderVars]>(): QueryKe
   return httpQueryHashFn;
 }
 
-export function areKeysEqual(
-  a: QueryKey | MutationKey,
-  b: QueryKey | MutationKey,
-  hashFn: typeof hashKey = hashKey,
-): boolean {
+export function areKeysEqual(a: QueryKey | MutationKey, b: QueryKey | MutationKey, hashFn: typeof hashKey = hashKey): boolean {
   return hashFn(a) === hashFn(b);
 }
 export function getRandomKey() {

@@ -22,17 +22,11 @@ export type QueryTagCallback<TVars = void, TData = unknown, TErr = unknown, TTag
   ctx: QueryTagContext<TVars, TData, TErr>,
 ) => TTag | readonly TTag[];
 
-export type QueryTagStaticOption<TTag extends QueryTagObject = QueryTagObject> =
-  | '*'
-  | QueryTag<TTag>
-  | readonly QueryTag<TTag>[];
+export type QueryTagStaticOption<TTag extends QueryTagObject = QueryTagObject> = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[];
 
-export type QueryTagOption<
-  TVars = unknown,
-  TData = unknown,
-  TErr = unknown,
-  TTag extends QueryTagObject = QueryTagObject,
-> = QueryTagStaticOption<TTag> | QueryTagCallback<TVars, TData, TErr, TTag>;
+export type QueryTagOption<TVars = unknown, TData = unknown, TErr = unknown, TTag extends QueryTagObject = QueryTagObject> =
+  | QueryTagStaticOption<TTag>
+  | QueryTagCallback<TVars, TData, TErr, TTag>;
 
 export type QueryUpdaterFn<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = (
   ctx: QueryTagContext<TVars, TData, TErr>,
@@ -59,12 +53,7 @@ type KeyOfItem<TTarget> = TTarget extends readonly (infer TItem)[]
       : never
     : never;
 
-export type QueryUpdateTagObject<
-  TVars = unknown,
-  TData = unknown,
-  TErr = unknown,
-  TTarget = unknown,
-> = QueryTagObject & {
+export type QueryUpdateTagObject<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = QueryTagObject & {
   /**
    * Custom updater that receives the query data and relevant context, and returns the new data.
    */

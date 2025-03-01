@@ -7,12 +7,7 @@ import { PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from
 import { createTagMiddleware } from './createTagMiddleware';
 import { mergeVars } from './utils';
 
-export class QueryBuilder<TVars, TData, TError, TKey extends unknown[]> extends QueryBuilderFrozen<
-  TVars,
-  TData,
-  TError,
-  TKey
-> {
+export class QueryBuilder<TVars, TData, TError, TKey extends unknown[]> extends QueryBuilderFrozen<TVars, TData, TError, TKey> {
   withVars<TVars$ = TVars, const TReset extends boolean = false>(
     vars?: TVars$,
     resetVars = false as TReset,
@@ -39,13 +34,9 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[]> extends 
   }
 
   withPreprocessor(preprocessor: PreprocessorFn<TVars, TVars>): this;
-  withPreprocessor<TVars$ = TVars>(
-    preprocessor: PreprocessorFn<TVars$, TVars>,
-  ): QueryBuilder<TVars$, TData, TError, TKey>;
+  withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey>;
 
-  withPreprocessor<TVars$ = TVars>(
-    preprocessor: PreprocessorFn<TVars$, TVars>,
-  ): QueryBuilder<TVars$, TData, TError, TKey> {
+  withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey> {
     const newBuilder = this as unknown as QueryBuilder<TVars$, TData, TError, TKey>;
 
     return newBuilder.withConfig({

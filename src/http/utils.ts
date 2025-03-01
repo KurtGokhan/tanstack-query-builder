@@ -61,13 +61,7 @@ function assembleUrlWithParams(path: string, pathParams: HttpRequestPathParams =
 }
 
 export function resolveCredentials(credentials: HttpRequestOptions['credentials']): RequestInit['credentials'] & {} {
-  return credentials === true
-    ? 'include'
-    : credentials === false
-      ? 'omit'
-      : typeof credentials === 'string'
-        ? credentials
-        : 'omit';
+  return credentials === true ? 'include' : credentials === false ? 'omit' : typeof credentials === 'string' ? credentials : 'omit';
 }
 
 const possibleErrorProps = [

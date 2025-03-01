@@ -4,12 +4,7 @@ import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFuncti
 import { createUpdateMiddleware } from './createUpdateMiddleware';
 import { mergeVars } from './utils';
 
-export class MutationBuilder<TVars, TData, TError, TKey extends unknown[]> extends MutationBuilderFrozen<
-  TVars,
-  TData,
-  TError,
-  TKey
-> {
+export class MutationBuilder<TVars, TData, TError, TKey extends unknown[]> extends MutationBuilderFrozen<TVars, TData, TError, TKey> {
   withVars<TVars$ = TVars, const TReset extends boolean = false>(
     vars?: TVars$,
     resetVars = false as TReset,

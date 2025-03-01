@@ -4,16 +4,7 @@ copyFileSync('./README.md', './dist/README.md');
 copyFileSync('./LICENSE', './dist/LICENSE');
 
 const content = readFileSync('./package.json', 'utf-8');
-const {
-  scripts,
-  devDependencies,
-  private: _,
-  overrides,
-  volta,
-  'lint-staged': __,
-  workspaces,
-  ...parsed
-}: any = JSON.parse(content);
+const { scripts, devDependencies, private: _, overrides, volta, 'lint-staged': __, workspaces, ...parsed }: any = JSON.parse(content);
 
 function replacePath(path: string) {
   return path.replace(/^\.\/dist\//, './');

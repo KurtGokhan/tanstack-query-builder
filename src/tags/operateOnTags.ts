@@ -61,8 +61,7 @@ export function operateOnTags(
     ...(operation === 'refetch' && { type: 'active' }),
     ...filters,
     predicate: (query) =>
-      resolvedTags.some((tag) => queryMatchesTag(queryClient, query, tag)) &&
-      (!filters?.predicate || filters.predicate(query)),
+      resolvedTags.some((tag) => queryMatchesTag(queryClient, query, tag)) && (!filters?.predicate || filters.predicate(query)),
   };
 
   if (operation === 'refetch') return queryClient.refetchQueries(filtersObj, options);

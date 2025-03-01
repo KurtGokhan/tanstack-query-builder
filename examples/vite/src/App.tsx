@@ -83,11 +83,7 @@ function App() {
   const posts = postsQuery.useQuery({}, { enabled: !postId });
   const reset = resetMutation.useMutation();
 
-  const deleteErrors = deletePostMutation.useMutationState(
-    undefined,
-    { status: 'error' },
-    (x) => x.state.variables?.params.id,
-  );
+  const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
 
   const [refresh] = useOperateOnTags({ tags: 'refreshable' });
 

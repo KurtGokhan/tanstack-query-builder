@@ -15,12 +15,7 @@ import {
 import { BuilderConfig } from './types';
 import { areKeysEqual, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
-export type MutationBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = BuilderConfig<
-  TVars,
-  TData,
-  TError,
-  TKey
-> & {
+export type MutationBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = BuilderConfig<TVars, TData, TError, TKey> & {
   options?: UseMutationOptions<TData, TError, TVars>;
 };
 
@@ -34,10 +29,7 @@ export class MutationBuilderFrozen<TVars, TData, TError, TKey extends unknown[]>
     public mutationKeyPrefix = getRandomKey(),
   ) {}
 
-  protected mergeConfigs: (config: typeof this._config, other: Partial<typeof this._config>) => typeof this._config = (
-    config,
-    other,
-  ) => {
+  protected mergeConfigs: (config: typeof this._config, other: Partial<typeof this._config>) => typeof this._config = (config, other) => {
     return {
       ...config,
       ...other,
@@ -67,10 +59,10 @@ export class MutationBuilderFrozen<TVars, TData, TError, TKey extends unknown[]>
     return [this.mutationKeyPrefix];
   };
 
-  getMutationOptions: (
-    queryClient: QueryClient,
-    opts?: typeof this._options,
-  ) => UseMutationOptions<TData, TError, TVars> = (queryClient, opts) => {
+  getMutationOptions: (queryClient: QueryClient, opts?: typeof this._options) => UseMutationOptions<TData, TError, TVars> = (
+    queryClient,
+    opts,
+  ) => {
     return mergeMutationOptions([
       {
         mutationKey: this.getMutationKey(),
@@ -81,10 +73,10 @@ export class MutationBuilderFrozen<TVars, TData, TError, TKey extends unknown[]>
     ]);
   };
 
-  getMutationFilters: (
-    vars?: TVars,
-    filters?: MutationFilters<TData, TError, TVars>,
-  ) => MutationFilters<any, any, any> = (vars, filters) => {
+  getMutationFilters: (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>) => MutationFilters<any, any, any> = (
+    vars,
+    filters,
+  ) => {
     return {
       mutationKey: this.getMutationKey(),
       ...filters,
@@ -92,11 +84,7 @@ export class MutationBuilderFrozen<TVars, TData, TError, TKey extends unknown[]>
         if (filters?.predicate && !filters.predicate(m)) return false;
         if (vars == null) return true;
         if (!m.state.variables) return false;
-        return areKeysEqual(
-          [m.state.variables],
-          [vars],
-          this.config.queryKeyHashFn as QueryKeyHashFunction<readonly unknown[]>,
-        );
+        return areKeysEqual([m.state.variables], [vars], this.config.queryKeyHashFn as QueryKeyHashFunction<readonly unknown[]>);
       },
     };
   };
@@ -115,10 +103,7 @@ export class MutationBuilderFrozen<TVars, TData, TError, TKey extends unknown[]>
     filters?: MutationFilters<TData, TError, TVars>,
     select?: (mt: Mutation<TData, TError, TVars>) => TSelect,
   ) => TSelect[] = (vars, filters, select) => {
-    return useMutationState(
-      { filters: this.getMutationFilters(vars, filters), select: select as any },
-      this.config.queryClient,
-    );
+    return useMutationState({ filters: this.getMutationFilters(vars, filters), select: select as any }, this.config.queryClient);
   };
 
   readonly getMutation = (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) => {
