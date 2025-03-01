@@ -2,12 +2,11 @@ import { hashKey } from '@tanstack/react-query';
 import { resolveTags } from '../tags/resolveTags';
 import { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
 import { MiddlewareFn } from './createMiddlewareFunction';
-import { BuilderTypeTemplate } from './types';
 
-type CreateTagMiddleware = <T extends BuilderTypeTemplate>(
-  tags: QueryTagOption[],
+type CreateTagMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
+  tags: QueryTagOption<any, any, any>[],
   cacheId: string | number,
-) => MiddlewareFn<T['vars'], T['data'], T['error'], T>;
+) => MiddlewareFn<TVars, TData, TError, TKey>;
 
 export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
   async function tagMiddlware(ctx, next, _, config) {

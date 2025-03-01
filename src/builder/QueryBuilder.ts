@@ -22,17 +22,20 @@ import { MutationBuilder } from './MutationBuilder';
 import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
 import { PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from './createPreprocessorFunction';
 import { createTagMiddleware } from './createTagMiddleware';
-import { BuilderConfig, BuilderQueriesResult, SetAllTypes, SetDataType, SetErrorType } from './types';
-import { AppendVarsType, BuilderTypeTemplate } from './types';
+import { BuilderConfig, BuilderQueriesResult } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
-export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
-  constructor(public config: QueryBuilderConfig<T>) {}
+export class QueryBuilderFrozen<TVars, TData, TError, TKey extends unknown[]> {
+  protected declare _config: QueryBuilderConfig<TVars, TData, TError, TKey>;
+  protected declare _options: typeof this._config.options;
+  protected declare _vars: TVars;
 
-  protected mergeConfigs: (
-    config: QueryBuilderConfig<T>,
-    other: Partial<QueryBuilderConfig<T>>,
-  ) => QueryBuilderConfig<T> = (config, other) => {
+  constructor(public config: typeof this._config) {}
+
+  protected mergeConfigs: (config: typeof this._config, other: Partial<typeof this._config>) => typeof this._config = (
+    config,
+    other,
+  ) => {
     return {
       ...config,
       ...other,
@@ -41,33 +44,29 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     };
   };
 
-  protected mergeVars: (list: [T['vars'], ...Partial<T['vars']>[]]) => T['vars'] = (list) => {
+  protected mergeVars: (list: (Partial<TVars> | undefined)[]) => TVars = (list) => {
     return mergeVars(list, this.config.mergeVars);
   };
 
-  protected preprocessVars: (vars: T['vars']) => T['queryKey'][0] = (vars) => {
-    if (!this.config.preprocessorFn) return vars as T['queryKey'][0];
+  protected preprocessVars: (vars: TVars) => TKey[0] = (vars) => {
+    if (!this.config.preprocessorFn) return vars as TKey[0];
     return this.config.preprocessorFn(vars);
   };
 
-  getQueryFn: () => QueryFunction<T['data'], T['queryKey']> = () => {
+  getQueryFn: () => QueryFunction<TData, TKey> = () => {
     return ({ client, meta, queryKey, signal, pageParam }) => {
       return this.config.queryFn({ client, meta, queryKey, signal, pageParam, originalQueryKey: queryKey });
     };
   };
 
-  getQueryKey: (vars: T['vars']) => DataTag<T['queryKey'], T['data'], T['error']> = (vars) => {
-    return [this.preprocessVars(this.mergeVars([this.config.vars, vars]))] as DataTag<
-      T['queryKey'],
-      T['data'],
-      T['error']
-    >;
+  getQueryKey: (vars: TVars) => DataTag<TKey, TData, TError> = (vars) => {
+    return [this.preprocessVars(this.mergeVars([this.config.vars, vars]))] as DataTag<TKey, TData, TError>;
   };
 
   getQueryOptions: (
-    vars: T['vars'],
-    opts?: QueryBuilderConfig<T>['options'],
-  ) => UseQueryOptions<T['data'], T['error'], T['data'], T['queryKey']> & { queryFn: FunctionType } = (vars, opts) => {
+    vars: TVars,
+    opts?: typeof this._options,
+  ) => UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType } = (vars, opts) => {
     return mergeQueryOptions([
       {
         queryFn: this.getQueryFn(),
@@ -79,46 +78,46 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     ]);
   };
 
-  useQuery: (
-    vars: T['vars'],
-    opts?: QueryBuilderConfig<T>['options'],
-  ) => ReturnType<typeof useQuery<T['data'], T['error'], T['data'], T['queryKey']>> = (vars, opts) => {
+  useQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useQuery<TData, TError, TData, TKey>> = (
+    vars,
+    opts,
+  ) => {
     return useQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 
   useSuspenseQuery: (
-    vars: T['vars'],
-    opts?: QueryBuilderConfig<T>['options'],
-  ) => ReturnType<typeof useSuspenseQuery<T['data'], T['error'], T['data'], T['queryKey']>> = (vars, opts) => {
+    vars: TVars,
+    opts?: typeof this._options,
+  ) => ReturnType<typeof useSuspenseQuery<TData, TError, TData, TKey>> = (vars, opts) => {
     return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 
   usePrefetchQuery: (
-    vars: T['vars'],
-    opts?: QueryBuilderConfig<T>['options'],
-  ) => ReturnType<typeof usePrefetchQuery<T['data'], T['error'], T['data'], T['queryKey']>> = (vars, opts) => {
+    vars: TVars,
+    opts?: typeof this._options,
+  ) => ReturnType<typeof usePrefetchQuery<TData, TError, TData, TKey>> = (vars, opts) => {
     return usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 
-  useIsFetching: (vars: T['vars'], filters?: QueryFilters) => number = (vars, filters) => {
+  useIsFetching: (vars: TVars, filters?: QueryFilters) => number = (vars, filters) => {
     return useIsFetching({ queryKey: this.getQueryKey(vars), ...filters }, this.config.queryClient);
   };
 
   private useQueriesInternal: (useHook: typeof useQueries | typeof useSuspenseQueries) => (
     queries: {
-      vars: T['vars'];
-      options?: QueryBuilderConfig<T>['options'];
+      vars: TVars;
+      options?: QueryBuilderConfig<TVars, TData, TError, TKey>['options'];
       mapKey?: PropertyKey;
     }[],
-    sharedVars?: T['vars'],
-    sharedOpts?: QueryBuilderConfig<T>['options'],
-  ) => BuilderQueriesResult<T> = (useHook) => (queries, sharedVars, sharedOpts) => {
-    type ResultType = BuilderQueriesResult<T>;
+    sharedVars?: TVars,
+    sharedOpts?: typeof this._options,
+  ) => BuilderQueriesResult<TVars, TData, TError, TKey> = (useHook) => (queries, sharedVars, sharedOpts) => {
+    type ResultType = BuilderQueriesResult<TVars, TData, TError, TKey>;
 
     const mapKeys = queries.map((q) => q.mapKey);
 
     const queryList = queries.map(({ vars, options }) =>
-      this.getQueryOptions(this.mergeVars([sharedVars, vars]), mergeQueryOptions([sharedOpts, options])),
+      this.getQueryOptions(this.mergeVars([sharedVars!, vars]), mergeQueryOptions([sharedOpts, options])),
     );
 
     const result = useHook({ queries: queryList }) as ResultType;
@@ -142,60 +141,69 @@ export class QueryBuilderFrozen<T extends BuilderTypeTemplate> {
     return this.useQueriesInternal(useSuspenseQueries)(queries, sharedVars, sharedOpts);
   };
 
-  private _client?: QueryBuilderClient<T>;
+  private _client?: QueryBuilderClient<TVars, TData, TError, TKey>;
   get client() {
     return (this._client ??= new QueryBuilderClient(this));
   }
 }
 
 class QueryBuilderClient<
-  T extends BuilderTypeTemplate,
-  TFilters = QueryFilters<T['data'], T['error'], T['data'], T['queryKey']>,
+  TVars,
+  TData,
+  TError,
+  TKey extends unknown[],
+  TFilters = QueryFilters<TData, TError, TData, TKey>,
 > {
-  constructor(private builder: QueryBuilderFrozen<T>) {}
+  private declare _options: QueryBuilderConfig<TVars, TData, TError, TKey>['options'];
+  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey>) {}
 
-  readonly ensureData = (vars: T['vars'], opts?: QueryBuilderConfig<T>['options']) =>
+  readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
 
-  readonly refetch = (vars: T['vars'], filters?: TFilters, opts?: RefetchOptions) =>
+  readonly refetch = (vars: TVars, filters?: TFilters, opts?: RefetchOptions) =>
     this.builder.config.queryClient?.refetchQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
 
-  readonly fetch = (vars: T['vars'], opts?: QueryBuilderConfig<T>['options']) =>
+  readonly fetch = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.fetchQuery(this.builder.getQueryOptions(vars, opts));
 
-  readonly isFetching = (vars: T['vars'], filters?: TFilters) =>
+  readonly isFetching = (vars: TVars, filters?: TFilters) =>
     this.builder.config.queryClient?.isFetching({ queryKey: this.builder.getQueryKey(vars), ...filters });
 
-  readonly prefetch = (vars: T['vars'], opts?: QueryBuilderConfig<T>['options']) =>
+  readonly prefetch = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.prefetchQuery(this.builder.getQueryOptions(vars, opts));
 
-  readonly reset = (vars: T['vars'], filters?: TFilters, opts?: ResetOptions) =>
+  readonly reset = (vars: TVars, filters?: TFilters, opts?: ResetOptions) =>
     this.builder.config.queryClient?.resetQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
 
-  readonly remove = (vars: T['vars'], filters?: TFilters) =>
+  readonly remove = (vars: TVars, filters?: TFilters) =>
     this.builder.config.queryClient?.removeQueries({ queryKey: this.builder.getQueryKey(vars), ...filters });
 
-  readonly cancel = (vars: T['vars'], filters?: TFilters, opts?: CancelOptions) =>
+  readonly cancel = (vars: TVars, filters?: TFilters, opts?: CancelOptions) =>
     this.builder.config.queryClient?.cancelQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
 
-  readonly invalidate = (vars: T['vars'], filters?: TFilters, opts?: InvalidateOptions) =>
+  readonly invalidate = (vars: TVars, filters?: TFilters, opts?: InvalidateOptions) =>
     this.builder.config.queryClient?.invalidateQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
 
-  readonly getData = (vars: T['vars']) =>
-    this.builder.config.queryClient?.getQueryData<T['data']>(this.builder.getQueryKey(vars));
+  readonly getData = (vars: TVars) =>
+    this.builder.config.queryClient?.getQueryData<TData>(this.builder.getQueryKey(vars));
 
-  readonly setData = (vars: T['vars'], updater: Updater<T['data']>, opts?: SetDataOptions) =>
-    this.builder.config.queryClient?.setQueryData<T['data']>(this.builder.getQueryKey(vars), updater, opts);
+  readonly setData = (vars: TVars, updater: Updater<TData>, opts?: SetDataOptions) =>
+    this.builder.config.queryClient?.setQueryData<TData>(this.builder.getQueryKey(vars), updater, opts);
 
-  readonly getState = (vars: T['vars']) =>
-    this.builder.config.queryClient?.getQueryState<T['data'], T['error']>(this.builder.getQueryKey(vars));
+  readonly getState = (vars: TVars) =>
+    this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
 }
 
-export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> extends QueryBuilderFrozen<T> {
-  withVars<TVars = T['vars'], const TReset extends boolean = false>(
-    vars?: TVars,
+export class QueryBuilder<TVars, TData, TError, TKey extends unknown[]> extends QueryBuilderFrozen<
+  TVars,
+  TData,
+  TError,
+  TKey
+> {
+  withVars<TVars$ = TVars, const TReset extends boolean = false>(
+    vars?: TVars$,
     resetVars = false as TReset,
-  ): QueryBuilder<AppendVarsType<T, Partial<TVars>, TReset>> {
+  ): QueryBuilder<TVars$, TData, TError, TKey> {
     if (!vars) return this as any;
 
     return this.withConfig({
@@ -203,45 +211,55 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
     }) as any;
   }
 
-  withData<TData>(): QueryBuilder<SetDataType<T, TData>> {
+  withData<TData$>(): QueryBuilder<TVars, TData$, TError, TKey> {
     return this as any;
   }
 
-  withError<TError>(): QueryBuilder<SetErrorType<T, TError>> {
+  withError<TError$>(): QueryBuilder<TVars, TData, TError$, TKey> {
     return this as any;
   }
 
-  withConfig(config: Partial<QueryBuilderConfig<T>>): this {
+  withConfig(config: Partial<typeof this._config>): this {
     const ctor = this.constructor as typeof QueryBuilder;
     const newConfig = this.mergeConfigs(this.config, config);
-    return new ctor<T>(newConfig) as this;
+    return new ctor(newConfig) as this;
   }
 
-  withPreprocessor<TVars = T['vars']>(
-    preprocessor: PreprocessorFn<TVars, T['vars']>,
-  ): QueryBuilder<AppendVarsType<T, TVars, true, true>> {
-    const newBuilder = this as unknown as QueryBuilder<AppendVarsType<T, TVars, true, true>>;
+  withPreprocessor(preprocessor: PreprocessorFn<TVars, TVars>): this;
+  withPreprocessor<TVars$ = TVars>(
+    preprocessor: PreprocessorFn<TVars$, TVars>,
+  ): QueryBuilder<TVars$, TData, TError, TKey>;
+
+  withPreprocessor<TVars$ = TVars>(
+    preprocessor: PreprocessorFn<TVars$, TVars>,
+  ): QueryBuilder<TVars$, TData, TError, TKey> {
+    const newBuilder = this as unknown as QueryBuilder<TVars$, TData, TError, TKey>;
 
     return newBuilder.withConfig({
       preprocessorFn: createPreprocessorFunction(preprocessor, this.config.preprocessorFn || identityPreprocessor),
     });
   }
 
-  withMiddleware<TVars = T['vars'], TData = T['data'], TError = T['error']>(
-    middleware: MiddlewareFn<TVars, TData, TError, T>,
-    config?: Partial<QueryBuilderConfig<SetAllTypes<T, TData, TError, TVars, true>>>,
-  ): QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>> {
-    const newBuilder = this as unknown as QueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
+  withMiddleware(middleware: MiddlewareFn<TVars, TData, TError, TKey>): this;
+  withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
+    middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
+  ): QueryBuilder<TVars$, TData$, TError$, TKey>;
+
+  withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
+    middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
+    config?: Partial<QueryBuilderConfig<TVars$, TData$, TError$, TKey>>,
+  ): QueryBuilder<TVars$, TData$, TError$, TKey> {
+    const newBuilder = this as unknown as QueryBuilder<TVars$, TData$, TError$, TKey>;
 
     return newBuilder.withConfig({
       ...config,
-      queryFn: createMiddlewareFunction(this.config.queryFn, middleware, this.config),
+      queryFn: createMiddlewareFunction(this.config.queryFn, middleware, newBuilder.config),
     });
   }
 
   static tagCacheId = 0;
 
-  withTags(...tags: QueryTagOption<T['vars'], T['data'], T['error']>[]): this {
+  withTags(...tags: QueryTagOption<TVars, TData, TError>[]): this {
     if (this.config.queryClient) {
       this.config.syncChannel?.addEventListener('message', (event) => {
         const { type, data } = event.data;
@@ -252,16 +270,16 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
       });
     }
 
-    return this.withMiddleware(createTagMiddleware<T>(tags, QueryBuilder.tagCacheId++)) as unknown as this;
+    return this.withMiddleware(createTagMiddleware(tags, QueryBuilder.tagCacheId++)) as unknown as this;
   }
 
-  freeze(): QueryBuilderFrozen<T> {
+  freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey> {
     return this;
   }
 
   protected MutationBuilderConstructor: typeof MutationBuilder = MutationBuilder;
 
-  asMutationBuilder(): MutationBuilder<T> {
+  asMutationBuilder(): MutationBuilder<TVars, TData, TError, TKey> {
     const { options, ...restConfig } = this.config;
     return new this.MutationBuilderConstructor(restConfig);
   }
@@ -269,6 +287,11 @@ export class QueryBuilder<T extends BuilderTypeTemplate = BuilderTypeTemplate> e
 
 type Updater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);
 
-export type QueryBuilderConfig<T extends BuilderTypeTemplate> = BuilderConfig<T> & {
-  options?: Partial<UseQueryOptions<T['data'], T['error'], T['data'], T['queryKey']> & { queryFn: FunctionType }>;
+export type QueryBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = BuilderConfig<
+  TVars,
+  TData,
+  TError,
+  TKey
+> & {
+  options?: Partial<UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType }>;
 };

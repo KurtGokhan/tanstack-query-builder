@@ -23,7 +23,7 @@ function normalizeTag<TTag extends QueryTagObject = QueryTagObject>(tag: TTag | 
 export function resolveTags<TVars = void, TTag extends QueryTagObject = QueryTagObject>({
   tags,
   ...ctx
-}: ResolveTagsParams<TVars, unknown, unknown, TTag> & { client: QueryClient }): TTag[] {
+}: ResolveTagsParams<TVars, any, any, TTag> & { client: QueryClient }): TTag[] {
   const resolvedTags =
     typeof tags === 'function'
       ? resolveTags({ tags: tags(ctx as QueryTagContext<TVars>), ...ctx })

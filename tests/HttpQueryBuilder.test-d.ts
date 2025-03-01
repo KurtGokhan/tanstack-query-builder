@@ -12,13 +12,20 @@ describe('HttpQueryBuilder', () => {
       .withParams<{ id: number }>()
       .withSearch<{ q: string }>();
 
-    expectTypeOf<Parameters<typeof htp.useQuery>[0]>().toEqualTypeOf<
+    type TVars = Parameters<typeof htp.useQuery>[0];
+    expectTypeOf<TVars['params']>().toEqualTypeOf<{ id: number }>();
+    expectTypeOf<TVars['search']>().toEqualTypeOf<{ q: string }>();
+    expectTypeOf<TVars['body']>().toEqualTypeOf<{ name: string }>();
+    expectTypeOf<TVars['headers']>().toEqualTypeOf<{ 'x-token': string }>();
+
+    expectTypeOf<TVars>().toEqualTypeOf<
       Prettify<
         HttpBuilderBaseVars & {
           body: { name: string };
           headers: { 'x-token': string };
           params: { id: number };
           search: { q: string };
+          meta?: unknown;
         }
       >
     >();

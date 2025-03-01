@@ -10,7 +10,7 @@ import {
 import { httpRequest } from '../http/request';
 import { createHttpUrl } from '../http/utils';
 import type { FunctionType } from '../types/utils';
-import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderTypeTemplate } from './types';
+import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from './types';
 
 export function mergeQueryEnabled(
   opts: (UseQueryOptions<any, any, any, any>['enabled'] | undefined | null)[],
@@ -64,29 +64,36 @@ export function mergeMutationOptions<TData = unknown, TError = DefaultError, TVa
   return opts;
 }
 
-export function mergeVars<T>(list: [T, ...Partial<T>[]], fn?: BuilderMergeVarsFn<T>): T {
+export function mergeVars<T>(list: (Partial<T> | undefined)[], fn?: BuilderMergeVarsFn<T>): T {
   if (list.length === 0) return {} as T;
-  if (list.length === 1) return list[0];
-  return list.reduce((acc, curr) => (fn ? fn(acc as T, curr) : { ...(acc as any), ...curr })) as T;
+  if (list.length === 1) return list[0] as T;
+  return list.reduce((acc, curr) =>
+    curr == null ? acc : acc == null ? curr : fn ? fn(acc as T, curr) : { ...(acc as any), ...curr },
+  ) as T;
 }
-export const mergeHttpVars: BuilderMergeVarsFn<HttpBuilderTypeTemplate['vars']> = (v1, v2) => {
-  return {
-    ...v1,
-    ...v2,
-    ...(v1?.headers || v2?.headers ? { headers: { ...v1?.headers!, ...v2?.headers! } } : {}),
-    ...(v1?.params || v2?.params ? { params: { ...v1?.params!, ...v2?.params! } } : {}),
-    ...(v1?.search || v2?.search ? { search: { ...v1?.search!, ...v2?.search! } } : {}),
-    ...(v1?.meta || v2?.meta ? { meta: { ...v1?.meta!, ...v2?.meta! } } : {}),
-  };
-};
 
-export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
-  mergeVarsFn: BuilderMergeVarsFn<T['vars']>,
-): BuilderQueryFn<T> {
+export function createHttpMergeVarsFn<TVars extends HttpBuilderVars>(): BuilderMergeVarsFn<TVars> {
+  const mergeHttpVars: BuilderMergeVarsFn<TVars> = (v1, v2) => {
+    return {
+      ...v1,
+      ...v2,
+      ...(v1?.headers || v2?.headers ? { headers: { ...v1?.headers!, ...v2?.headers! } } : {}),
+      ...(v1?.params || v2?.params ? { params: { ...v1?.params!, ...v2?.params! } } : {}),
+      ...(v1?.search || v2?.search ? { search: { ...v1?.search!, ...v2?.search! } } : {}),
+      ...(v1?.meta || v2?.meta ? { meta: { ...v1?.meta!, ...v2?.meta! } } : {}),
+    };
+  };
+
+  return mergeHttpVars;
+}
+
+export function createHttpQueryFn<TVars, TData, TError, TKey extends unknown[]>(
+  mergeVarsFn: BuilderMergeVarsFn<TVars>,
+): BuilderQueryFn<TVars, TData, TError, TKey> {
   return async ({ queryKey, signal, pageParam }) => {
     const [vars] = queryKey || [];
-    const mergedVars = mergeVarsFn(vars, pageParam as Partial<T['vars']>);
-    return httpRequest<T['data']>({ ...(mergedVars as any), signal });
+    const mergedVars = mergeVarsFn(vars as any, pageParam as any);
+    return httpRequest<TData>({ ...(mergedVars as any), signal });
   };
 }
 
@@ -95,8 +102,8 @@ export function createHttpQueryFn<T extends HttpBuilderTypeTemplate>(
  * and removes irrelevant options which do not affect the query result.
  */
 
-export function createHttpQueryHashFn<T extends HttpBuilderTypeTemplate>(): QueryKeyHashFunction<T['queryKey']> {
-  const httpQueryHashFn: QueryKeyHashFunction<T['queryKey']> = function httpQueryKeyHashFn(queryKey) {
+export function createHttpQueryHashFn<TKey extends [HttpBuilderVars]>(): QueryKeyHashFunction<TKey> {
+  const httpQueryHashFn: QueryKeyHashFunction<TKey> = function httpQueryKeyHashFn(queryKey) {
     const [vars] = queryKey || [];
 
     const { baseUrl, params, search, path, method, body, headers, key } = vars;

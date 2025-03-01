@@ -1,66 +1,70 @@
+import { RequestError } from '../http/errors';
 import { ExtractPathParams, HttpMethod } from '../http/types';
 import { WithOptional } from '../types/utils';
-import { HttpMutationBuilder } from './HttpMutationBuilder';
-import { MutationBuilder } from './MutationBuilder';
 import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
-import { MiddlewareFn } from './createMiddlewareFunction';
-import { PreprocessorFn } from './createPreprocessorFunction';
-import {
-  HttpBaseHeaders,
-  HttpBaseParams,
-  HttpBaseSearch,
-  HttpBuilderTypeTemplate,
-  SetAllTypes,
-  SetDataType,
-  SetErrorType,
-} from './types';
-import { AppendVarsType } from './types';
-import { createHttpQueryFn, createHttpQueryHashFn, mergeHttpVars } from './utils';
+import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
+import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryHashFn } from './utils';
 
-export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTypeTemplate> extends QueryBuilder<T> {
-  constructor(config?: WithOptional<QueryBuilderConfig<T>, 'queryFn'>) {
-    const mergeVars = config?.mergeVars || mergeHttpVars;
-    const queryFn = config?.queryFn || createHttpQueryFn<T>(mergeVars);
+export class HttpQueryBuilder<
+  TParam = unknown,
+  TSearch = unknown,
+  TBody = unknown,
+  THeader = unknown,
+  TMeta = unknown,
+  TData = unknown,
+  TError = RequestError,
+  TKey extends [HttpBuilderVars] = [HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>],
+> extends QueryBuilder<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey> {
+  protected declare _vars: HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>;
+
+  constructor(
+    config?: WithOptional<
+      QueryBuilderConfig<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>,
+      'queryFn'
+    >,
+  ) {
+    const mergeVars = config?.mergeVars || createHttpMergeVarsFn();
+    const queryFn = config?.queryFn || createHttpQueryFn(mergeVars);
     const queryKeyHashFn = config?.queryKeyHashFn || createHttpQueryHashFn();
     super({ mergeVars, queryFn, queryKeyHashFn, ...config });
   }
 
-  withBody<TBody>(body?: TBody): HttpQueryBuilder<AppendVarsType<T, { body: TBody }>> {
+  withBody<TBody$>(body?: TBody$): HttpQueryBuilder<TParam, TSearch, TBody$, THeader, TMeta, TData, TError, TKey> {
     if (!body) return this as any;
     return this.withVars({ body }) as any;
   }
 
-  withHeaders<THeaders extends HttpBaseHeaders>(
-    headers?: THeaders,
-  ): HttpQueryBuilder<AppendVarsType<T, { headers: THeaders }>> {
+  withHeaders<THeaders$ extends HttpBaseHeaders>(
+    headers?: THeaders$,
+  ): HttpQueryBuilder<TParam, TSearch, TBody, THeaders$, TMeta, TData, TError, TKey> {
     if (!headers) return this as any;
     return this.withVars({ headers }) as any;
   }
 
-  withParams<TParams extends HttpBaseParams>(
-    params?: TParams,
-  ): HttpQueryBuilder<AppendVarsType<T, { params: TParams }>> {
+  withParams<TParams$ extends HttpBaseParams>(
+    params?: TParams$,
+  ): HttpQueryBuilder<TParams$, TSearch, TBody, THeader, TMeta, TData, TError, TKey> {
     if (!params) return this as any;
     return this.withVars({ params }) as any;
   }
 
-  withSearch<TSearch extends HttpBaseSearch>(
-    search?: TSearch,
-  ): HttpQueryBuilder<AppendVarsType<T, { search: TSearch }>> {
+  withSearch<TSearch$ extends HttpBaseSearch>(
+    search?: TSearch$,
+  ): HttpQueryBuilder<TParam, TSearch$, TBody, THeader, TMeta, TData, TError, TKey> {
     if (!search) return this as any;
     return this.withVars({ search }) as any;
   }
 
-  withMeta<TMeta>(meta?: TMeta): HttpQueryBuilder<AppendVarsType<T, { meta: TMeta }>> {
+  withMeta<TMeta$>(meta?: TMeta$): HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta$, TData, TError, TKey> {
     if (!meta) return this as any;
     return this.withVars({ meta }) as any;
   }
 
-  withPath<const TPath extends string>(
-    path: TPath,
-  ): ExtractPathParams<TPath> extends void
+  withPath<const TPath$ extends string>(
+    path: TPath$,
+  ): ExtractPathParams<TPath$> extends void
     ? this
-    : HttpQueryBuilder<AppendVarsType<T, { params: ExtractPathParams<TPath> }>> {
+    : HttpQueryBuilder<ExtractPathParams<TPath$>, TSearch, TBody, THeader, TMeta, TData, TError, TKey> {
     return this.withVars({ path }) as any;
   }
 
@@ -72,21 +76,6 @@ export class HttpQueryBuilder<T extends HttpBuilderTypeTemplate = HttpBuilderTyp
     return this.withVars({ method }) as any;
   }
 
-  declare withData: <TData>() => HttpQueryBuilder<SetDataType<T, TData>>;
-  declare withError: <TError>() => HttpQueryBuilder<SetErrorType<T, TError>>;
-  declare withVars: <TVars = T['vars'], const TReset extends boolean = false>(
-    vars?: TVars,
-    reset?: TReset,
-  ) => HttpQueryBuilder<AppendVarsType<T, Partial<TVars>, TReset>>;
-
-  declare withPreprocessor: <TVars = T['vars']>(
-    preprocessor: PreprocessorFn<TVars, T['vars']>,
-  ) => HttpQueryBuilder<AppendVarsType<T, TVars, true, true>>;
-
-  declare withMiddleware: <TVars = T['vars'], TData = T['data'], TError = T['error']>(
-    middleware: MiddlewareFn<TVars, TData, TError, T>,
-  ) => HttpQueryBuilder<SetAllTypes<T, TData, TError, TVars, true>>;
-
-  declare asMutationBuilder: () => HttpMutationBuilder<T>;
-  protected override MutationBuilderConstructor: typeof MutationBuilder = HttpMutationBuilder as typeof MutationBuilder;
+  declare withData: <TData$>() => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData$, TError, TKey>;
+  declare withError: <TError$>() => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError$, TKey>;
 }

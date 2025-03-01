@@ -3,11 +3,10 @@ import { resolveTags } from '../tags/resolveTags';
 import { QueryTagContext, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { UpdateTagsUndoer, undoUpdateTags, updateTags } from '../tags/updateTags';
 import { MiddlewareFn } from './createMiddlewareFunction';
-import { BuilderTypeTemplate } from './types';
 
-type CreateUpdateMiddleware = <T extends BuilderTypeTemplate>(
-  tags: QueryTagOption<T['vars'], T['data'], T['error'], QueryUpdateTagObject<T['vars'], T['data'], T['error'], any>>[],
-) => MiddlewareFn<T['vars'], T['data'], T['error'], T>;
+type CreateUpdateMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
+  tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, any>>[],
+) => MiddlewareFn<TVars, TData, TError, TKey>;
 
 export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
   async function updateMiddleware(ctx, next, throwError, config) {

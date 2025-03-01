@@ -34,7 +34,7 @@ It uses the builder pattern, the best pattern that works with complex Typescript
 
 - Strong typed customizable tags
 - Infinite queries
-- OOTB Query Hash function
+- Single interface for mutations and queries
 
 ## Examples
 

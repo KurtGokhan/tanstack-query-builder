@@ -2,14 +2,17 @@ import './mocks';
 import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
-import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 import { queryClient } from './client';
 
 const baseQuery = new HttpQueryBuilder({
   queryClient,
   syncChannel: new BroadcastChannel('react-query-builder'),
 }).withBaseUrl(baseUrl);
-const baseMutation = baseQuery.asMutationBuilder();
+const baseMutation = new HttpMutationBuilder({
+  queryClient,
+  syncChannel: new BroadcastChannel('react-query-builder'),
+}).withBaseUrl(baseUrl);
 
 const resetMutation = baseMutation.withPath('/reset').withUpdates('*');
 

@@ -1,21 +1,21 @@
 import { MutationBuilderConfig } from './MutationBuilder';
 import { QueryBuilderConfig } from './QueryBuilder';
-import type { BuilderQueryContext, BuilderQueryFn, BuilderTypeTemplate, SetAllTypes } from './types';
+import type { BuilderQueryContext, BuilderQueryFn } from './types';
 
-export type MiddlewareFn<TVars, TData, TError, TOriginalTemplate extends BuilderTypeTemplate> = (
-  context: MiddlewareContext<TOriginalTemplate['queryKey']>,
-  next: MiddlewareNextFn<TOriginalTemplate>,
+export type MiddlewareFn<TVars, TData, TError, TKey extends unknown[]> = (
+  context: MiddlewareContext<TKey>,
+  next: MiddlewareNextFn<any, any, any, any>,
   throwError: (error: TError) => never,
-  config: QueryBuilderConfig<TOriginalTemplate> | MutationBuilderConfig<TOriginalTemplate>,
+  config: QueryBuilderConfig<TVars, TData, TError, TKey> | MutationBuilderConfig<TVars, TData, TError, TKey>,
 ) => TData | Promise<TData>;
 
 export type MiddlewareContext<TKey extends unknown[]> = BuilderQueryContext<TKey> & {
   vars: TKey[0];
 };
 
-export type MiddlewareNextFn<T extends BuilderTypeTemplate> = (
-  context: Omit<MiddlewareContext<T['queryKey']>, 'queryKey'>,
-) => Promise<T['data']>;
+export type MiddlewareNextFn<TVars, TData, TError, TKey extends unknown[]> = (
+  context: Omit<MiddlewareContext<TKey>, 'queryKey'>,
+) => Promise<TData>;
 
 const createMiddlewareContext = <TKey extends unknown[]>(
   context: BuilderQueryContext<TKey>,
@@ -30,14 +30,14 @@ const throwError = (error: any): never => {
   throw error;
 };
 
-export const createMiddlewareFunction = <TVars, TData, TError, TOriginalTemplate extends BuilderTypeTemplate>(
-  originalFn: BuilderQueryFn<TOriginalTemplate>,
-  middleware: MiddlewareFn<TVars, TData, TError, TOriginalTemplate>,
-  config: QueryBuilderConfig<TOriginalTemplate> | MutationBuilderConfig<TOriginalTemplate>,
-): BuilderQueryFn<SetAllTypes<TOriginalTemplate, TData, TError, TVars, true>> => {
+export const createMiddlewareFunction = <TVars, TData, TError, TKey extends unknown[]>(
+  originalFn: BuilderQueryFn<any, any, any, any>,
+  middleware: MiddlewareFn<TVars, TData, TError, TKey>,
+  config: QueryBuilderConfig<TVars, TData, TError, TKey> | MutationBuilderConfig<TVars, TData, TError, TKey>,
+): BuilderQueryFn<TVars, TData, TError, TKey> => {
   return async (context) =>
     middleware(
-      createMiddlewareContext<TOriginalTemplate['queryKey']>(context),
+      createMiddlewareContext<TKey>(context),
       async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }),
       throwError,
       config,
