@@ -122,3 +122,6 @@ export function areKeysEqual(
 ): boolean {
   return hashFn(a) === hashFn(b);
 }
+export function getRandomKey() {
+  return Math.random().toString(36).substring(7);
+}

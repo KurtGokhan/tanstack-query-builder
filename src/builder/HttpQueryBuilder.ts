@@ -1,7 +1,8 @@
 import { RequestError } from '../http/errors';
 import { ExtractPathParams, HttpMethod } from '../http/types';
 import { WithOptional } from '../types/utils';
-import { QueryBuilder, QueryBuilderConfig } from './QueryBuilder';
+import { QueryBuilder } from './QueryBuilder';
+import { QueryBuilderConfig } from './QueryBuilderFrozen';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
 import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryHashFn } from './utils';
 

@@ -1,7 +1,8 @@
 import { RequestError } from '../http/errors';
 import { ExtractPathParams, HttpMethod } from '../http/types';
 import { WithOptional } from '../types/utils';
-import { MutationBuilder, MutationBuilderConfig } from './MutationBuilder';
+import { MutationBuilder } from './MutationBuilder';
+import { MutationBuilderConfig } from './MutationBuilderFrozen';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
 import { createHttpQueryFn, createHttpQueryHashFn } from './utils';
 import { createHttpMergeVarsFn } from './utils';

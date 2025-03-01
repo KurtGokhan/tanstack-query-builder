@@ -1,5 +1,5 @@
-import { MutationBuilderConfig } from './MutationBuilder';
-import { QueryBuilderConfig } from './QueryBuilder';
+import { MutationBuilderConfig } from './MutationBuilderFrozen';
+import { QueryBuilderConfig } from './QueryBuilderFrozen';
 import type { BuilderQueryContext, BuilderQueryFn } from './types';
 
 export type MiddlewareFn<TVars, TData, TError, TKey extends unknown[]> = (
