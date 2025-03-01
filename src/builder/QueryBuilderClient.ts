@@ -1,9 +1,20 @@
 import type { CancelOptions, InvalidateOptions, QueryFilters, RefetchOptions, ResetOptions, SetDataOptions } from '@tanstack/react-query';
+import { operateOnTags } from '../tags/operateOnTags';
+import { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../tags/types';
+import { updateTags } from '../tags/updateTags';
+import { WithOptional } from '../type-utils';
 import { QueryBuilderConfig, QueryBuilderFrozen } from './QueryBuilderFrozen';
 
-export class QueryBuilderClient<TVars, TData, TError, TKey extends unknown[], TFilters = QueryFilters<TData, TError, TData, TKey>> {
+export class QueryBuilderClient<
+  TVars,
+  TData,
+  TError,
+  TKey extends unknown[],
+  TTags extends Record<string, unknown>,
+  TFilters = QueryFilters<TData, TError, TData, TKey>,
+> {
   private declare _options: QueryBuilderConfig<TVars, TData, TError, TKey>['options'];
-  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey>) {}
+  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags>) {}
 
   readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
@@ -47,6 +58,22 @@ export class QueryBuilderClient<TVars, TData, TError, TKey extends unknown[], TF
     this.builder.config.queryClient?.setQueryData<TData>(this.builder.getQueryKey(vars), updater, opts);
 
   readonly getState = (vars: TVars) => this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
+
+  readonly operateTags = ({ tags = [], operation = 'invalidate', filters, options }: TagOperationOptions<TTags>) =>
+    operateOnTags({ queryClient: this.builder.config.queryClient!, tags, operation }, filters, options);
+
+  /**
+   * This function can be used to operate on queries based on tags.
+   */
+  readonly updateTags = ({
+    tags = [],
+    ctx: { client = this.builder.config.queryClient, ...ctx },
+    optimistic = false,
+  }: {
+    tags: readonly QueryUpdateTag<TVars, TData, TError, TTags>[];
+    ctx: WithOptional<QueryTagContext<TVars, TData, TError>, 'client'>;
+    optimistic?: boolean;
+  }) => updateTags({ tags, queryClient: client!, ctx: { client: client!, ...ctx }, optimistic });
 }
 
 type SetDataUpdater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);

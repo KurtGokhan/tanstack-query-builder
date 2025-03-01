@@ -2,6 +2,7 @@ import {
   DataTag,
   InfiniteData,
   InfiniteQueryPageParamsOptions,
+  MutationFunction,
   QueryFilters,
   QueryFunction,
   UseInfiniteQueryOptions,
@@ -10,14 +11,18 @@ import {
   UseSuspenseInfiniteQueryResult,
   useInfiniteQuery,
   useIsFetching,
+  useMutation,
   usePrefetchInfiniteQuery,
   usePrefetchQuery,
   useQueries,
   useQuery,
+  useQueryClient,
   useSuspenseInfiniteQuery,
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { operateOnTags } from '../tags/operateOnTags';
+import { TagOperationOptions } from '../tags/types';
 import { FunctionType, TODO } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { BuilderConfig, BuilderQueriesResult } from './types';
@@ -174,7 +179,24 @@ export class QueryBuilderFrozen<
     return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   };
 
-  private _client?: QueryBuilderClient<TVars, TData, TError, TKey>;
+  /**
+   * This hook returns a function that can be used to operate on queries based on tags.
+   * It also returns the mutation object that can be used to track the state of the operation.
+   * See `operateOnTags` for more information.
+   */
+  useTagOperation(opts?: TagOperationOptions<TTags> | void) {
+    const queryClient = useQueryClient();
+    const mutationFn: MutationFunction<unknown, TagOperationOptions<TTags> | void> = (
+      { tags = [], operation = 'invalidate', filters, options } = opts || {},
+    ) => operateOnTags({ queryClient, tags, operation }, filters, options);
+
+    const mutation = useMutation({ mutationFn });
+    const operate = mutation.mutateAsync;
+
+    return [operate, mutation] as const;
+  }
+
+  private _client?: QueryBuilderClient<TVars, TData, TError, TKey, TTags>;
   get client() {
     return (this._client ??= new QueryBuilderClient(this));
   }

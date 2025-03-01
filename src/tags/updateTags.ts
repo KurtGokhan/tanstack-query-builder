@@ -1,6 +1,4 @@
-import { type InfiniteData, InfiniteQueryObserver, type QueryClient, type QueryState, useQueryClient } from '@tanstack/react-query';
-import { useStableCallback } from '../hooks/useStableCallback';
-import type { WithOptional } from '../type-utils';
+import { type InfiniteData, InfiniteQueryObserver, type QueryClient, type QueryState } from '@tanstack/react-query';
 import { queryMatchesTag } from './operateOnTags';
 import type { QueryTagContext, QueryUpdateTag } from './types';
 import { getUpdater } from './updaters';
@@ -92,29 +90,4 @@ function setDataToExistingQuery(
   const query = queryClient.getQueryCache().get(hash);
   query?.setData(newData);
   if (state || meta) query?.setState(state || {}, { meta });
-}
-
-/**
- * This hook returns a function that can be used to operate on queries based on tags.
- * It also returns the mutation object that can be used to track the state of the operation.
- * See `operateOnTags` for more information.
- */
-export function useUpdateTags(base?: {
-  tags?: readonly QueryUpdateTag<any, any, any, any>[];
-  ctx?: QueryTagContext<unknown>;
-  optimistic?: boolean;
-}) {
-  const queryClient = useQueryClient();
-  const update = useStableCallback(
-    ({
-      tags = base?.tags || [],
-      ctx = base?.ctx || { client: queryClient, vars: undefined, data: undefined },
-      optimistic = base?.optimistic,
-    }: {
-      tags: readonly QueryUpdateTag<any, any, any, any>[];
-      ctx: WithOptional<QueryTagContext<unknown>, 'client'>;
-      optimistic?: boolean;
-    }) => updateTags({ tags, queryClient, ctx: { client: queryClient, ...ctx }, optimistic }),
-  );
-  return update;
 }

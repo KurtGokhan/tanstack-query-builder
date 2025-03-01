@@ -2,7 +2,7 @@ import './mocks';
 import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
-import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { HttpQueryBuilder } from 'react-query-builder';
 import { queryClient } from './client';
 
 const baseQuery = new HttpQueryBuilder({
@@ -92,13 +92,13 @@ function App() {
 
   const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
 
-  const [refresh] = useOperateOnTags({ tags: 'refreshable' });
+  const refresh = () => baseQuery.client.operateTags({ tags: 'refreshable', operation: 'reset' });
 
   if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 
   return (
     <>
-      <button onClick={() => refresh()} disabled={posts.isFetching}>
+      <button onClick={refresh} disabled={posts.isFetching}>
         Refresh
       </button>
 

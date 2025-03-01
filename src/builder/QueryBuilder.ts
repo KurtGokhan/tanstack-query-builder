@@ -89,7 +89,7 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
     return this as any;
   }
 
-  freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey> {
+  freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags> {
     return this;
   }
 

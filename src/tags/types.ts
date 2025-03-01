@@ -1,5 +1,6 @@
-import type { QueryClient } from '@tanstack/react-query';
+import type { InvalidateOptions, InvalidateQueryFilters, QueryClient } from '@tanstack/react-query';
 import { KeysOfValue, StringLiteral } from '../type-utils';
+import { OperateOnTagsOperation } from './operateOnTags';
 
 export type TagMap = Record<string, unknown>;
 
@@ -23,7 +24,7 @@ export type QueryTagCallback<TVars = void, TData = unknown, TErr = unknown, TTag
   ctx: QueryTagContext<TVars, TData, TErr>,
 ) => TTag | readonly TTag[];
 
-export type QueryTagStaticOption<TTag extends QueryTagObject = QueryTagObject> = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[];
+export type QueryTagStaticOption<TTag extends QueryTagObject<any> = QueryTagObject<any>> = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[];
 
 export type QueryTagOption<TVars = unknown, TData = unknown, TErr = unknown, TTag extends QueryTagObject<any> = QueryTagObject<any>> =
   | QueryTagStaticOption<TTag>
@@ -81,3 +82,10 @@ export type QueryUpdateTag<TVars = unknown, TData = unknown, TErr = unknown, TMa
 >;
 
 export type QueryTagCache = Record<string | number, Record<string, QueryTagObject[]>>;
+
+export type TagOperationOptions<TMap extends TagMap = TagMap> = {
+  tags?: QueryTagStaticOption<QueryTagObject<TMap>>;
+  operation?: OperateOnTagsOperation;
+  filters?: InvalidateQueryFilters;
+  options?: InvalidateOptions;
+};
