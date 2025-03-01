@@ -68,9 +68,11 @@ const handlers = [
     await delay();
     return HttpResponse.json(users);
   }),
-  http.get(`${baseUrl}/posts`, async () => {
+  http.get(`${baseUrl}/posts`, async (req) => {
     await delay();
-    return HttpResponse.json(posts);
+    const page = Number(new URL(req.request.url).searchParams.get('page')) || 0;
+    const pageSize = 5;
+    return HttpResponse.json(posts.slice(page * pageSize, (page + 1) * pageSize));
   }),
   http.get(`${baseUrl}/posts/:id`, async (req) => {
     await delay();

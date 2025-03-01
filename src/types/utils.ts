@@ -16,5 +16,5 @@ export type FunctionType = (...args: any[]) => any;
 
 /** Extracts the keys of a type that have a value of a specific type. */
 export type KeysOfValue<T, TCondition> = {
-  [K in keyof T]?: T[K] extends TCondition ? K : never;
+  [K in keyof T]: T[K] extends TCondition ? K : never;
 }[keyof T];

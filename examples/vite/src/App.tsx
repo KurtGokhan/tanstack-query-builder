@@ -21,7 +21,7 @@ const baseMutation = baseQuery.asMutationBuilder();
 
 const resetMutation = baseMutation.withPath('/reset').withUpdates('*');
 
-const postsQuery = baseQuery.withTags('refreshable', 'posts').withPath('/posts').withData<PostData[]>();
+const postsQuery = baseQuery.withTags('refreshable', 'posts').withPath('/posts').withData<PostData[]>().withSearch<{ page?: number }>();
 
 const postQuery = baseQuery
   .withTags('refreshable')
@@ -62,7 +62,7 @@ const editPostMutation = baseMutation
       ...ctx,
       vars: {
         ...ctx.vars,
-        body: { ...ctx.vars.body, body: `${ctx.vars.body.body} \n Last updated ${new Date().toISOString()}` },
+        body: { ...ctx.vars.body, body: `${ctx.vars.body?.body} \n Last updated ${new Date().toISOString()}` },
       },
     });
     return res;

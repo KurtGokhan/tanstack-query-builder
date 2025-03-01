@@ -44,7 +44,7 @@ export type PredefinedUpdater<TVars = unknown, TData = unknown, TErr = unknown, 
   | `replace-${UpdaterSelector<TVars>}`
   | `${'create' | 'update' | 'upsert' | 'delete' | 'switch'}-${UpdaterSelector<TVars>}-by-${KeyOfTarget<TTarget>}`;
 
-type UpdaterSelector<TVars> = 'data' | 'vars' | Extract<KeysOfValue<TVars, Record<string, unknown>>, string>;
+type UpdaterSelector<TVars> = 'data' | 'vars' | Extract<KeysOfValue<TVars, Record<string, unknown> | undefined>, string>;
 type KeyOfTarget<TTarget> = KeyOfItem<TTarget> & string & {};
 type KeyOfItem<TTarget> = TTarget extends readonly (infer TItem)[]
   ? keyof TItem

@@ -24,7 +24,9 @@ type WhenRequired<T, TReq> = T extends undefined
     ? Partial<TReq>
     : T extends null
       ? Partial<TReq>
-      : TReq;
+      : Partial<T> extends T
+        ? Partial<TReq>
+        : TReq;
 
 export type HttpBuilderVars<TParam = unknown, TSearch = unknown, TBody = unknown, THeaders = unknown, TMeta = unknown> = Prettify<
   HttpBuilderBaseVars &
