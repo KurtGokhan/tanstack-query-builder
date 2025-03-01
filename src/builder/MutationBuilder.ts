@@ -4,11 +4,17 @@ import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFuncti
 import { createUpdateMiddleware } from './createUpdateMiddleware';
 import { mergeVars } from './utils';
 
-export class MutationBuilder<TVars, TData, TError, TKey extends unknown[]> extends MutationBuilderFrozen<TVars, TData, TError, TKey> {
+export class MutationBuilder<
+  TVars,
+  TData,
+  TError,
+  TKey extends unknown[],
+  TTags extends Record<string, unknown>,
+> extends MutationBuilderFrozen<TVars, TData, TError, TKey, TTags> {
   withVars<TVars$ = TVars, const TReset extends boolean = false>(
     vars?: TVars$,
     resetVars = false as TReset,
-  ): MutationBuilder<TVars$, TData, TError, TKey> {
+  ): MutationBuilder<TVars$, TData, TError, TKey, TTags> {
     if (!vars) return this as any;
 
     return this.withConfig({
@@ -16,11 +22,11 @@ export class MutationBuilder<TVars, TData, TError, TKey extends unknown[]> exten
     }) as any;
   }
 
-  withData<TData$>(): MutationBuilder<TVars, TData$, TError, TKey> {
+  withData<TData$>(): MutationBuilder<TVars, TData$, TError, TKey, TTags> {
     return this as any;
   }
 
-  withError<TError$>(): MutationBuilder<TVars, TData, TError$, TKey> {
+  withError<TError$>(): MutationBuilder<TVars, TData, TError$, TKey, TTags> {
     return this as any;
   }
 
@@ -32,21 +38,19 @@ export class MutationBuilder<TVars, TData, TError, TKey extends unknown[]> exten
 
   withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
     middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
-  ): MutationBuilder<TVars$, TData$, TError$, TKey> {
-    const newBuilder = this as unknown as MutationBuilder<TVars$, TData$, TError$, TKey>;
+  ): MutationBuilder<TVars$, TData$, TError$, TKey, TTags> {
+    const newBuilder = this as unknown as MutationBuilder<TVars$, TData$, TError$, TKey, TTags>;
 
     return newBuilder.withConfig({
       queryFn: createMiddlewareFunction(this.config.queryFn, middleware, newBuilder.config),
     });
   }
 
-  withUpdates<TTarget = unknown>(
-    ...tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, TTarget>>[]
-  ): this {
-    return this.withMiddleware(createUpdateMiddleware<TVars, TData, TError, TKey>(tags)) as unknown as this;
+  withUpdates(...tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, TTags>>[]): this {
+    return this.withMiddleware(createUpdateMiddleware<TVars, TData, TError, TKey, TTags>(tags)) as unknown as this;
   }
 
-  freeze(): MutationBuilderFrozen<TVars, TData, TError, TKey> {
+  freeze(): MutationBuilderFrozen<TVars, TData, TError, TKey, TTags> {
     return this;
   }
 }

@@ -2,30 +2,32 @@ import './mocks';
 import { useRef, useState } from 'react';
 import { CommentData, PostData, baseUrl } from './mocks';
 import './App.css';
-import { HttpMutationBuilder, HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
+import { HttpQueryBuilder, useOperateOnTags } from 'react-query-builder';
 import { queryClient } from './client';
 
 const baseQuery = new HttpQueryBuilder({
   queryClient,
   syncChannel: new BroadcastChannel('react-query-builder'),
-}).withBaseUrl(baseUrl);
-const baseMutation = new HttpMutationBuilder({
-  queryClient,
-  syncChannel: new BroadcastChannel('react-query-builder'),
-}).withBaseUrl(baseUrl);
+})
+  .withBaseUrl(baseUrl)
+  .withTagTypes<{
+    post: PostData;
+    posts: PostData[];
+    comments: CommentData;
+    refreshable: unknown;
+  }>();
+
+const baseMutation = baseQuery.asMutationBuilder();
 
 const resetMutation = baseMutation.withPath('/reset').withUpdates('*');
 
-const postsQuery = baseQuery
-  .withTags('refreshable', { type: 'posts' as any, id: 'LIST' })
-  .withPath('/posts')
-  .withData<PostData[]>();
+const postsQuery = baseQuery.withTags('refreshable', 'posts').withPath('/posts').withData<PostData[]>();
 
 const postQuery = baseQuery
   .withTags('refreshable')
   .withPath('/posts/:id')
   .withData<PostData>()
-  .withTags((ctx) => ({ type: 'posts' as any, id: ctx.data.id }))
+  .withTags((ctx) => ({ type: 'post', id: ctx.data.id }))
   .withPreprocessor<{ id: number }>((vars) => ({ ...vars, params: { id: vars.id } }))
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);
@@ -42,15 +44,14 @@ const editPostMutation = baseMutation
   .withPath('/posts/:id')
   .withMethod('put')
   .withBody<Partial<PostData>>()
-  .withUpdates<PostData | PostData[]>(
+  .withUpdates(
     {
-      type: 'posts' as any,
-      id: 'LIST',
+      type: 'posts',
       optimistic: true,
       updater: 'update-body-by-id',
     },
     (ctx) => ({
-      type: 'posts' as any,
+      type: 'post',
       id: ctx.vars.params.id,
       optimistic: true,
       updater: 'merge-body',
@@ -67,15 +68,11 @@ const editPostMutation = baseMutation
     return res;
   });
 
-const deletePostMutation = baseMutation
-  .withMethod('delete')
-  .withPath('/posts/:id')
-  .withUpdates<PostData[]>({
-    type: 'posts' as any,
-    id: 'LIST',
-    optimistic: true,
-    updater: 'delete-params-by-id',
-  });
+const deletePostMutation = baseMutation.withMethod('delete').withPath('/posts/:id').withUpdates({
+  type: 'posts',
+  optimistic: true,
+  updater: 'delete-params-by-id',
+});
 
 function App() {
   const [postId, setPostId] = useState<number | null>(null);

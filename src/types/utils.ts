@@ -18,17 +18,3 @@ export type FunctionType = (...args: any[]) => any;
 export type KeysOfValue<T, TCondition> = {
   [K in keyof T]?: T[K] extends TCondition ? K : never;
 }[keyof T];
-
-type IsRequired<T, TFalsy = never, TTruthy = T> = T extends undefined
-  ? TFalsy
-  : unknown extends T
-    ? TFalsy
-    : T extends null
-      ? TFalsy
-      : TTruthy;
-
-type RequiredKeys<T extends Record<string, any>> = {
-  [K in keyof T]: IsRequired<T[K], never, K>;
-}[keyof T];
-
-export type MakeRequiredIfNecessary<T extends Record<string, any>> = WithRequired<T, RequiredKeys<T>>;

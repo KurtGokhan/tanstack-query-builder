@@ -1,6 +1,6 @@
 import { MutationBuilder } from '../src/builder/MutationBuilder';
 
-describe('QueryBuilder', () => {
+describe('MutationBuilder', () => {
   type TData = { readonly sym: unique symbol };
   type TVar = { readonly sym: unique symbol };
   type TErr = { readonly sym: unique symbol };

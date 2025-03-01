@@ -1,15 +1,16 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { KeysOfValue, StringLiteral } from '../types/utils';
-import type { QueryTagType } from './tag-types';
 
-/**
- * ID can be any value. But some values like `LIST` are reserved for special cases.
- */
-export type QueryTagId = 'LIST' | StringLiteral | number | null | undefined;
+export type TagMap = Record<string, unknown>;
 
-export type QueryTagObject = { type: QueryTagType; id?: QueryTagId };
+export type QueryTagId = StringLiteral | number | null | undefined;
 
-export type QueryTag<TTag extends QueryTagObject = QueryTagObject> = '*' | TTag['type'] | TTag;
+export type QueryTagObject<TMap extends TagMap = TagMap> = {
+  type: keyof TMap & string;
+  id?: QueryTagId;
+};
+
+export type QueryTag<TTag extends QueryTagObject = QueryTagObject<any>> = '*' | TTag['type'] | TTag;
 
 export type QueryTagContext<TVars = void, TData = unknown, TErr = unknown> = {
   client: QueryClient;
@@ -24,7 +25,7 @@ export type QueryTagCallback<TVars = void, TData = unknown, TErr = unknown, TTag
 
 export type QueryTagStaticOption<TTag extends QueryTagObject = QueryTagObject> = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[];
 
-export type QueryTagOption<TVars = unknown, TData = unknown, TErr = unknown, TTag extends QueryTagObject = QueryTagObject> =
+export type QueryTagOption<TVars = unknown, TData = unknown, TErr = unknown, TTag extends QueryTagObject<any> = QueryTagObject<any>> =
   | QueryTagStaticOption<TTag>
   | QueryTagCallback<TVars, TData, TErr, TTag>;
 
@@ -43,8 +44,8 @@ export type PredefinedUpdater<TVars = unknown, TData = unknown, TErr = unknown, 
   | `replace-${UpdaterSelector<TVars>}`
   | `${'create' | 'update' | 'upsert' | 'delete' | 'switch'}-${UpdaterSelector<TVars>}-by-${KeyOfTarget<TTarget>}`;
 
-type UpdaterSelector<TVars> = 'data' | 'vars' | (KeysOfValue<TVars, Record<string, any>> & string);
-type KeyOfTarget<TTarget> = string & KeyOfItem<TTarget>;
+type UpdaterSelector<TVars> = 'data' | 'vars' | Extract<KeysOfValue<TVars, Record<string, unknown>>, string>;
+type KeyOfTarget<TTarget> = KeyOfItem<TTarget> & string & {};
 type KeyOfItem<TTarget> = TTarget extends readonly (infer TItem)[]
   ? keyof TItem
   : TTarget extends Record<string, infer TItem>
@@ -53,11 +54,8 @@ type KeyOfItem<TTarget> = TTarget extends readonly (infer TItem)[]
       : never
     : never;
 
-export type QueryUpdateTagObject<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = QueryTagObject & {
-  /**
-   * Custom updater that receives the query data and relevant context, and returns the new data.
-   */
-  updater?: QueryUpdater<TVars, TData, TErr, TTarget>;
+export type QueryUpdateTagObject<TVars = unknown, TData = unknown, TErr = unknown, TMap extends TagMap = TagMap> = {
+  id?: QueryTagId;
 
   optimistic?: boolean;
 
@@ -69,10 +67,17 @@ export type QueryUpdateTagObject<TVars = unknown, TData = unknown, TErr = unknow
    * - `both`: The default. Applies both `pre` and `post` behavior.
    */
   invalidate?: 'pre' | 'post' | 'none' | 'both';
-};
+} & {
+  [K in keyof TMap]: K extends string
+    ? {
+        type: K;
+        updater?: QueryUpdater<TVars, TData, TErr, TMap[K]>;
+      }
+    : never;
+}[keyof TMap];
 
-export type QueryUpdateTag<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = QueryTag<
-  QueryUpdateTagObject<TVars, TData, TErr, TTarget>
+export type QueryUpdateTag<TVars = unknown, TData = unknown, TErr = unknown, TMap extends TagMap = TagMap> = QueryTag<
+  QueryUpdateTagObject<TVars, TData, TErr, TMap>
 >;
 
 export type QueryTagCache = Record<string | number, Record<string, QueryTagObject[]>>;

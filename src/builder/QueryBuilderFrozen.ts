@@ -19,7 +19,13 @@ export type QueryBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = B
   options?: Partial<UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType }>;
 };
 
-export class QueryBuilderFrozen<TVars, TData, TError, TKey extends unknown[]> {
+export class QueryBuilderFrozen<
+  TVars,
+  TData,
+  TError,
+  TKey extends unknown[],
+  TTags extends Record<string, unknown> = Record<string, unknown>,
+> {
   protected declare _config: QueryBuilderConfig<TVars, TData, TError, TKey>;
   protected declare _options: typeof this._config.options;
   protected declare _vars: TVars;

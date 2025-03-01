@@ -1,6 +1,6 @@
 import type { QueryClient, QueryFunctionContext, QueryKeyHashFunction, UseQueryResult } from '@tanstack/react-query';
 import type { HttpRequestOptions } from '../http/types';
-import { MakeRequiredIfNecessary, Prettify } from '../types/utils';
+import { Prettify } from '../types/utils';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   queryFn: BuilderQueryFn<TVars, TData, TError, TKey>;
@@ -18,15 +18,21 @@ export type HttpBaseSearch = Record<string | number, unknown>;
 
 export type HttpBuilderBaseVars = Omit<HttpRequestOptions, 'body' | 'headers' | 'params' | 'search' | 'meta'>;
 
+type WhenRequired<T, TReq> = T extends undefined
+  ? Partial<TReq>
+  : unknown extends T
+    ? Partial<TReq>
+    : T extends null
+      ? Partial<TReq>
+      : TReq;
+
 export type HttpBuilderVars<TParam = unknown, TSearch = unknown, TBody = unknown, THeaders = unknown, TMeta = unknown> = Prettify<
   HttpBuilderBaseVars &
-    MakeRequiredIfNecessary<{
-      body?: TBody;
-      headers?: THeaders;
-      params?: TParam;
-      search?: TSearch;
-      meta?: TMeta;
-    }>
+    WhenRequired<TParam, { params: TParam }> &
+    WhenRequired<TSearch, { search: TSearch }> &
+    WhenRequired<TBody, { body: TBody }> &
+    WhenRequired<THeaders, { headers: THeaders }> &
+    WhenRequired<TMeta, { meta: TMeta }>
 >;
 
 export type BuilderMergeVarsFn<TVars> = (vars1: TVars | Partial<TVars>, vars2: TVars | Partial<TVars>) => TVars | Partial<TVars>;

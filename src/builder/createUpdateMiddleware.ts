@@ -4,8 +4,8 @@ import { QueryTagContext, QueryTagOption, QueryUpdateTagObject } from '../tags/t
 import { UpdateTagsUndoer, undoUpdateTags, updateTags } from '../tags/updateTags';
 import { MiddlewareFn } from './createMiddlewareFunction';
 
-type CreateUpdateMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
-  tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, any>>[],
+type CreateUpdateMiddleware = <TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>>(
+  tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, TTags>>[],
 ) => MiddlewareFn<TVars, TData, TError, TKey>;
 
 export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>

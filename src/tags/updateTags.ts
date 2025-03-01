@@ -16,7 +16,7 @@ export function updateTags({
   ctx,
   optimistic,
 }: {
-  tags: readonly QueryUpdateTag<any, any, any>[];
+  tags: readonly QueryUpdateTag<any, any, any, any>[];
   queryClient: QueryClient;
   ctx: QueryTagContext<unknown>;
   optimistic?: boolean;
@@ -86,7 +86,7 @@ function setDataToExistingQuery(
  * See `operateOnTags` for more information.
  */
 export function useUpdateTags(base?: {
-  tags?: readonly QueryUpdateTag[];
+  tags?: readonly QueryUpdateTag<any, any, any, any>[];
   ctx?: QueryTagContext<unknown>;
   optimistic?: boolean;
 }) {
@@ -97,7 +97,7 @@ export function useUpdateTags(base?: {
       ctx = base?.ctx || { client: queryClient, vars: undefined, data: undefined },
       optimistic = base?.optimistic,
     }: {
-      tags: readonly QueryUpdateTag[];
+      tags: readonly QueryUpdateTag<any, any, any, any>[];
       ctx: WithOptional<QueryTagContext<unknown>, 'client'>;
       optimistic?: boolean;
     }) => updateTags({ tags, queryClient, ctx: { client: queryClient, ...ctx }, optimistic }),
