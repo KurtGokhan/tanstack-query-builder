@@ -4,7 +4,7 @@ import { WithOptional } from '../type-utils';
 import { QueryBuilder } from './QueryBuilder';
 import { BuilderConfig } from './types';
 import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
-import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryHashFn } from './utils';
+import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './utils';
 
 export class HttpQueryBuilder<
   TParam = unknown,
@@ -22,8 +22,8 @@ export class HttpQueryBuilder<
   ) {
     const mergeVars = config?.mergeVars || createHttpMergeVarsFn();
     const queryFn = config?.queryFn || createHttpQueryFn(mergeVars);
-    const queryKeyHashFn = config?.queryKeyHashFn || createHttpQueryHashFn();
-    super({ mergeVars, queryFn, queryKeyHashFn, ...config });
+    const queryKeySanitizer = config?.queryKeySanitizer || createHttpQueryKeySanitizer();
+    super({ mergeVars, queryFn, queryKeySanitizer, ...config });
   }
 
   withBody<TBody$>(body?: TBody$): HttpQueryBuilder<TParam, TSearch, TBody$, THeader, TMeta, TData, TError, TTags> {

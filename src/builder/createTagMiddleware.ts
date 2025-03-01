@@ -10,6 +10,8 @@ type CreateTagMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
 
 export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
   async function tagMiddlware(ctx, next, _, config) {
+    if (ctx.operationType === 'mutation') return next(ctx);
+
     let resolvedTags: QueryTagObject[] = [];
 
     try {
@@ -23,8 +25,8 @@ export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
 
       throw error;
     } finally {
-      const hashFn = config?.queryKeyHashFn ?? hashKey;
-      const hash = hashFn(ctx.originalQueryKey as any);
+      const sanitized = config?.queryKeySanitizer ? config.queryKeySanitizer(ctx.queryKey) : ctx.queryKey;
+      const hash = hashKey(sanitized);
       const tagCache = ((ctx.client as any).tagCache ??= {}) as QueryTagCache;
       const tags = (tagCache[hash] ??= {});
       tags[cacheId] = resolvedTags;

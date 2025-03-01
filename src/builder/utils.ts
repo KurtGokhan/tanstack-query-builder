@@ -2,14 +2,13 @@ import {
   type DefaultError,
   type MutationKey,
   type QueryKey,
-  QueryKeyHashFunction,
   type UseMutationOptions,
   type UseQueryOptions,
   hashKey,
 } from '@tanstack/react-query';
 import { httpRequest } from '../http/request';
 import { createHttpUrl } from '../http/utils';
-import type { BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from './types';
+import type { BuilderKeySanitizerFn, BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from './types';
 
 export function mergeQueryEnabled(
   opts: (UseQueryOptions<any, any, any, any>['enabled'] | undefined | null)[],
@@ -77,21 +76,25 @@ export function createHttpQueryFn<TVars, TData, TError, TKey extends unknown[]>(
  * and removes irrelevant options which do not affect the query result.
  */
 
-export function createHttpQueryHashFn<TKey extends [HttpBuilderVars]>(): QueryKeyHashFunction<TKey> {
-  const httpQueryHashFn: QueryKeyHashFunction<TKey> = function httpQueryKeyHashFn(queryKey) {
+export function createHttpQueryKeySanitizer<TKey extends [HttpBuilderVars]>(): BuilderKeySanitizerFn<TKey> {
+  const sanitizer: BuilderKeySanitizerFn<TKey> = function httpQueryKeySanitizer(queryKey) {
     const [vars] = queryKey || [];
 
     const { baseUrl, params, search, path, method, body, headers, key } = vars;
     const url = createHttpUrl({ path, params, baseUrl, search });
 
-    return hashKey([url, method, body, headers, key].filter((x) => x != null));
+    const res = [url, method, body, headers, key];
+
+    const lastNullIndex = res.findLastIndex((x) => x != null);
+    return res.slice(0, lastNullIndex + 1) as TKey;
   };
 
-  return httpQueryHashFn;
+  return sanitizer;
 }
 
-export function areKeysEqual(a: QueryKey | MutationKey, b: QueryKey | MutationKey, hashFn: typeof hashKey = hashKey): boolean {
-  return hashFn(a) === hashFn(b);
+export function areKeysEqual(a: QueryKey | MutationKey, b: QueryKey | MutationKey, hashFn?: BuilderKeySanitizerFn<any>): boolean {
+  if (!hashFn) return hashKey(a) === hashKey(b);
+  return hashKey(hashFn(a)) === hashKey(hashFn(b));
 }
 export function getRandomKey() {
   return Math.random().toString(36).substring(7);

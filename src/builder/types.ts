@@ -1,11 +1,11 @@
-import type { QueryClient, QueryFunctionContext, QueryKeyHashFunction, UseQueryResult } from '@tanstack/react-query';
+import type { QueryClient, QueryFunctionContext, QueryKey, UseQueryResult } from '@tanstack/react-query';
 import type { HttpRequestOptions } from '../http/types';
 import { Prettify } from '../type-utils';
 import { BuilderOptions } from './options';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   queryFn: BuilderQueryFn<TVars, TData, TError, TKey>;
-  queryKeyHashFn?: QueryKeyHashFunction<TKey>;
+  queryKeySanitizer?: BuilderKeySanitizerFn<TKey>;
   vars?: Partial<TVars>;
   mergeVars?: BuilderMergeVarsFn<TVars>;
   queryClient?: QueryClient;
@@ -49,7 +49,9 @@ export type BuilderQueriesResult<TVars, TData, TError, TKey> = QueriesResultItem
 
 export type BuilderQueryContext<TQueryKey extends unknown[]> = QueryFunctionContext<TQueryKey, never> & {
   originalQueryKey: unknown[];
-  // TODO: add function type, e.g. query, mutation, infiniteQuery, queries
+  operationType: 'query' | 'mutation' | 'infiniteQuery' | 'queries';
 };
 
 export type BuilderQueryFn<TVars, TData, TError, TKey extends unknown[]> = (context: BuilderQueryContext<TKey>) => TData | Promise<TData>;
+
+export type BuilderKeySanitizerFn<TKey extends unknown[]> = (key: TKey) => QueryKey;

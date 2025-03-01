@@ -10,6 +10,8 @@ type CreateUpdateMiddleware = <TVars, TData, TError, TKey extends unknown[], TTa
 
 export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
   async function updateMiddleware(ctx, next, throwError, config) {
+    if (ctx.operationType !== 'mutation') return next(ctx);
+
     type TagObj = QueryUpdateTagObject<any, any, any, any>;
     type TagCtx = QueryTagContext<any>;
 

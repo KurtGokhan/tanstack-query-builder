@@ -85,14 +85,14 @@ const deletePostMutation = builder.withMethod('delete').withPath('/posts/:id').w
 function App() {
   const [postId, setPostId] = useState<number | null>(null);
 
-  const posts = postsQuery.useInfiniteQuery({}, { enabled: !postId });
+  const posts = postsQuery.useInfiniteQuery({}, { enabled: postId != null });
   const reset = resetMutation.useMutation();
 
   const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
 
   const refresh = () => builder.client.operateTags({ tags: 'refreshable', operation: 'reset' });
 
-  if (postId) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
+  if (postId != null) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 
   return (
     <>

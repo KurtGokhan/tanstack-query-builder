@@ -1,7 +1,7 @@
 import { http, HttpResponse, delay } from 'msw';
 import { setupWorker } from 'msw/browser';
-import { mockComments } from './comments';
-import { PostData, mockPosts } from './posts';
+import { createMockComments } from './comments';
+import { PostData, createMockPosts } from './posts';
 
 export type UserData = { id: number; name: string; email: string; username: string; website: string };
 
@@ -18,7 +18,10 @@ function createMockData() {
     },
   ];
 
-  return { users, posts: mockPosts, comments: mockComments };
+  const posts = createMockPosts();
+  const comments = createMockComments();
+
+  return { users, posts, comments };
 }
 
 function saveMockData(saveData = { users, posts, comments }) {

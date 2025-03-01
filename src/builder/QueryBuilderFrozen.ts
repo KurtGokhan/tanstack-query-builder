@@ -8,12 +8,12 @@ import {
   QueryClient,
   QueryFilters,
   QueryFunction,
-  QueryKeyHashFunction,
   UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
   UseMutationOptions,
   UseQueryResult,
   UseSuspenseInfiniteQueryResult,
+  hashKey,
   useInfiniteQuery,
   useIsFetching,
   useIsMutating,
@@ -43,18 +43,9 @@ export class QueryBuilderFrozen<
   TKey extends unknown[],
   TTags extends Record<string, unknown> = Record<string, unknown>,
 > {
-  public config: BuilderConfig<TVars, TData, TError, TKey>;
   protected declare _options: BuilderOptions<TVars, TData, TError, TKey>;
 
-  constructor(config: BuilderConfig<TVars, TData, TError, TKey>) {
-    this.config = {
-      ...config,
-      options: {
-        mutationKey: [getRandomKey()],
-        ...config?.options!,
-      },
-    };
-  }
+  constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {}
 
   protected mergeConfigs: (config: typeof this.config, other: Partial<typeof this.config>) => typeof this.config = (config, other) => {
     return {
@@ -76,9 +67,26 @@ export class QueryBuilderFrozen<
 
   //#region Query
 
-  getQueryFn: () => QueryFunction<TData, TKey, Partial<TVars>> = () => {
+  getQueryFn: (operationType?: 'query' | 'queries' | 'infiniteQuery') => QueryFunction<TData, TKey, Partial<TVars>> = (
+    operationType = 'query',
+  ) => {
     return ({ client, meta, queryKey, signal, pageParam }) => {
-      return this.config.queryFn({ client, meta, queryKey, signal, pageParam, originalQueryKey: queryKey });
+      return this.config.queryFn({
+        client,
+        meta,
+        queryKey,
+        signal,
+        pageParam,
+        originalQueryKey: queryKey,
+        operationType,
+      });
+    };
+  };
+
+  getQueryKeyHashFn: () => (key: TKey) => string = () => {
+    return (key) => {
+      const sanitized = this.config.queryKeySanitizer ? this.config.queryKeySanitizer(key) : key;
+      return hashKey(sanitized);
     };
   };
 
@@ -89,11 +97,12 @@ export class QueryBuilderFrozen<
   getQueryOptions: (
     vars: TVars,
     opts?: typeof this._options,
-  ) => WithRequired<BuilderOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey'> = (vars, opts) => {
+    operationType?: 'query' | 'queries' | 'infiniteQuery',
+  ) => WithRequired<BuilderOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey'> = (vars, opts, operationType) => {
     return mergeBuilderOptions([
       {
-        queryFn: this.getQueryFn(),
-        queryKeyHashFn: this.config.queryKeyHashFn,
+        queryFn: this.getQueryFn(operationType),
+        queryKeyHashFn: this.getQueryKeyHashFn(),
         queryKey: this.getQueryKey(vars),
       },
       this.config.options,
@@ -141,7 +150,7 @@ export class QueryBuilderFrozen<
     const mapKeys = queries.map((q) => q.mapKey);
 
     const queryList = queries.map(({ vars, options }) =>
-      this.getQueryOptions(this.mergeVars([sharedVars!, vars]), mergeBuilderOptions([sharedOpts, options])),
+      this.getQueryOptions(this.mergeVars([sharedVars!, vars]), mergeBuilderOptions([sharedOpts, options]), 'queries'),
     );
 
     const result = useHook({ queries: queryList }) as ResultType;
@@ -190,7 +199,7 @@ export class QueryBuilderFrozen<
       persister,
       behavior,
       ...options
-    } = this.getQueryOptions(vars, opts);
+    } = this.getQueryOptions(vars, opts, 'infiniteQuery');
     return {
       ...options,
       initialPageParam: typeof getInitialPageParam === 'function' ? getInitialPageParam() : getInitialPageParam!,
@@ -229,13 +238,18 @@ export class QueryBuilderFrozen<
         client: this.config.queryClient || queryClient,
         signal: new AbortController().signal,
         originalQueryKey: queryKey,
+        operationType: 'mutation',
       });
     };
   };
 
   private randomKey?: string;
   getMutationKey: () => MutationKey = () => {
-    return this.config.options?.mutationKey || [(this.randomKey ??= getRandomKey())];
+    if (this.config.options?.mutationKey) return this.config.options.mutationKey;
+
+    if (this.config.queryKeySanitizer && this.config.vars) return this.config.queryKeySanitizer([this.config.vars] as TKey);
+
+    return this.config.options?.mutationKey || [(this.randomKey ||= getRandomKey())];
   };
 
   getMutationOptions: (queryClient: QueryClient, opts?: typeof this._options) => UseMutationOptions<TData, TError, TVars> = (
@@ -263,7 +277,7 @@ export class QueryBuilderFrozen<
         if (filters?.predicate && !filters.predicate(m)) return false;
         if (vars == null) return true;
         if (!m.state.variables) return false;
-        return areKeysEqual([m.state.variables], [vars], this.config.queryKeyHashFn as QueryKeyHashFunction<readonly unknown[]>);
+        return areKeysEqual([m.state.variables], [vars], this.config.queryKeySanitizer);
       },
     };
   };
