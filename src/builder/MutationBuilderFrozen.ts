@@ -21,8 +21,7 @@ export type MutationBuilderConfig<TVars, TData, TError, TKey extends unknown[]> 
 
 export class MutationBuilderFrozen<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> {
   protected declare _config: MutationBuilderConfig<TVars, TData, TError, TKey>;
-  protected declare _options: typeof this._config.options;
-  protected declare _vars: TVars;
+  protected declare _options: UseMutationOptions<TData, TError, TVars>;
 
   constructor(
     public config: typeof this._config,

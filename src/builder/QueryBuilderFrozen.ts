@@ -1,22 +1,34 @@
 import {
   DataTag,
+  InfiniteData,
+  InfiniteQueryPageParamsOptions,
   QueryFilters,
   QueryFunction,
+  UseInfiniteQueryOptions,
+  UseInfiniteQueryResult,
   UseQueryOptions,
+  UseSuspenseInfiniteQueryResult,
+  useInfiniteQuery,
   useIsFetching,
+  usePrefetchInfiniteQuery,
   usePrefetchQuery,
   useQueries,
   useQuery,
+  useSuspenseInfiniteQuery,
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { FunctionType } from '../types/utils';
+import { FunctionType, TODO } from '../types/utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { BuilderConfig, BuilderQueriesResult } from './types';
 import { mergeQueryOptions, mergeVars } from './utils';
 
+export type QueryBuilderOptions<TVars, TData, TError, TKey extends unknown[]> = Partial<
+  UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType } & InfiniteQueryPageParamsOptions<TData, Partial<TVars>>
+>;
+
 export type QueryBuilderConfig<TVars, TData, TError, TKey extends unknown[]> = BuilderConfig<TVars, TData, TError, TKey> & {
-  options?: Partial<UseQueryOptions<TData, TError, TData, TKey> & { queryFn: FunctionType }>;
+  options?: QueryBuilderOptions<TVars, TData, TError, TKey>;
 };
 
 export class QueryBuilderFrozen<
@@ -27,8 +39,7 @@ export class QueryBuilderFrozen<
   TTags extends Record<string, unknown> = Record<string, unknown>,
 > {
   protected declare _config: QueryBuilderConfig<TVars, TData, TError, TKey>;
-  protected declare _options: typeof this._config.options;
-  protected declare _vars: TVars;
+  protected declare _options: QueryBuilderOptions<TVars, TData, TError, TKey>;
 
   constructor(public config: typeof this._config) {}
 
@@ -50,7 +61,7 @@ export class QueryBuilderFrozen<
     return this.config.preprocessorFn(vars);
   };
 
-  getQueryFn: () => QueryFunction<TData, TKey> = () => {
+  getQueryFn: () => QueryFunction<TData, TKey, Partial<TVars>> = () => {
     return ({ client, meta, queryKey, signal, pageParam }) => {
       return this.config.queryFn({ client, meta, queryKey, signal, pageParam, originalQueryKey: queryKey });
     };
@@ -73,6 +84,16 @@ export class QueryBuilderFrozen<
       this.config.options,
       opts,
     ]);
+  };
+
+  getInfiniteQueryOptions: (
+    vars: TVars,
+    opts?: typeof this._options,
+  ) => UseInfiniteQueryOptions<TData, TError, InfiniteData<TData, Partial<TVars>>, TData, TKey> & { queryFn: FunctionType } = (
+    vars,
+    opts,
+  ) => {
+    return this.getQueryOptions(vars, opts) as TODO;
   };
 
   useQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useQuery<TData, TError, TData, TKey>> = (vars, opts) => {
@@ -133,6 +154,24 @@ export class QueryBuilderFrozen<
 
   useSuspenseQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
     return this.useQueriesInternal(useSuspenseQueries)(queries, sharedVars, sharedOpts);
+  };
+
+  useInfiniteQuery: (vars: TVars, opts?: typeof this._options) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError> = (
+    vars,
+    opts,
+  ) => {
+    return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
+  };
+
+  usePrefetchInfiniteQuery: (vars: TVars, opts?: typeof this._options) => void = (vars, opts) => {
+    return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
+  };
+
+  useSuspenseInfiniteQuery: (
+    vars: TVars,
+    opts?: typeof this._options,
+  ) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError> = (vars, opts) => {
+    return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   };
 
   private _client?: QueryBuilderClient<TVars, TData, TError, TKey>;

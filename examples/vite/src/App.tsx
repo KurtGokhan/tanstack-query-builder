@@ -21,7 +21,17 @@ const baseMutation = baseQuery.asMutationBuilder();
 
 const resetMutation = baseMutation.withPath('/reset').withUpdates('*');
 
-const postsQuery = baseQuery.withTags('refreshable', 'posts').withPath('/posts').withData<PostData[]>().withSearch<{ page?: number }>();
+const postsQuery = baseQuery
+  .withTags('refreshable', 'posts')
+  .withPath('/posts')
+  .withData<PostData[]>()
+  .withSearch<{ page?: number }>()
+  .withConfig({
+    options: {
+      initialPageParam: { search: { page: 0 } },
+      getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
+    },
+  });
 
 const postQuery = baseQuery
   .withTags('refreshable')
@@ -77,7 +87,7 @@ const deletePostMutation = baseMutation.withMethod('delete').withPath('/posts/:i
 function App() {
   const [postId, setPostId] = useState<number | null>(null);
 
-  const posts = postsQuery.useQuery({}, { enabled: !postId });
+  const posts = postsQuery.useInfiniteQuery({}, { enabled: !postId });
   const reset = resetMutation.useMutation();
 
   const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
@@ -100,7 +110,7 @@ function App() {
         ? 'Loading...'
         : posts.isError
           ? posts.error.message
-          : posts.data?.map((post) => (
+          : posts.data?.pages?.flat().map((post) => (
               <div key={post.id}>
                 <a>
                   <h2
@@ -125,6 +135,12 @@ function App() {
                 <p>{post.body}</p>
               </div>
             ))}
+
+      {posts.hasNextPage && (
+        <button onClick={() => posts.fetchNextPage()} disabled={posts.isFetchingNextPage}>
+          Load next page
+        </button>
+      )}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { type QueryClient, type QueryState, useQueryClient } from '@tanstack/react-query';
+import { type InfiniteData, InfiniteQueryObserver, type QueryClient, type QueryState, useQueryClient } from '@tanstack/react-query';
 import { useStableCallback } from '../hooks/useStableCallback';
 import type { WithOptional } from '../types/utils';
 import { queryMatchesTag } from './operateOnTags';
@@ -46,7 +46,21 @@ export function updateTags({
 
     for (const q of list) {
       undos.push({ hash: q.queryHash, data: q.state.data });
-      setDataToExistingQuery(queryClient, q.queryHash, updaterFn(ctx, q.state.data), willInvalidate ? { isInvalidated: true } : undefined, {
+
+      let newData: unknown;
+      if (q.observers[0] && q.observers[0] instanceof InfiniteQueryObserver) {
+        const data = q.state.data as InfiniteData<unknown>;
+        if (data.pages && Array.isArray(data.pages)) {
+          newData = {
+            ...data,
+            pages: data.pages.map((page) => updaterFn(ctx, page)),
+          } as InfiniteData<unknown>;
+        }
+      } else {
+        newData = updaterFn(ctx, q.state.data);
+      }
+
+      setDataToExistingQuery(queryClient, q.queryHash, newData, willInvalidate ? { isInvalidated: true } : undefined, {
         updated: optimistic ? 'optimistic' : 'pessimistic',
       });
     }

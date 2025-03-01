@@ -8,17 +8,26 @@ export class QueryBuilderClient<TVars, TData, TError, TKey extends unknown[], TF
   readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
 
+  readonly ensureInfiniteData = (vars: TVars, opts?: typeof this._options) =>
+    this.builder.config.queryClient?.ensureInfiniteQueryData(this.builder.getInfiniteQueryOptions(vars, opts));
+
   readonly refetch = (vars: TVars, filters?: TFilters, opts?: RefetchOptions) =>
     this.builder.config.queryClient?.refetchQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
 
   readonly fetch = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.fetchQuery(this.builder.getQueryOptions(vars, opts));
 
+  readonly fetchInfinite = (vars: TVars, opts?: typeof this._options) =>
+    this.builder.config.queryClient?.fetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
+
   readonly isFetching = (vars: TVars, filters?: TFilters) =>
     this.builder.config.queryClient?.isFetching({ queryKey: this.builder.getQueryKey(vars), ...filters });
 
   readonly prefetch = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.prefetchQuery(this.builder.getQueryOptions(vars, opts));
+
+  readonly prefetchInfinite = (vars: TVars, opts?: typeof this._options) =>
+    this.builder.config.queryClient?.prefetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
 
   readonly reset = (vars: TVars, filters?: TFilters, opts?: ResetOptions) =>
     this.builder.config.queryClient?.resetQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
