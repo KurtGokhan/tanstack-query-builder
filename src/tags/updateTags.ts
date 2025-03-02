@@ -1,9 +1,16 @@
-import { type InfiniteData, InfiniteQueryObserver, type QueryClient, type QueryState } from '@tanstack/react-query';
+import { type InfiniteData, InfiniteQueryObserver, type QueryClient, QueryObserver, type QueryState } from '@tanstack/react-query';
 import { queryMatchesTag } from './operateOnTags';
 import type { QueryTagContext, QueryUpdateTag } from './types';
 import { getUpdater } from './updaters';
 
-export type UpdateTagsUndoer = { hash: string; data: unknown };
+export type UpdateTagsUndoer = {
+  hash: string;
+  data: unknown;
+  newData: unknown;
+  subscribe(): void;
+  dispose(): void;
+  undo(): void;
+};
 
 /**
  * Works similar to invalidateTags, but instead of invalidating queries, it updates them with the provided updater or the data resulting from the mutation.
@@ -43,34 +50,80 @@ export function updateTags({
     const willInvalidate = typeof tag !== 'object' || ['post', 'both'].includes(tag.invalidate || 'both');
 
     for (const q of list) {
-      undos.push({ hash: q.queryHash, data: q.state.data });
+      let isInfinite = false;
 
-      let newData: unknown;
-      if (q.observers[0] && q.observers[0] instanceof InfiniteQueryObserver) {
-        const data = q.state.data as InfiniteData<unknown>;
-        if (data.pages && Array.isArray(data.pages)) {
-          newData = {
-            ...data,
-            pages: data.pages.map((page) => updaterFn(ctx, page)),
-          } as InfiniteData<unknown>;
+      function getNewData() {
+        if (!updaterFn) return undefined;
+
+        let newData: unknown;
+        if (q.observers[0] && q.observers[0] instanceof InfiniteQueryObserver) {
+          isInfinite = true;
+          const data = q.state.data as InfiniteData<unknown>;
+          if (data.pages && Array.isArray(data.pages)) {
+            newData = {
+              ...data,
+              pages: data.pages.map((page) => updaterFn(ctx, page)),
+            } as InfiniteData<unknown>;
+          }
+        } else {
+          newData = updaterFn(ctx, q.state.data);
         }
-      } else {
-        newData = updaterFn(ctx, q.state.data);
+
+        return newData;
       }
 
-      setDataToExistingQuery(queryClient, q.queryHash, newData, willInvalidate ? { isInvalidated: true } : undefined, {
-        updated: optimistic ? 'optimistic' : 'pessimistic',
-      });
+      const newData = getNewData();
+
+      let observer: QueryObserver<any, any> | InfiniteQueryObserver<any, any> | null = null;
+
+      const updateType = optimistic ? ('optimistic' as const) : ('pessimistic' as const);
+      const meta = { updated: updateType };
+
+      let subscribePaused = false;
+      const undoObj: UpdateTagsUndoer = {
+        hash: q.queryHash,
+        data: q.state.data,
+        newData,
+        subscribe: () => {
+          subscribePaused = false;
+          observer = isInfinite
+            ? new InfiniteQueryObserver(queryClient, { ...(q.options as any), enabled: false })
+            : new QueryObserver(queryClient, { queryKey: q.queryKey, enabled: false });
+          observer.trackProp('data');
+
+          q.addObserver(observer);
+          observer.subscribe((ev) => {
+            if (subscribePaused) return;
+
+            const newData = getNewData();
+            undoObj.newData = newData;
+
+            subscribePaused = true;
+            setDataToExistingQuery(queryClient, undoObj.hash, newData, willInvalidate ? { isInvalidated: true } : undefined, meta);
+            subscribePaused = false;
+          });
+        },
+        dispose: () => {
+          if (!observer) return;
+          q.removeObserver(observer);
+          observer.destroy();
+          observer = null;
+          subscribePaused = true;
+        },
+        undo: () => {
+          undoObj.dispose();
+          setDataToExistingQuery(queryClient, undoObj.hash, undoObj.data, undefined, { updated: 'undone' });
+        },
+      };
+      undos.push(undoObj);
+
+      subscribePaused = true;
+      setDataToExistingQuery(queryClient, undoObj.hash, newData, willInvalidate ? { isInvalidated: true } : undefined, meta);
+      subscribePaused = false;
     }
   }
 
   return undos;
-}
-
-export function undoUpdateTags(undos: UpdateTagsUndoer[], queryClient: QueryClient) {
-  for (const { hash, data } of undos) {
-    setDataToExistingQuery(queryClient, hash, data, {}, { updated: 'undone' });
-  }
 }
 
 /**
@@ -88,6 +141,6 @@ function setDataToExistingQuery(
   },
 ) {
   const query = queryClient.getQueryCache().get(hash);
-  query?.setData(newData);
+  query?.setData(newData, { manual: true });
   if (state || meta) query?.setState(state || {}, { meta });
 }

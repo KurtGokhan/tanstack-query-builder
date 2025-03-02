@@ -83,6 +83,7 @@ const deletePostMutation = builder.withMethod('delete').withPath('/posts/:id').w
 });
 
 function App() {
+  const [enablePrefetch, setEnablePrefetch] = useState(false);
   const [postId, setPostId] = useState<number | null>(null);
 
   const posts = postsQuery.useInfiniteQuery({}, { enabled: postId != null });
@@ -104,6 +105,11 @@ function App() {
         Reset
       </button>
 
+      <label>
+        <input type="checkbox" onChange={(e) => setEnablePrefetch(e.target.checked)} checked={enablePrefetch} />
+        Enable prefetch
+      </label>
+
       {posts.isLoading
         ? 'Loading...'
         : posts.isError
@@ -111,19 +117,14 @@ function App() {
           : posts.data?.pages?.flat().map((post) => (
               <div key={post.id}>
                 <a>
-                  <h2
-                    onClick={() => setPostId(post.id)}
-                    onMouseOver={() => {
-                      postQuery.client.prefetch({ id: post.id });
-                    }}
-                  >
-                    {post.title}
+                  <h2 onClick={() => setPostId(post.id)} onMouseOver={() => enablePrefetch && postQuery.client.prefetch({ id: post.id })}>
+                    {post.id} - {post.title}
                   </h2>
                 </a>
 
                 <button
                   onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } })}
-                  disabled={deletePostMutation.client.isMutating() > 0}
+                  // disabled={deletePostMutation.client.isMutating() > 0}
                 >
                   Delete
                 </button>

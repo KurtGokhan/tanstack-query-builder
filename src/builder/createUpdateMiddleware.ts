@@ -1,7 +1,7 @@
 import { operateOnTags } from '../tags/operateOnTags';
 import { resolveTags } from '../tags/resolveTags';
 import type { QueryTagContext, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
-import { type UpdateTagsUndoer, undoUpdateTags, updateTags } from '../tags/updateTags';
+import { type UpdateTagsUndoer, updateTags } from '../tags/updateTags';
 import type { MiddlewareFn } from './createMiddlewareFunction';
 
 type CreateUpdateMiddleware = <TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>>(
@@ -15,33 +15,39 @@ export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
     type TagObj = QueryUpdateTagObject<any, any, any, any>;
     type TagCtx = QueryTagContext<any>;
 
-    let undos: UpdateTagsUndoer[] | null = null;
+    const undos: UpdateTagsUndoer[] = [];
     const invalidates: TagObj[] = [];
     const preCtx: TagCtx = { client: ctx.client, vars: ctx.vars, data: undefined };
 
     try {
       const preUpdates = resolveTags({ tags, ...preCtx }).filter((u) => u.optimistic);
-      undos = updateTags({
+      const preUndos = updateTags({
         queryClient: ctx.client,
         tags: preUpdates.filter((x) => x.updater),
         ctx: preCtx,
         optimistic: true,
       });
-      invalidates.push(...preUpdates);
 
-      const optToInvalidate = preUpdates.filter((tag) => ['pre', 'both'].includes(tag.invalidate || 'both'));
-      operateOnTags({ queryClient: ctx.client, tags: optToInvalidate }, { refetchType: 'none' });
+      invalidates.push(...preUpdates);
+      preUndos.forEach((undo) => undo.subscribe());
+      undos.push(...preUndos);
+
+      const preInvalidate = preUpdates.filter((tag) => ['pre', 'both'].includes(tag.invalidate || 'both'));
+      operateOnTags({ queryClient: ctx.client, tags: preInvalidate }, { refetchType: 'none' });
 
       const data = await next(ctx);
 
       const postCtx: TagCtx = { ...preCtx, data };
       const postUpdates = resolveTags({ tags, ...postCtx }).filter((u) => !u.optimistic);
-      updateTags({ queryClient: ctx.client, tags: postUpdates.filter((x) => x.updater), ctx: postCtx });
+      const postUndos = updateTags({ queryClient: ctx.client, tags: postUpdates.filter((x) => x.updater), ctx: postCtx });
+
       invalidates.push(...postUpdates);
+      postUndos.forEach((undo) => undo.subscribe());
+      undos.push(...postUndos);
 
       return data;
     } catch (error) {
-      if (undos?.length) undoUpdateTags(undos, ctx.client);
+      if (undos?.length) undos.forEach((undo) => undo.undo());
 
       const postCtx: TagCtx = { ...preCtx, error };
       const postUpdates = resolveTags({ tags, ...postCtx }).filter((u) => !u.optimistic);
@@ -49,12 +55,14 @@ export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
 
       throw error;
     } finally {
-      const tagsToInvalidate = invalidates.filter((tag) => ['post', 'both'].includes(tag.invalidate || 'both'));
+      const finalInvalidates = invalidates.filter((tag) => ['post', 'both'].includes(tag.invalidate || 'both'));
 
-      operateOnTags({ tags: tagsToInvalidate, queryClient: ctx.client });
+      operateOnTags({ tags: finalInvalidates, queryClient: ctx.client }).finally(() => {
+        if (undos?.length) undos.forEach((undo) => undo.dispose());
+      });
 
       if (config.syncChannel) {
-        const tagsToSync = tagsToInvalidate.map(({ type, id }) => ({ type, id }));
+        const tagsToSync = finalInvalidates.map(({ type, id }) => ({ type, id }));
         config.syncChannel.postMessage({ type: 'invalidate', data: tagsToSync });
       }
     }
