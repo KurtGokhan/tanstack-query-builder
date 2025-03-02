@@ -28,10 +28,9 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { operateOnTags } from '../tags/operateOnTags';
-import { TagOperationOptions } from '../tags/types';
 import { FunctionType, TODO, WithRequired } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
+import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
 import { BuilderOptions, mergeBuilderOptions } from './options';
 import { BuilderConfig, BuilderQueriesResult } from './types';
 import { areKeysEqual, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
@@ -301,25 +300,13 @@ export class QueryBuilderFrozen<
 
   //#endregion
 
-  /**
-   * This hook returns a function that can be used to operate on queries based on tags.
-   * It also returns the mutation object that can be used to track the state of the operation.
-   * See `operateOnTags` for more information.
-   */
-  useTagOperation(opts?: TagOperationOptions<TTags> | void) {
-    const queryClient = useQueryClient();
-    const mutationFn: MutationFunction<unknown, TagOperationOptions<TTags> | void> = (
-      { tags = [], operation = 'invalidate', filters, options } = opts || {},
-    ) => operateOnTags({ queryClient, tags, operation }, filters, options);
-
-    const mutation = useMutation({ mutationFn });
-    const operate = mutation.mutateAsync;
-
-    return [operate, mutation] as const;
-  }
-
   private _client?: QueryBuilderClient<TVars, TData, TError, TKey, TTags>;
   get client() {
     return (this._client ??= new QueryBuilderClient(this));
+  }
+
+  private _tags?: QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>;
+  get tags() {
+    return (this._tags ??= new QueryBuilderTagsManager(this));
   }
 }

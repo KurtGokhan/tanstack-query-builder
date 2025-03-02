@@ -50,7 +50,7 @@ export async function httpRequest<TData = unknown>(options: HttpRequestOptions) 
 
   const resolvedHeaders = new Headers(headers as HeadersInit);
 
-  const resolvedCredentials: RequestInit['credentials'] = resolveCredentials(credentials);
+  const resolvedCredentials = resolveCredentials(credentials);
 
   const request = new Request(finalUrl, {
     method,

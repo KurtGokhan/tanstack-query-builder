@@ -9,10 +9,6 @@ import type {
   SetDataOptions,
 } from '@tanstack/react-query';
 import { MutationObserver } from '@tanstack/react-query';
-import { operateOnTags } from '../tags/operateOnTags';
-import { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../tags/types';
-import { updateTags } from '../tags/updateTags';
-import { WithOptional } from '../type-utils';
 import { QueryBuilderFrozen } from './QueryBuilderFrozen';
 import { BuilderConfig } from './types';
 
@@ -86,22 +82,6 @@ export class QueryBuilderClient<
     const observer = new MutationObserver<TData, TError, TVars>(client, options);
     return observer.mutate(vars, options).finally(() => observer.reset());
   };
-
-  readonly operateTags = ({ tags = [], operation = 'invalidate', filters, options }: TagOperationOptions<TTags>) =>
-    operateOnTags({ queryClient: this.builder.config.queryClient!, tags, operation }, filters, options);
-
-  /**
-   * This function can be used to operate on queries based on tags.
-   */
-  readonly updateTags = ({
-    tags = [],
-    ctx: { client = this.builder.config.queryClient, ...ctx },
-    optimistic = false,
-  }: {
-    tags: readonly QueryUpdateTag<TVars, TData, TError, TTags>[];
-    ctx: WithOptional<QueryTagContext<TVars, TData, TError>, 'client'>;
-    optimistic?: boolean;
-  }) => updateTags({ tags, queryClient: client!, ctx: { client: client!, ...ctx }, optimistic });
 }
 
 type SetDataUpdater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);

@@ -90,14 +90,14 @@ function App() {
 
   const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
 
-  const refresh = () => builder.client.operateTags({ tags: 'refreshable', operation: 'reset' });
+  const reload = () => builder.tags.reset({ tags: 'refreshable' });
 
   if (postId != null) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
 
   return (
     <>
-      <button onClick={refresh} disabled={posts.isFetching}>
-        Refresh
+      <button onClick={reload} disabled={posts.isFetching}>
+        Reload
       </button>
 
       <button onClick={() => reset.mutateAsync({})} disabled={reset.isPending}>
