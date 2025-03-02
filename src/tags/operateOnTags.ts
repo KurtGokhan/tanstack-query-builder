@@ -34,7 +34,7 @@ export function queryMatchesTag(queryClient: QueryClient, query: Query, tag: Que
   return false;
 }
 
-export type OperateOnTagsOperation = 'invalidate' | 'refetch' | 'reset' | 'cancel' | 'remove';
+export type TagOperation = 'invalidate' | 'refetch' | 'reset' | 'cancel' | 'remove';
 
 /**
  * Operates on queries on a query client that match the given tags.
@@ -49,7 +49,7 @@ export function operateOnTags(
   }: {
     tags: QueryTagStaticOption;
     queryClient: QueryClient;
-    operation?: OperateOnTagsOperation;
+    operation?: TagOperation;
   },
   filters?: InvalidateQueryFilters,
   options?: InvalidateOptions,

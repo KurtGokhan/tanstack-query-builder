@@ -1,10 +1,9 @@
-import { BuilderConfig } from './types';
+import type { BuilderConfig } from './types';
 import type { BuilderQueryContext, BuilderQueryFn } from './types';
 
 export type MiddlewareFn<TVars, TData, TError, TKey extends unknown[]> = (
   context: MiddlewareContext<TKey>,
   next: MiddlewareNextFn<any, any, any, any>,
-  throwError: (error: TError) => never,
   config: BuilderConfig<TVars, TData, TError, TKey>,
 ) => TData | Promise<TData>;
 
@@ -23,15 +22,11 @@ const createMiddlewareContext = <TKey extends unknown[]>(context: BuilderQueryCo
   };
 };
 
-const throwError = (error: any): never => {
-  throw error;
-};
-
 export const createMiddlewareFunction = <TVars, TData, TError, TKey extends unknown[]>(
   originalFn: BuilderQueryFn<any, any, any, any>,
   middleware: MiddlewareFn<TVars, TData, TError, TKey>,
   config: BuilderConfig<TVars, TData, TError, TKey>,
 ): BuilderQueryFn<TVars, TData, TError, TKey> => {
   return async (context) =>
-    middleware(createMiddlewareContext<TKey>(context), async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }), throwError, config);
+    middleware(createMiddlewareContext<TKey>(context), async (ctx) => originalFn({ ...context, queryKey: [ctx.vars] }), config);
 };

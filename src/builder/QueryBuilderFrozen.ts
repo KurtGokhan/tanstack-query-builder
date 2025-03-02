@@ -28,11 +28,11 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import { FunctionType, TODO, WithRequired } from '../type-utils';
+import type { FunctionType, TODO, WithRequired } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
-import { BuilderOptions, mergeBuilderOptions } from './options';
-import { BuilderConfig, BuilderQueriesResult } from './types';
+import { type BuilderOptions, mergeBuilderOptions } from './options';
+import type { BuilderConfig, BuilderQueriesResult } from './types';
 import { areKeysEqual, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
 export class QueryBuilderFrozen<

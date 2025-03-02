@@ -1,10 +1,10 @@
-import { MutationFunction, useMutation, useQueryClient } from '@tanstack/react-query';
+import { type MutationFunction, useMutation, useQueryClient } from '@tanstack/react-query';
 import { operateOnTags } from '../tags/operateOnTags';
-import { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../tags/types';
+import type { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../tags/types';
 import { updateTags } from '../tags/updateTags';
-import { WithOptional } from '../type-utils';
-import { QueryBuilderFrozen } from './QueryBuilderFrozen';
-import { BuilderConfig } from './types';
+import type { WithOptional } from '../type-utils';
+import type { QueryBuilderFrozen } from './QueryBuilderFrozen';
+import type { BuilderConfig } from './types';
 
 export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> {
   private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];

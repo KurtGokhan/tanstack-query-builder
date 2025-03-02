@@ -1,10 +1,10 @@
-import { RequestError } from '../http/errors';
-import { ExtractPathParams, HttpMethod } from '../http/types';
-import { WithOptional } from '../type-utils';
+import type { RequestError } from '../http/errors';
+import type { ExtractPathParams, HttpMethod } from '../http/types';
+import type { WithOptional } from '../type-utils';
 import { QueryBuilder } from './QueryBuilder';
-import { BuilderConfig } from './types';
-import { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
-import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './utils';
+import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './http-utils';
+import type { BuilderConfig } from './types';
+import type { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
 
 export class HttpQueryBuilder<
   TParam = unknown,

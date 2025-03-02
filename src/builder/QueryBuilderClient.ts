@@ -9,8 +9,8 @@ import type {
   SetDataOptions,
 } from '@tanstack/react-query';
 import { MutationObserver } from '@tanstack/react-query';
-import { QueryBuilderFrozen } from './QueryBuilderFrozen';
-import { BuilderConfig } from './types';
+import type { QueryBuilderFrozen } from './QueryBuilderFrozen';
+import type { BuilderConfig } from './types';
 
 export class QueryBuilderClient<
   TVars,

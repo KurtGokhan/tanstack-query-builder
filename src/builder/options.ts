@@ -1,5 +1,5 @@
-import { GetNextPageParamFunction, GetPreviousPageParamFunction, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
-import { FunctionType, WithOptional } from '../type-utils';
+import type { GetNextPageParamFunction, GetPreviousPageParamFunction, UseMutationOptions, UseQueryOptions } from '@tanstack/react-query';
+import type { FunctionType, WithOptional } from '../type-utils';
 import { mergeQueryEnabled } from './utils';
 
 export type BuilderOptions<TVars, TData, TError, TKey extends unknown[]> = WithOptional<

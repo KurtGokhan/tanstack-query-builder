@@ -1,4 +1,4 @@
-import { QueryTagObject, QueryUpdater, QueryUpdaterFn } from './types';
+import type { QueryTagObject, QueryUpdater, QueryUpdaterFn } from './types';
 
 export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown>(
   updater: QueryUpdater<TVars, TData, TErr, TTarget>,

@@ -1,7 +1,7 @@
 import { hashKey } from '@tanstack/react-query';
 import { resolveTags } from '../tags/resolveTags';
-import { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
-import { MiddlewareFn } from './createMiddlewareFunction';
+import type { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/types';
+import type { MiddlewareFn } from './createMiddlewareFunction';
 
 type CreateTagMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
   tags: QueryTagOption<any, any, any>[],
@@ -9,7 +9,7 @@ type CreateTagMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
 ) => MiddlewareFn<TVars, TData, TError, TKey>;
 
 export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
-  async function tagMiddlware(ctx, next, _, config) {
+  async function tagMiddlware(ctx, next, config) {
     if (ctx.operationType === 'mutation') return next(ctx);
 
     let resolvedTags: QueryTagObject[] = [];

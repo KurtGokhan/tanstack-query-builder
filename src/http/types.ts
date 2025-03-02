@@ -1,5 +1,5 @@
-import { Prettify } from '../type-utils';
-import { RequestConcurrencyOptions } from './concurrency';
+import type { Prettify } from '../type-utils';
+import type { RequestConcurrencyOptions } from './concurrency';
 
 export type HttpRequestHeaders = {
   [header: string]: string | string[];

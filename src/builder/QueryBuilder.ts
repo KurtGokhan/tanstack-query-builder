@@ -1,11 +1,11 @@
 import { operateOnTags } from '../tags/operateOnTags';
-import { QueryTagObject, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
+import type { QueryTagObject, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { QueryBuilderFrozen } from './QueryBuilderFrozen';
-import { MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
-import { PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from './createPreprocessorFunction';
+import { type MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
+import { type PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from './createPreprocessorFunction';
 import { createTagMiddleware } from './createTagMiddleware';
 import { createUpdateMiddleware } from './createUpdateMiddleware';
-import { BuilderConfig } from './types';
+import type { BuilderConfig } from './types';
 import { mergeVars } from './utils';
 
 export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> extends QueryBuilderFrozen<

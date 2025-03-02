@@ -1,6 +1,6 @@
 import type { InvalidateOptions, InvalidateQueryFilters, QueryClient } from '@tanstack/react-query';
-import { KeysOfValue, StringLiteral } from '../type-utils';
-import { OperateOnTagsOperation } from './operateOnTags';
+import type { KeysOfValue, StringLiteral } from '../type-utils';
+import type { TagOperation } from './operateOnTags';
 
 export type TagMap = Record<string, unknown>;
 
@@ -85,7 +85,7 @@ export type QueryTagCache = Record<string | number, Record<string, QueryTagObjec
 
 export type TagOperationOptions<TMap extends TagMap = TagMap> = {
   tags?: QueryTagStaticOption<QueryTagObject<TMap>>;
-  operation?: OperateOnTagsOperation;
+  operation?: TagOperation;
   filters?: InvalidateQueryFilters;
   options?: InvalidateOptions;
 };

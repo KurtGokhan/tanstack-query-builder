@@ -1,7 +1,7 @@
 import { requestConcurrency } from './concurrency';
 import { Deferred } from './deferred';
 import { AbortError, RequestError, TimeoutError } from './errors';
-import { HttpRequestOptions } from './types';
+import type { HttpRequestOptions } from './types';
 import { createHttpUrl, inferErrorMessage, resolveCredentials } from './utils';
 
 const CONTENT_TYPE_HEADER = 'content-type';
