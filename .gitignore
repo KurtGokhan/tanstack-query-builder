@@ -15,7 +15,7 @@
 # production
 /build
 /artifacts
-/dist
+dist
 
 # misc
 .DS_Store

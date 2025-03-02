@@ -1,7 +1,12 @@
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+/// <reference types="node" />
 
-copyFileSync('./README.md', './dist/README.md');
-copyFileSync('./LICENSE', './dist/LICENSE');
+import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const rootFile = (path: string) => fileURLToPath(import.meta.resolve(path));
+
+copyFileSync(rootFile('../README.md'), './dist/README.md');
+copyFileSync(rootFile('../LICENSE'), './dist/LICENSE');
 
 const content = readFileSync('./package.json', 'utf-8');
 const { scripts, devDependencies, private: _, overrides, volta, 'lint-staged': __, workspaces, ...parsed }: any = JSON.parse(content);

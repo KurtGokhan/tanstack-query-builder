@@ -1,0 +1,64 @@
+{
+  "name": "react-query-builder",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "private": true,
+  "description": "The simplest way to start building with Tanstack Query",
+  "homepage": "https://gkurt.com/react-query-builder/",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/KurtGokhan/react-query-builder.git"
+  },
+  "keywords": ["react", "react-query", "tanstack-query", "optimistic-updates", "tag-based-invalidation"],
+  "license": "MIT",
+  "author": {
+    "name": "Gokhan Kurt",
+    "email": "krtgkn@gmail.com",
+    "url": "https://github.com/KurtGokhan"
+  },
+  "files": ["*", "!*.tsbuildinfo"],
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "react-query-builder@dev": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "start": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest",
+    "prepare": "npm run bundle",
+    "bundle": "npm run build && node ../../scripts/copyPackageJson.mts",
+    "publish": "npm run bundle && npm publish ./dist",
+    "attw": "npx --yes @arethetypeswrong/cli --pack dist",
+    "publint": "cd dist && npx publint --yes"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.66.11",
+    "@types/react": "19.0.10",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.7"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.66.0",
+    "@types/react": ">=18",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    }
+  }
+}
