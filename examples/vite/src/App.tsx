@@ -1,11 +1,14 @@
 import { setupWorker } from 'msw/browser';
 import { useRef, useState } from 'react';
-import { CommentData, PostData, baseUrl, mockHandlers } from 'react-query-builder-example-mocks';
+import { CommentData, PostData, baseUrl, getMockHandlers } from 'react-query-builder-example-mocks';
 import './App.css';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { HttpQueryBuilder } from 'react-query-builder';
 import { queryClient } from './client';
+import './index.css';
 
-await setupWorker(...mockHandlers).start({
+await setupWorker(...getMockHandlers()).start({
   onUnhandledRequest: 'bypass',
   quiet: true,
 });
@@ -87,7 +90,7 @@ const deletePostMutation = builder.withMethod('delete').withPath('/posts/:id').w
   updater: 'delete-params-by-id',
 });
 
-function App() {
+function AppCore() {
   const [enablePrefetch, setEnablePrefetch] = useState(false);
   const [postId, setPostId] = useState<number | null>(null);
 
@@ -221,4 +224,11 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
   );
 }
 
-export default App;
+export function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppCore />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
