@@ -10,7 +10,8 @@ describe('HttpQueryBuilder', () => {
       .withBody<{ name: string }>()
       .withHeaders<{ 'x-token': string }>()
       .withParams<{ id: number }>()
-      .withSearch<{ q: string }>();
+      .withSearch<{ q: string }>()
+      .withMeta<{ mt: string }>();
 
     type TVars = Parameters<typeof htp.useQuery>[0];
     expectTypeOf<TVars['params']>().toEqualTypeOf<{ id: number }>();
@@ -25,7 +26,7 @@ describe('HttpQueryBuilder', () => {
           headers: { 'x-token': string };
           params: { id: number };
           search: { q: string };
-          meta?: unknown;
+          meta: { mt: string };
         }
       >
     >();

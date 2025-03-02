@@ -1,9 +1,14 @@
-import './mocks';
+import { setupWorker } from 'msw/browser';
 import { useRef, useState } from 'react';
-import { CommentData, PostData, baseUrl } from './mocks';
+import { CommentData, PostData, baseUrl, mockHandlers } from 'react-query-builder-example-mocks';
 import './App.css';
 import { HttpQueryBuilder } from 'react-query-builder';
 import { queryClient } from './client';
+
+await setupWorker(...mockHandlers).start({
+  onUnhandledRequest: 'bypass',
+  quiet: true,
+});
 
 const builder = new HttpQueryBuilder({
   queryClient,

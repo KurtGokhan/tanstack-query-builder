@@ -1,5 +1,4 @@
 import { http, HttpResponse, delay } from 'msw';
-import { setupWorker } from 'msw/browser';
 import { createMockComments } from './comments';
 import { PostData, createMockPosts } from './posts';
 
@@ -57,7 +56,7 @@ window.addEventListener('storage', (event) => {
   }
 });
 
-const handlers = [
+export const mockHandlers = [
   http.post(`${baseUrl}/reset`, async () => {
     await delay();
     const allData = recreateMockData();
@@ -122,8 +121,3 @@ const handlers = [
     return HttpResponse.json(posts[postIndex]);
   }),
 ];
-
-await setupWorker(...handlers).start({
-  onUnhandledRequest: 'bypass',
-  quiet: true,
-});
