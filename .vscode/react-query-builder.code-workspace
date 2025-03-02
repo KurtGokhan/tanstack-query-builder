@@ -13,15 +13,11 @@
       "path": "../website"
     },
     {
-      "name": "🌩️ Vite Example",
+      "name": "⚡ Vite Example",
       "path": "../examples/vite"
     }
   ],
   "settings": {
-    "files.exclude": {
-      "website": true,
-      "examples": true
-    },
     "editor.codeActionsOnSave": {
       "quickfix.biome": "explicit",
       "source.organizeImports.biome": "explicit",
