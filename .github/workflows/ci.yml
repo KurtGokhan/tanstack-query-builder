@@ -23,5 +23,9 @@ jobs:
       - run: npx playwright install chromium --with-deps
       - run: npm run check
       - run: npm test
+
       - run: npm run attw
+        working-directory: ./packages/react-query-builder
+
       - run: npm run publint
+        working-directory: ./packages/react-query-builder
