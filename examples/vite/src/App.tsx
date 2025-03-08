@@ -33,7 +33,7 @@ const postsQuery = builder
   .withData<PostData[]>()
   .withSearch<{ page?: number }>()
   .withPagination({
-    getInitialPageParam: { search: { page: 0 } },
+    initialPageParam: { search: { page: 0 } },
     getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
   });
 
@@ -92,7 +92,7 @@ function AppCore() {
   const [enablePrefetch, setEnablePrefetch] = useState(false);
   const [postId, setPostId] = useState<number | null>(null);
 
-  const posts = postsQuery.useInfiniteQuery({}, { enabled: postId != null });
+  const posts = postsQuery.useInfiniteQuery({}, { enabled: postId == null });
   const reset = resetMutation.useMutation();
 
   const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);

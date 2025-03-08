@@ -102,9 +102,9 @@ export class QueryBuilder<
   }
 
   withPagination(
-    paginationConfig: BuilderPaginationOptions<TVars, TData, TError, TKey>,
+    paginationOptions: BuilderPaginationOptions<TVars, TData, TError, TKey>,
   ): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'withPagination'> {
-    return this.withConfig({ options: paginationConfig }) as any;
+    return this.withConfig({ paginationOptions }) as any;
   }
 
   freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, TFlags> {

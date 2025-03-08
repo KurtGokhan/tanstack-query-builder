@@ -4,10 +4,8 @@ import type { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../ta
 import { updateTags } from '../tags/updateTags';
 import type { WithOptional } from '../type-utils';
 import type { QueryBuilderFrozen } from './QueryBuilderFrozen';
-import type { BuilderConfig } from './types';
 
 export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> {
-  private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];
   constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags>) {}
 
   /**

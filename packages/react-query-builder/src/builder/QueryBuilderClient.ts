@@ -21,12 +21,13 @@ export class QueryBuilderClient<
   TFilters = QueryFilters<TData, TError, TData, TKey>,
 > {
   private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];
+  private declare _pgOptions: BuilderConfig<TVars, TData, TError, TKey>['paginationOptions'];
   constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {}
 
   readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
 
-  readonly ensureInfiniteData = (vars: TVars, opts?: typeof this._options) =>
+  readonly ensureInfiniteData = (vars: TVars, opts?: typeof this._pgOptions) =>
     this.builder.config.queryClient?.ensureInfiniteQueryData(this.builder.getInfiniteQueryOptions(vars, opts));
 
   readonly refetch = (vars: TVars, filters?: TFilters, opts?: RefetchOptions) =>
@@ -35,7 +36,7 @@ export class QueryBuilderClient<
   readonly fetch = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.fetchQuery(this.builder.getQueryOptions(vars, opts));
 
-  readonly fetchInfinite = (vars: TVars, opts?: typeof this._options) =>
+  readonly fetchInfinite = (vars: TVars, opts?: typeof this._pgOptions) =>
     this.builder.config.queryClient?.fetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
 
   readonly isFetching = (vars: TVars, filters?: TFilters) =>
@@ -44,7 +45,7 @@ export class QueryBuilderClient<
   readonly prefetch = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.prefetchQuery(this.builder.getQueryOptions(vars, opts));
 
-  readonly prefetchInfinite = (vars: TVars, opts?: typeof this._options) =>
+  readonly prefetchInfinite = (vars: TVars, opts?: typeof this._pgOptions) =>
     this.builder.config.queryClient?.prefetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
 
   readonly reset = (vars: TVars, filters?: TFilters, opts?: ResetOptions) =>

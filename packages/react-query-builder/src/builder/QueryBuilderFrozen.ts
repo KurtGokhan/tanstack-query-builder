@@ -8,7 +8,6 @@ import {
   QueryClient,
   QueryFilters,
   QueryFunction,
-  UseInfiniteQueryOptions,
   UseInfiniteQueryResult,
   UseMutationOptions,
   UseQueryResult,
@@ -28,10 +27,10 @@ import {
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import type { FunctionType, TODO, WithRequired } from '../type-utils';
+import type { TODO, WithRequired } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
-import { type BuilderOptions, mergeBuilderOptions } from './options';
+import { type BuilderOptions, BuilderPaginationOptions, mergeBuilderOptions, mergeBuilderPaginationOptions } from './options';
 import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination } from './types';
 import { areKeysEqual, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
@@ -44,6 +43,7 @@ export class QueryBuilderFrozen<
   TFlags extends BuilderFlags = '',
 > {
   protected declare _options: BuilderOptions<TVars, TData, TError, TKey>;
+  protected declare _pgOptions: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>;
 
   constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {}
 
@@ -53,6 +53,7 @@ export class QueryBuilderFrozen<
       ...other,
       vars: mergeVars([config.vars, other.vars], other.mergeVars || config.mergeVars),
       options: mergeBuilderOptions([config.options, other.options]),
+      paginationOptions: mergeBuilderPaginationOptions([config.paginationOptions, other.paginationOptions]),
     };
   };
 
@@ -179,13 +180,12 @@ export class QueryBuilderFrozen<
   //#region InfiniteQuery
 
   getInfiniteQueryOptions = ((vars, opts) => {
-    // TODO: eventually allow these options as well
+    // Remove incompatible options from the base query options
     const {
       enabled,
       staleTime,
       initialData,
       placeholderData,
-      getInitialPageParam,
       refetchInterval,
       refetchOnWindowFocus,
       refetchOnReconnect,
@@ -194,38 +194,42 @@ export class QueryBuilderFrozen<
       persister,
       behavior,
       ...options
-    } = this.getQueryOptions(vars, opts, 'infiniteQuery');
-    return {
-      ...options,
-      initialPageParam: typeof getInitialPageParam === 'function' ? getInitialPageParam() : getInitialPageParam!,
-      getNextPageParam: options.getNextPageParam!,
-    };
+    } = this.config.options || {};
+
+    return mergeBuilderPaginationOptions([
+      {
+        queryFn: this.getQueryFn('infiniteQuery'),
+        queryKeyHashFn: this.getQueryKeyHashFn(),
+        queryKey: this.getQueryKey(vars),
+      },
+      options,
+      this.config.paginationOptions,
+      opts,
+    ]);
   }) as HasPagination<
     TFlags,
     (
       vars: TVars,
-      opts?: typeof this._options,
-    ) => UseInfiniteQueryOptions<TData, TError, InfiniteData<TData, Partial<TVars>>, TData, TKey, Partial<TVars>> & {
-      queryFn: FunctionType;
-    }
+      opts?: typeof this._pgOptions,
+    ) => WithRequired<BuilderPaginationOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey' | 'initialPageParam'>
   >;
 
   useInfiniteQuery = ((vars, opts) => {
     return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   }) as HasPagination<
     TFlags,
-    (vars: TVars, opts?: typeof this._options) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
+    (vars: TVars, opts?: typeof this._pgOptions) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
   >;
 
   usePrefetchInfiniteQuery = ((vars, opts) => {
     return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  }) as HasPagination<TFlags, (vars: TVars, opts?: typeof this._options) => void>;
+  }) as HasPagination<TFlags, (vars: TVars, opts?: typeof this._pgOptions) => void>;
 
   useSuspenseInfiniteQuery = ((vars, opts) => {
     return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   }) as HasPagination<
     TFlags,
-    (vars: TVars, opts?: typeof this._options) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
+    (vars: TVars, opts?: typeof this._pgOptions) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
   >;
 
   //#endregion

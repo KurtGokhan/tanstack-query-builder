@@ -1,7 +1,7 @@
 import type { QueryClient, QueryFunctionContext, QueryKey, UseQueryResult } from '@tanstack/react-query';
 import type { HttpRequestOptions } from '../http/types';
 import type { HasFlag, Prettify } from '../type-utils';
-import type { BuilderOptions } from './options';
+import type { BuilderOptions, BuilderPaginationOptions } from './options';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   queryFn: BuilderQueryFn<TVars, TData, TError, TKey>;
@@ -12,6 +12,7 @@ export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   syncChannel?: BroadcastChannel;
   preprocessorFn?: (vars: TVars) => TKey[0];
   options?: BuilderOptions<TVars, TData, TError, TKey>;
+  paginationOptions?: BuilderPaginationOptions<TVars, TData, TError, TKey>;
 };
 
 export type HttpBaseHeaders = Record<string, string | string[]>;
