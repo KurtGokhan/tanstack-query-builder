@@ -21,7 +21,7 @@ export class QueryBuilderClient<
   TFilters = QueryFilters<TData, TError, TData, TKey>,
 > {
   private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];
-  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags>) {}
+  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {}
 
   readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
     this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));

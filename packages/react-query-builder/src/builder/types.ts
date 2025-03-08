@@ -1,6 +1,6 @@
 import type { QueryClient, QueryFunctionContext, QueryKey, UseQueryResult } from '@tanstack/react-query';
 import type { HttpRequestOptions } from '../http/types';
-import type { Prettify } from '../type-utils';
+import type { HasFlag, Prettify } from '../type-utils';
 import type { BuilderOptions } from './options';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
@@ -55,3 +55,8 @@ export type BuilderQueryContext<TQueryKey extends unknown[]> = QueryFunctionCont
 export type BuilderQueryFn<TVars, TData, TError, TKey extends unknown[]> = (context: BuilderQueryContext<TKey>) => TData | Promise<TData>;
 
 export type BuilderKeySanitizerFn<TKey extends unknown[]> = (key: TKey) => QueryKey;
+
+export type HasClient<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'withClient', TTruthy>;
+export type HasPagination<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'withPagination', TTruthy>;
+
+export type BuilderFlags = '' | 'withClient' | 'withPagination';

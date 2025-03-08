@@ -2,15 +2,17 @@ import type { GetNextPageParamFunction, GetPreviousPageParamFunction, UseMutatio
 import type { FunctionType, WithOptional } from '../type-utils';
 import { mergeQueryEnabled } from './utils';
 
+export type BuilderPaginationOptions<TVars, TData, TError, TKey extends unknown[]> = {
+  getNextPageParam: GetNextPageParamFunction<Partial<TVars>, TData>;
+  getPreviousPageParam?: GetPreviousPageParamFunction<Partial<TVars>, TData>;
+  getInitialPageParam?: Partial<TVars> | (() => Partial<TVars>);
+};
+
 export type BuilderOptions<TVars, TData, TError, TKey extends unknown[]> = WithOptional<
   UseQueryOptions<TData, TError, TData, TKey>,
   'queryFn' | 'queryKey'
-> & {
-  queryFn?: FunctionType;
-  getInitialPageParam?: Partial<TVars> | (() => Partial<TVars>);
-  getPreviousPageParam?: GetPreviousPageParamFunction<Partial<TVars>, TData>;
-  getNextPageParam?: GetNextPageParamFunction<Partial<TVars>, TData>;
-} & Pick<
+> & { queryFn?: FunctionType } & Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>> &
+  Pick<
     UseMutationOptions<TData, TError, TVars>,
     'onError' | 'onMutate' | 'onSettled' | 'onSuccess' | 'gcTime' | 'mutationKey' | 'networkMode' | 'retry' | 'retryDelay' | 'throwOnError'
   >;

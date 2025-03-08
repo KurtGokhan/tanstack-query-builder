@@ -32,7 +32,7 @@ import type { FunctionType, TODO, WithRequired } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
 import { type BuilderOptions, mergeBuilderOptions } from './options';
-import type { BuilderConfig, BuilderQueriesResult } from './types';
+import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination } from './types';
 import { areKeysEqual, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
 export class QueryBuilderFrozen<
@@ -41,6 +41,7 @@ export class QueryBuilderFrozen<
   TError,
   TKey extends unknown[],
   TTags extends Record<string, unknown> = Record<string, unknown>,
+  TFlags extends BuilderFlags = '',
 > {
   protected declare _options: BuilderOptions<TVars, TData, TError, TKey>;
 
@@ -177,12 +178,7 @@ export class QueryBuilderFrozen<
 
   //#region InfiniteQuery
 
-  getInfiniteQueryOptions: (
-    vars: TVars,
-    opts?: typeof this._options,
-  ) => UseInfiniteQueryOptions<TData, TError, InfiniteData<TData, Partial<TVars>>, TData, TKey, Partial<TVars>> & {
-    queryFn: FunctionType;
-  } = (vars, opts) => {
+  getInfiniteQueryOptions = ((vars, opts) => {
     // TODO: eventually allow these options as well
     const {
       enabled,
@@ -204,25 +200,33 @@ export class QueryBuilderFrozen<
       initialPageParam: typeof getInitialPageParam === 'function' ? getInitialPageParam() : getInitialPageParam!,
       getNextPageParam: options.getNextPageParam!,
     };
-  };
+  }) as HasPagination<
+    TFlags,
+    (
+      vars: TVars,
+      opts?: typeof this._options,
+    ) => UseInfiniteQueryOptions<TData, TError, InfiniteData<TData, Partial<TVars>>, TData, TKey, Partial<TVars>> & {
+      queryFn: FunctionType;
+    }
+  >;
 
-  useInfiniteQuery: (vars: TVars, opts?: typeof this._options) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError> = (
-    vars,
-    opts,
-  ) => {
+  useInfiniteQuery = ((vars, opts) => {
     return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  };
+  }) as HasPagination<
+    TFlags,
+    (vars: TVars, opts?: typeof this._options) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
+  >;
 
-  usePrefetchInfiniteQuery: (vars: TVars, opts?: typeof this._options) => void = (vars, opts) => {
+  usePrefetchInfiniteQuery = ((vars, opts) => {
     return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  };
+  }) as HasPagination<TFlags, (vars: TVars, opts?: typeof this._options) => void>;
 
-  useSuspenseInfiniteQuery: (
-    vars: TVars,
-    opts?: typeof this._options,
-  ) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError> = (vars, opts) => {
+  useSuspenseInfiniteQuery = ((vars, opts) => {
     return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  };
+  }) as HasPagination<
+    TFlags,
+    (vars: TVars, opts?: typeof this._options) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
+  >;
 
   //#endregion
 
@@ -301,8 +305,8 @@ export class QueryBuilderFrozen<
   //#endregion
 
   private _client?: QueryBuilderClient<TVars, TData, TError, TKey, TTags>;
-  get client() {
-    return (this._client ??= new QueryBuilderClient(this));
+  get client(): HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>> {
+    return (this._client ??= new QueryBuilderClient(this)) as any;
   }
 
   private _tags?: QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>;

@@ -1,6 +1,6 @@
 import { Prettify } from '../src/type-utils';
 
-describe('playground', () => {
+describe('axioms', () => {
   it('unknown & type', () => {
     type T = { readonly sym: unique symbol };
     type TTest = T & unknown;

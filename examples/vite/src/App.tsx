@@ -14,9 +14,9 @@ await setupWorker(...getMockHandlers()).start({
 });
 
 const builder = new HttpQueryBuilder({
-  queryClient,
   syncChannel: new BroadcastChannel('react-query-builder'),
 })
+  .withClient(queryClient)
   .withBaseUrl(baseUrl)
   .withTagTypes<{
     post: PostData;
@@ -32,11 +32,9 @@ const postsQuery = builder
   .withPath('/posts')
   .withData<PostData[]>()
   .withSearch<{ page?: number }>()
-  .withConfig({
-    options: {
-      getInitialPageParam: { search: { page: 0 } },
-      getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
-    },
+  .withPagination({
+    getInitialPageParam: { search: { page: 0 } },
+    getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
   });
 
 const postQuery = builder

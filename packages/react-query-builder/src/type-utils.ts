@@ -18,3 +18,7 @@ export type FunctionType = (...args: any[]) => any;
 export type KeysOfValue<T, TCondition> = {
   [K in keyof T]: T[K] extends TCondition ? K : never;
 }[keyof T];
+
+export type HasFlag<T extends string, TFlag extends string, TTrue = true, TFalse = never> = T extends `${string}${TFlag}${string}`
+  ? TTrue
+  : TFalse;

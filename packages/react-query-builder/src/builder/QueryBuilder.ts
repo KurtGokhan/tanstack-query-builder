@@ -1,3 +1,4 @@
+import { QueryClient } from '@tanstack/react-query';
 import { operateOnTags } from '../tags/operateOnTags';
 import type { QueryTagObject, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { QueryBuilderFrozen } from './QueryBuilderFrozen';
@@ -5,20 +6,22 @@ import { type MiddlewareFn, createMiddlewareFunction } from './createMiddlewareF
 import { type PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from './createPreprocessorFunction';
 import { createTagMiddleware } from './createTagMiddleware';
 import { createUpdateMiddleware } from './createUpdateMiddleware';
-import type { BuilderConfig } from './types';
+import { BuilderPaginationOptions } from './options';
+import type { BuilderConfig, BuilderFlags } from './types';
 import { mergeVars } from './utils';
 
-export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> extends QueryBuilderFrozen<
+export class QueryBuilder<
   TVars,
   TData,
   TError,
-  TKey,
-  TTags
-> {
+  TKey extends unknown[],
+  TTags extends Record<string, unknown>,
+  TFlags extends BuilderFlags = '',
+> extends QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, TFlags> {
   withVars<TVars$ = TVars, const TReset extends boolean = false>(
     vars?: TVars$,
     resetVars = false as TReset,
-  ): QueryBuilder<TVars$, TData, TError, TKey, TTags> {
+  ): QueryBuilder<TVars$, TData, TError, TKey, TTags, TFlags> {
     if (!vars) return this as any;
 
     return this.withConfig({
@@ -26,11 +29,11 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
     }) as any;
   }
 
-  withData<TData$>(): QueryBuilder<TVars, TData$, TError, TKey, TTags> {
+  withData<TData$>(): QueryBuilder<TVars, TData$, TError, TKey, TTags, TFlags> {
     return this as any;
   }
 
-  withError<TError$>(): QueryBuilder<TVars, TData, TError$, TKey, TTags> {
+  withError<TError$>(): QueryBuilder<TVars, TData, TError$, TKey, TTags, TFlags> {
     return this as any;
   }
 
@@ -41,10 +44,10 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
   }
 
   withPreprocessor(preprocessor: PreprocessorFn<TVars, TVars>): this;
-  withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey, TTags>;
+  withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey, TTags, TFlags>;
 
-  withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey, TTags> {
-    const newBuilder = this as unknown as QueryBuilder<TVars$, TData, TError, TKey, TTags>;
+  withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey, TTags, TFlags> {
+    const newBuilder = this as unknown as QueryBuilder<TVars$, TData, TError, TKey, TTags, TFlags>;
 
     return newBuilder.withConfig({
       preprocessorFn: createPreprocessorFunction(preprocessor, this.config.preprocessorFn || identityPreprocessor),
@@ -54,13 +57,13 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
   withMiddleware(middleware: MiddlewareFn<TVars, TData, TError, TKey>): this;
   withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
     middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
-  ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags>;
+  ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags, TFlags>;
 
   withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
     middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
     config?: Partial<BuilderConfig<TVars$, TData$, TError$, TKey>>,
-  ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags> {
-    const newBuilder = this as unknown as QueryBuilder<TVars$, TData$, TError$, TKey, TTags>;
+  ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags, TFlags> {
+    const newBuilder = this as unknown as QueryBuilder<TVars$, TData$, TError$, TKey, TTags, TFlags>;
 
     return newBuilder.withConfig({
       ...config,
@@ -88,13 +91,23 @@ export class QueryBuilder<TVars, TData, TError, TKey extends unknown[], TTags ex
     return this.withMiddleware(createUpdateMiddleware<TVars, TData, TError, TKey, TTags>(tags)) as unknown as this;
   }
 
-  withTagTypes<TTag extends string, T = unknown>(): QueryBuilder<TVars, TData, TError, TKey, TTags & Record<TTag, T>>;
-  withTagTypes<TTags$ extends Record<string, unknown>>(): QueryBuilder<TVars, TData, TError, TKey, TTags$>;
+  withTagTypes<TTag extends string, T = unknown>(): QueryBuilder<TVars, TData, TError, TKey, TTags & Record<TTag, T>, TFlags>;
+  withTagTypes<TTags$ extends Record<string, unknown>>(): QueryBuilder<TVars, TData, TError, TKey, TTags$, TFlags>;
   withTagTypes(): this {
     return this as any;
   }
 
-  freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags> {
+  withClient(queryClient: QueryClient): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'withClient'> {
+    return this.withConfig({ queryClient }) as any;
+  }
+
+  withPagination(
+    paginationConfig: BuilderPaginationOptions<TVars, TData, TError, TKey>,
+  ): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'withPagination'> {
+    return this.withConfig({ options: paginationConfig }) as any;
+  }
+
+  freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, TFlags> {
     return this;
   }
 }
