@@ -80,6 +80,7 @@ export class HttpQueryBuilder<
   declare withError: <TError$>() => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError$, TTags, TFlags, TKey>;
   declare withClient: (
     queryClient: QueryClient,
+    opts?: { syncTagsWithOtherTabs?: boolean },
   ) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'withClient', TKey>;
 
   declare withPagination: (

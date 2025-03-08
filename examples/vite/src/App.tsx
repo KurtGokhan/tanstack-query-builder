@@ -13,17 +13,12 @@ await setupWorker(...getMockHandlers()).start({
   quiet: true,
 });
 
-const builder = new HttpQueryBuilder({
-  syncChannel: new BroadcastChannel('react-query-builder'),
-})
-  .withClient(queryClient)
-  .withBaseUrl(baseUrl)
-  .withTagTypes<{
-    post: PostData;
-    posts: PostData[];
-    comments: CommentData;
-    refreshable: unknown;
-  }>();
+const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUrl(baseUrl).withTagTypes<{
+  post: PostData;
+  posts: PostData[];
+  comments: CommentData;
+  refreshable: unknown;
+}>();
 
 const resetMutation = builder.withPath('/reset').withMethod('post').withUpdates('*');
 

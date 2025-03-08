@@ -74,16 +74,6 @@ export class QueryBuilder<
   static tagCacheId = 0;
 
   withTags(...tags: QueryTagOption<TVars, TData, TError, QueryTagObject<TTags>>[]): this {
-    if (this.config.queryClient) {
-      this.config.syncChannel?.addEventListener('message', (event) => {
-        const { type, data } = event.data;
-        if (type === 'invalidate') {
-          const queryClient = this.config.queryClient;
-          if (queryClient) operateOnTags({ queryClient, tags: data });
-        }
-      });
-    }
-
     return this.withMiddleware(createTagMiddleware(tags.flat(), QueryBuilder.tagCacheId++)) as unknown as this;
   }
 
@@ -97,8 +87,21 @@ export class QueryBuilder<
     return this as any;
   }
 
-  withClient(queryClient: QueryClient): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'withClient'> {
-    return this.withConfig({ queryClient }) as any;
+  withClient(
+    queryClient: QueryClient,
+    { syncTagsWithOtherTabs = true }: { syncTagsWithOtherTabs?: boolean } = {},
+  ): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'withClient'> {
+    let syncChannel: BroadcastChannel | undefined = undefined;
+
+    if (syncTagsWithOtherTabs) {
+      syncChannel = new BroadcastChannel('react-query-builder-tags');
+      syncChannel.addEventListener('message', (event) => {
+        const { type, data } = event.data;
+        if (type === 'invalidate') operateOnTags({ queryClient, tags: data });
+      });
+    }
+
+    return this.withConfig({ queryClient, syncChannel }) as any;
   }
 
   withPagination(
