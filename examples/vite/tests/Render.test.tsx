@@ -33,3 +33,42 @@ test('Loads next page when clicked', async () => {
   await loadBtn.click();
   await expect.element(getByText('Load next page')).not.toBeInTheDocument();
 });
+
+test('Deletes posts immediately on clicking delete button', async () => {
+  const { getByText } = render(<App />);
+
+  const el = getByText('1 - 10 Tips for Better Time Management');
+
+  await expect.element(el).toBeInTheDocument();
+  await getByText('Delete').nth(1).click();
+
+  await expect.element(el).not.toBeInTheDocument();
+});
+
+test('Deletes deletes but reverts the deletion after server fails', async () => {
+  const { getByText } = render(<App />);
+
+  const el = getByText('0 - Exploring the Future of AI');
+
+  await expect.element(el).toBeInTheDocument();
+  await getByText('Delete').nth(0).click();
+
+  await expect.element(el).not.toBeInTheDocument();
+
+  await expect.element(el, { timeout: 4000 }).toBeInTheDocument();
+  await expect.element(getByText('Error deleting post')).toBeInTheDocument();
+});
+
+test('Posts deleted in other tabs are synced', async () => {
+  const { getByText } = render(<App />);
+
+  const el = getByText('1 - 10 Tips for Better Time Management');
+
+  await expect.element(el).toBeInTheDocument();
+
+  // Simulate delete in another tab and send sync message
+  await fetch(`${baseUrl}/posts/1`, { method: 'DELETE' });
+  new BroadcastChannel('react-query-builder-tags').postMessage({ type: 'invalidate', data: [{ type: 'posts' }] });
+
+  await expect.element(el).not.toBeInTheDocument();
+});

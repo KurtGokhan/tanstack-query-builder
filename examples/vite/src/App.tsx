@@ -124,8 +124,8 @@ function AppCore() {
                 </a>
 
                 <button
-                  onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } })}
-                  // disabled={deletePostMutation.client.isMutating() > 0}
+                  onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } }).catch(() => {})}
+                  disabled={deletePostMutation.client.isMutating({ params: { id: post.id } }) > 0}
                 >
                   Delete
                 </button>

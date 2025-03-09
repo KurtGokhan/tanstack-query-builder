@@ -277,6 +277,8 @@ export class QueryBuilderFrozen<
     vars,
     filters,
   ) => {
+    const baseKey = this.preprocessVars(this.mergeVars([this.config.vars, vars]));
+
     return {
       mutationKey: this.getMutationKey(),
       ...filters,
@@ -284,7 +286,9 @@ export class QueryBuilderFrozen<
         if (filters?.predicate && !filters.predicate(m)) return false;
         if (vars == null) return true;
         if (!m.state.variables) return false;
-        return areKeysEqual([m.state.variables], [vars], this.config.queryKeySanitizer);
+
+        const curKey = this.preprocessVars(this.mergeVars([this.config.vars, m.state.variables]));
+        return areKeysEqual([curKey], [baseKey], this.config.queryKeySanitizer);
       },
     };
   };

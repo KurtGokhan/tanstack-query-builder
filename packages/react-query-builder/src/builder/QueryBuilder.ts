@@ -93,7 +93,7 @@ export class QueryBuilder<
   ): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'withClient'> {
     let syncChannel: BroadcastChannel | undefined = undefined;
 
-    if (syncTagsWithOtherTabs) {
+    if (syncTagsWithOtherTabs && typeof BroadcastChannel !== 'undefined') {
       syncChannel = new BroadcastChannel('react-query-builder-tags');
       syncChannel.addEventListener('message', (event) => {
         const { type, data } = event.data;
