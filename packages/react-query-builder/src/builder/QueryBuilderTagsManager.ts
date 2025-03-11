@@ -6,7 +6,7 @@ import type { WithOptional } from '../type-utils';
 import type { QueryBuilderFrozen } from './QueryBuilderFrozen';
 
 export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> {
-  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags>) {}
+  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {}
 
   /**
    * This hook returns a function that can be used to operate on queries based on tags.

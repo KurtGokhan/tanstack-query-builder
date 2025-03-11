@@ -318,7 +318,7 @@ export class QueryBuilderFrozen<
   }
 
   private _tags?: QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>;
-  get tags() {
-    return (this._tags ??= new QueryBuilderTagsManager(this));
+  get tags(): HasClient<TFlags, QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>> {
+    return (this._tags ??= new QueryBuilderTagsManager(this)) as any;
   }
 }
