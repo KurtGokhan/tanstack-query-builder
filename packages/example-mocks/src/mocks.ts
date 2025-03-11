@@ -23,8 +23,9 @@ function createMockData() {
   return { users, posts, comments };
 }
 
-export function getMockHandlers() {
+export function getMockHandlers(withLocalStorage = true) {
   function saveMockData(saveData = { users, posts, comments }) {
+    if (!withLocalStorage) return;
     localStorage.setItem('mockData', JSON.stringify(saveData));
   }
 
@@ -35,11 +36,13 @@ export function getMockHandlers() {
   }
 
   function getMockData() {
-    const ls = localStorage.getItem('mockData');
     try {
-      if (ls) {
-        const data = JSON.parse(ls);
-        if (data.users && data.posts && data.comments) return data as ReturnType<typeof createMockData>;
+      if (withLocalStorage) {
+        const ls = localStorage.getItem('mockData');
+        if (ls) {
+          const data = JSON.parse(ls);
+          if (data.users && data.posts && data.comments) return data as ReturnType<typeof createMockData>;
+        }
       }
     } catch (e) {}
 

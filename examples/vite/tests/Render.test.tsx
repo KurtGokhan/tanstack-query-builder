@@ -2,9 +2,11 @@ import { baseUrl } from 'react-query-builder-example-mocks';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { App } from '../src/App';
+import { queryClient } from '../src/client';
 
 beforeEach(async () => {
   await fetch(`${baseUrl}/reset`, { method: 'POST' });
+  queryClient.clear();
 });
 
 test('Renders the app', async () => {
@@ -45,7 +47,7 @@ test('Deletes posts immediately on clicking delete button', async () => {
   await expect.element(el).not.toBeInTheDocument();
 });
 
-test('Deletes deletes but reverts the deletion after server fails', async () => {
+test('Deletes the post but reverts the deletion after server fails', async () => {
   const { getByText } = render(<App />);
 
   const el = getByText('0 - Exploring the Future of AI');

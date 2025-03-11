@@ -8,7 +8,9 @@ import { HttpQueryBuilder } from 'react-query-builder';
 import { queryClient } from './client';
 import './index.css';
 
-await setupWorker(...getMockHandlers()).start({
+const isTest = import.meta.env.MODE === 'test';
+
+await setupWorker(...getMockHandlers(!isTest)).start({
   onUnhandledRequest: 'bypass',
   quiet: true,
 });
