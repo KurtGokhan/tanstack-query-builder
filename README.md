@@ -35,29 +35,31 @@ Following code loads a list of Posts from an API, and presents a Delete button t
 When a Post is deleted, the list query is automatically invalidated and refetched to show the up-to-date data.
 
 ```tsx
-import { HttpMutationBuilder, HttpQueryBuilder } from "react-query-builder";
-
-const baseUrl = "https://jsonplaceholder.typicode.com";
-const baseQuery = new HttpQueryBuilder().withBaseUrl(baseUrl);
-const baseMutation = new HttpMutationBuilder().withBaseUrl(baseUrl);
+import { HttpQueryBuilder } from "react-query-builder";
 
 type PostData = { id: number; title: string; body: string; userId: number };
 
-const postsQuery = baseQuery
+const builder = new HttpQueryBuilder()
+  .withBaseUrl("https://jsonplaceholder.typicode.com")
+  .withTagTypes<{
+    posts: PostData[];
+    refreshable: unknown;
+  }>();
+
+const postsQuery = builder
   .withTags("refreshable", "posts")
   .withPath("/posts")
   .withData<PostData[]>();
 
-const deletePostMutation = baseMutation
+const deletePostMutation = builder
   .withUpdates("posts")
   .withMethod("delete")
   .withPath("/posts/:id");
 
 export function MyApp() {
+  const [refresh] = builder.tags.useOperation({ tags: "refreshable" });
   const posts = postsQuery.useQuery({});
   const deletePost = deletePostMutation.useMutation();
-
-  const [refresh] = useOperateOnTags({ tags: "refreshable" });
 
   const onDelete = (id: number) => deletePost.mutateAsync({ params: { id } });
 
@@ -65,6 +67,8 @@ export function MyApp() {
 
   return (
     <>
+      <button onClick={() => refresh()}>Refresh all posts</button>
+
       {posts.data.map((post) => (
         <div key={post.id}>
           <h2>{post.title}</h2>
@@ -78,8 +82,6 @@ export function MyApp() {
           </button>
         </div>
       ))}
-
-      <button onClick={() => refresh()}>Refresh all posts</button>
     </>
   );
 }
