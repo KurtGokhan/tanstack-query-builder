@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: { exclude: ['react-query-builder'] },
+  optimizeDeps: { exclude: ['tanstack-query-builder'] },
   test: {
     globals: true,
     includeTaskLocation: true,

@@ -1,13 +1,13 @@
 {
-  "name": "react-query-builder",
+  "name": "tanstack-query-builder",
   "version": "1.0.0",
   "type": "commonjs",
   "private": true,
   "description": "The simplest way to start building with Tanstack Query",
-  "homepage": "https://gkurt.com/react-query-builder/",
+  "homepage": "https://gkurt.com/tanstack-query-builder/",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/KurtGokhan/react-query-builder.git"
+    "url": "git+ssh://git@github.com/KurtGokhan/tanstack-query-builder.git"
   },
   "keywords": ["react", "react-query", "tanstack-query", "optimistic-updates", "tag-based-invalidation"],
   "license": "MIT",
@@ -23,7 +23,7 @@
   "main": "./dist/index.js",
   "exports": {
     ".": {
-      "react-query-builder@dev": "./src/index.ts",
+      "tanstack-query-builder@dev": "./src/index.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.js"
     }

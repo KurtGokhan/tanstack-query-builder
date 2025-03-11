@@ -1,8 +1,8 @@
-[![npm](https://img.shields.io/npm/v/react-query-builder?style=for-the-badge)](https://www.npmjs.com/package/react-query-builder)
-[![NPM](https://img.shields.io/npm/l/react-query-builder?style=for-the-badge)](https://github.com/KurtGokhan/react-query-builder/blob/main/LICENSE)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/KurtGokhan/react-query-builder/ci.yml?style=for-the-badge)](https://github.com/KurtGokhan/react-query-builder/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/tanstack-query-builder?style=for-the-badge)](https://www.npmjs.com/package/tanstack-query-builder)
+[![NPM](https://img.shields.io/npm/l/tanstack-query-builder?style=for-the-badge)](https://github.com/KurtGokhan/tanstack-query-builder/blob/main/LICENSE)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/KurtGokhan/tanstack-query-builder/ci.yml?style=for-the-badge)](https://github.com/KurtGokhan/tanstack-query-builder/actions/workflows/ci.yml)
 
-# React Query Builder
+# Tanstack Query Builder
 
 The simplest way to start building with Tanstack Query.
 
@@ -10,7 +10,7 @@ This library builds on top of Tanstack Query to provide out-of-the-box functiona
 
 It uses the builder pattern, the best pattern for working with complex Typescript types.
 
-[Visit the docs →](https://gkurt.com/react-query-builder/)
+[Visit the docs →](https://gkurt.com/tanstack-query-builder/)
 
 ## Features
 
@@ -36,7 +36,7 @@ When a Post is deleted, the list query is automatically invalidated and refetche
 
 ```tsx
 import { QueryClient } from "@tanstack/react-query";
-import { HttpQueryBuilder } from "react-query-builder";
+import { HttpQueryBuilder } from "tanstack-query-builder";
 
 type PostData = { id: number; title: string; body: string; userId: number };
 
@@ -95,4 +95,4 @@ export function MyApp() {
 }
 ```
 
-For more examples and documentation, [Visit the docs →](https://gkurt.com/react-query-builder/)
+For more examples and documentation, [Visit the docs →](https://gkurt.com/tanstack-query-builder/)

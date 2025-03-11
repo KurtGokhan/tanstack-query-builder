@@ -5,19 +5,19 @@ const { themes } = require('prism-react-renderer');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'React Query Builder',
+  title: 'Tanstack Query Builder',
   tagline: 'Pragmatic utilities for React Query',
 
   // Set the production url of your site here
   url: 'https://gkurt.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/react-query-builder/',
+  baseUrl: '/tanstack-query-builder/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'KurtGokhan', // Usually your GitHub org/user name.
-  projectName: 'react-query-builder', // Usually your repo name.
+  projectName: 'tanstack-query-builder', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -40,7 +40,7 @@ const config = {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          // editUrl: 'https://github.com/KurtGokhan/react-query-builder/',
+          // editUrl: 'https://github.com/KurtGokhan/tanstack-query-builder/',
 
           remarkPlugins: [[require('@docusaurus/remark-plugin-npm2yarn'), { sync: true, converters: ['yarn', 'pnpm', 'bun'] }]],
         },
@@ -58,10 +58,10 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'React Query Builder',
+        title: 'Tanstack Query Builder',
         items: [
           {
-            href: 'https://github.com/KurtGokhan/react-query-builder',
+            href: 'https://github.com/KurtGokhan/tanstack-query-builder',
             label: 'GitHub',
             position: 'right',
           },

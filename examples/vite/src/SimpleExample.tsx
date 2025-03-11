@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { HttpQueryBuilder } from 'react-query-builder';
+import { HttpQueryBuilder } from 'tanstack-query-builder';
 
 type PostData = { id: number; title: string; body: string; userId: number };
 

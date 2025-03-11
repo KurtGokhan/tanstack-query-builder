@@ -25,7 +25,7 @@ jobs:
       - run: npm test
 
       - run: npm run attw
-        working-directory: ./packages/react-query-builder
+        working-directory: ./packages/tanstack-query-builder
 
       - run: npm run publint
-        working-directory: ./packages/react-query-builder
+        working-directory: ./packages/tanstack-query-builder

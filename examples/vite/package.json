@@ -1,5 +1,5 @@
 {
-  "name": "react-query-builder-example-vite",
+  "name": "tanstack-query-builder-example-vite",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -15,8 +15,8 @@
     "@tanstack/react-query-devtools": "^5.66.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-query-builder": "*",
-    "react-query-builder-example-mocks": "*"
+    "tanstack-query-builder": "*",
+    "tanstack-query-builder-example-mocks": "*"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",

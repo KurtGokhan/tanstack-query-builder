@@ -94,7 +94,7 @@ export class QueryBuilder<
     let syncChannel: BroadcastChannel | undefined = undefined;
 
     if (syncTagsWithOtherTabs && typeof BroadcastChannel !== 'undefined') {
-      syncChannel = new BroadcastChannel('react-query-builder-tags');
+      syncChannel = new BroadcastChannel('tanstack-query-builder-tags');
       syncChannel.addEventListener('message', (event) => {
         const { type, data } = event.data;
         if (type === 'invalidate') operateOnTags({ queryClient, tags: data });

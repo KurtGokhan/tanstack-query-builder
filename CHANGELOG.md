@@ -1,1 +1,1 @@
-# react-query-builder
+# tanstack-query-builder

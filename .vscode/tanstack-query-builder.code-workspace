@@ -5,8 +5,8 @@
       "path": ".."
     },
     {
-      "name": "📦 React Query Builder",
-      "path": "../packages/react-query-builder"
+      "name": "📦 Tanstack Query Builder",
+      "path": "../packages/tanstack-query-builder"
     },
     {
       "name": "🌐 Website",

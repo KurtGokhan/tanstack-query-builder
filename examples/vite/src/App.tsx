@@ -1,10 +1,10 @@
 import { setupWorker } from 'msw/browser';
 import { useRef, useState } from 'react';
-import { CommentData, PostData, baseUrl, getMockHandlers } from 'react-query-builder-example-mocks';
+import { CommentData, PostData, baseUrl, getMockHandlers } from 'tanstack-query-builder-example-mocks';
 import './App.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { HttpQueryBuilder } from 'react-query-builder';
+import { HttpQueryBuilder } from 'tanstack-query-builder';
 import { queryClient } from './client';
 import './index.css';
 

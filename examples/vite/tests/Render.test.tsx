@@ -1,4 +1,4 @@
-import { baseUrl } from 'react-query-builder-example-mocks';
+import { baseUrl } from 'tanstack-query-builder-example-mocks';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { App } from '../src/App';
@@ -70,7 +70,7 @@ test('Posts deleted in other tabs are synced', async () => {
 
   // Simulate delete in another tab and send sync message
   await fetch(`${baseUrl}/posts/1`, { method: 'DELETE' });
-  new BroadcastChannel('react-query-builder-tags').postMessage({ type: 'invalidate', data: [{ type: 'posts' }] });
+  new BroadcastChannel('tanstack-query-builder-tags').postMessage({ type: 'invalidate', data: [{ type: 'posts' }] });
 
   await expect.element(el).not.toBeInTheDocument();
 });
