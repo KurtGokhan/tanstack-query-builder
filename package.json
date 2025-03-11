@@ -21,7 +21,8 @@
     "lint": "biome lint",
     "format": "biome format",
     "check": "biome check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "version": "npm version $npm_package_version --workspaces --git-tag-version false --ignore-scripts && git add '**/package.json'"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
