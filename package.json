@@ -1,6 +1,6 @@
 {
   "name": "tanstack-query-builder-dev",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "type": "commonjs",
   "private": true,
   "description": "The simplest way to start building with Tanstack Query",
