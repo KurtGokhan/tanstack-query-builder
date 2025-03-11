@@ -1,0 +1,31 @@
+# See: https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-nodejs-packages
+
+name: Publish Package to NPM
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+
+      - run: npm run publish
+        working-directory: ./packages/tanstack-query-builder
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
