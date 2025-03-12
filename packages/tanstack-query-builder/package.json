@@ -32,11 +32,11 @@
     "start": "tsup --watch",
     "build": "tsup",
     "test": "vitest",
-    "prepare": "npm run bundle",
-    "bundle": "npm run build && node ../../scripts/copyPackageJson.mts",
+    "prepare": "npm run build",
+    "prepack": "node ../../scripts/copyPackageJson.mts",
     "attw": "npx --yes @arethetypeswrong/cli --pack dist",
     "publint": "cd dist && npx --yes publint",
-    "publish": "npm run bundle && npm run attw && npm run publint && npm publish ./dist --provenance --access public"
+    "publish": "npm run build && npm run prepack && npm run attw && npm run publint && npm publish ./dist --provenance --access public"
   },
   "devDependencies": {
     "@tanstack/react-query": "^5.66.11",
