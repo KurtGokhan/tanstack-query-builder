@@ -1,4 +1,0 @@
-{
-  "compilerOptions": { "declaration": false, "resolveJsonModule": true },
-  "references": [{ "path": "./tsconfig.lib.json" }, { "path": "./tsconfig.test.json" }]
-}
