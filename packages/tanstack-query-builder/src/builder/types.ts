@@ -1,6 +1,5 @@
 import type { QueryClient, QueryFunctionContext, QueryKey, UseQueryResult } from '@tanstack/react-query';
-import type { HttpRequestOptions } from '../http/types';
-import type { HasFlag, Prettify } from '../type-utils';
+import type { HasFlag } from '../type-utils';
 import type { BuilderOptions, BuilderPaginationOptions } from './options';
 
 export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
@@ -14,31 +13,6 @@ export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   options?: BuilderOptions<TVars, TData, TError, TKey>;
   paginationOptions?: BuilderPaginationOptions<TVars, TData, TError, TKey>;
 };
-
-export type HttpBaseHeaders = Record<string, string | string[]>;
-export type HttpBaseParams = Record<string | number, unknown>;
-export type HttpBaseSearch = Record<string | number, unknown>;
-
-export type HttpBuilderBaseVars = Omit<HttpRequestOptions, 'body' | 'headers' | 'params' | 'search' | 'meta'>;
-
-type WhenRequired<T, TReq> = T extends undefined
-  ? Partial<TReq>
-  : unknown extends T
-    ? Partial<TReq>
-    : T extends null
-      ? Partial<TReq>
-      : Partial<T> extends T
-        ? Partial<TReq>
-        : TReq;
-
-export type HttpBuilderVars<TParam = unknown, TSearch = unknown, TBody = unknown, THeaders = unknown, TMeta = unknown> = Prettify<
-  HttpBuilderBaseVars &
-    WhenRequired<TParam, { params: TParam }> &
-    WhenRequired<TSearch, { search: TSearch }> &
-    WhenRequired<TBody, { body: TBody }> &
-    WhenRequired<THeaders, { headers: THeaders }> &
-    WhenRequired<TMeta, { meta: TMeta }>
->;
 
 export type BuilderMergeVarsFn<TVars> = (vars1: TVars | Partial<TVars>, vars2: TVars | Partial<TVars>) => TVars | Partial<TVars>;
 

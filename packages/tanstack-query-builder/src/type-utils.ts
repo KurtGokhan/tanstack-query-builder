@@ -22,3 +22,13 @@ export type KeysOfValue<T, TCondition> = {
 export type HasFlag<T extends string, TFlag extends string, TTrue = true, TFalse = never> = T extends `${string}${TFlag}${string}`
   ? TTrue
   : TFalse;
+
+export type WhenRequired<T, TReq> = T extends undefined
+  ? Partial<TReq>
+  : unknown extends T
+    ? Partial<TReq>
+    : T extends null
+      ? Partial<TReq>
+      : Partial<T> extends T
+        ? Partial<TReq>
+        : TReq;

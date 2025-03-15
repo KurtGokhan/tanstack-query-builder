@@ -1,5 +1,5 @@
 import { RequestError } from './errors';
-import type { HttpRequestOptions, HttpRequestPathParams } from './types';
+import type { HttpRequestOptions, HttpRequestPathParams } from './request-types';
 
 function prepareParams(params: Record<string, unknown>): Record<string, string> {
   const newParams: Record<string, string> = {};

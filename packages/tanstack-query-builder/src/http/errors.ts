@@ -1,4 +1,4 @@
-import type { HttpRequestOptions } from './types';
+import type { HttpRequestOptions } from './request-types';
 
 type RequestErrorInit = Pick<RequestError, 'options' | 'request' | 'response' | 'body' | 'cause'>;
 

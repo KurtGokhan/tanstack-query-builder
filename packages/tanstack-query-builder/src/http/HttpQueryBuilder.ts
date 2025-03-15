@@ -2,11 +2,11 @@ import { QueryClient } from '@tanstack/react-query';
 import { QueryBuilder } from '../builder/QueryBuilder';
 import type { BuilderPaginationOptions } from '../builder/options';
 import type { BuilderConfig, BuilderFlags } from '../builder/types';
-import type { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from '../builder/types';
 import type { RequestError } from '../http/errors';
-import type { ExtractPathParams, HttpMethod } from '../http/types';
 import type { WithOptional } from '../type-utils';
+import type { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './builder-types';
 import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './builder-utils';
+import type { ExtractPathParams, HttpMethod } from './request-types';
 
 export class HttpQueryBuilder<
   TParam = unknown,

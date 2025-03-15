@@ -1,4 +1,5 @@
-import type { BuilderKeySanitizerFn, BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from '../builder/types';
+import type { BuilderKeySanitizerFn, BuilderMergeVarsFn, BuilderQueryFn } from '../builder/types';
+import type { HttpBuilderVars } from './builder-types';
 import { httpRequest } from './request';
 import { createHttpUrl } from './request-utils';
 
