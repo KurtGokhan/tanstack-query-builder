@@ -1,6 +1,6 @@
-import { httpRequest } from '../http/request';
-import { createHttpUrl } from '../http/utils';
-import type { BuilderKeySanitizerFn, BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from './types';
+import type { BuilderKeySanitizerFn, BuilderMergeVarsFn, BuilderQueryFn, HttpBuilderVars } from '../builder/types';
+import { httpRequest } from './request';
+import { createHttpUrl } from './request-utils';
 
 export function createHttpMergeVarsFn<TVars extends HttpBuilderVars>(): BuilderMergeVarsFn<TVars> {
   const mergeHttpVars: BuilderMergeVarsFn<TVars> = (v1, v2) => {

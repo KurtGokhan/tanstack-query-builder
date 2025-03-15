@@ -1,5 +1,5 @@
-import { HttpQueryBuilder } from '../src/builder/HttpQueryBuilder';
 import { HttpBuilderBaseVars } from '../src/builder/types';
+import { HttpQueryBuilder } from '../src/http/HttpQueryBuilder';
 import { PathParam } from '../src/http/types';
 import { Prettify } from '../src/type-utils';
 

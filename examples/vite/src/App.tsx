@@ -4,7 +4,7 @@ import { CommentData, PostData, baseUrl, getMockHandlers } from 'tanstack-query-
 import './App.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { HttpQueryBuilder } from 'tanstack-query-builder';
+import { HttpQueryBuilder } from 'tanstack-query-builder/http';
 import { queryClient } from './client';
 import './index.css';
 

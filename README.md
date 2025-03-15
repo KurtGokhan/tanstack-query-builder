@@ -36,7 +36,7 @@ When a Post is deleted, the list query is automatically invalidated and refetche
 
 ```tsx
 import { QueryClient } from "@tanstack/react-query";
-import { HttpQueryBuilder } from "tanstack-query-builder";
+import { HttpQueryBuilder } from "tanstack-query-builder/http";
 
 type PostData = { id: number; title: string; body: string; userId: number };
 

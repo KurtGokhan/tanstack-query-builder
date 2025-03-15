@@ -26,6 +26,11 @@
       "tanstack-query-builder@dev": "./src/index.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.js"
+    },
+    "./http": {
+      "tanstack-query-builder@dev": "./src/http/index.ts",
+      "import": "./dist/http/index.mjs",
+      "default": "./dist/http/index.js"
     }
   },
   "scripts": {

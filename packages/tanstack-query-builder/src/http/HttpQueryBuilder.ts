@@ -1,12 +1,12 @@
 import { QueryClient } from '@tanstack/react-query';
+import { QueryBuilder } from '../builder/QueryBuilder';
+import type { BuilderPaginationOptions } from '../builder/options';
+import type { BuilderConfig, BuilderFlags } from '../builder/types';
+import type { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from '../builder/types';
 import type { RequestError } from '../http/errors';
 import type { ExtractPathParams, HttpMethod } from '../http/types';
 import type { WithOptional } from '../type-utils';
-import { QueryBuilder } from './QueryBuilder';
-import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './http-utils';
-import { BuilderPaginationOptions } from './options';
-import type { BuilderConfig, BuilderFlags } from './types';
-import type { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './types';
+import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './builder-utils';
 
 export class HttpQueryBuilder<
   TParam = unknown,
