@@ -3,6 +3,7 @@ import type { HttpRequestOptions } from './request-types';
 type RequestErrorInit = Pick<RequestError, 'options' | 'request' | 'response' | 'body' | 'cause'>;
 
 export class RequestError extends Error {
+  readonly name: string = 'RequestError';
   readonly options?: HttpRequestOptions;
   readonly request?: Request;
   readonly response?: Response;
@@ -14,9 +15,10 @@ export class RequestError extends Error {
     Object.assign(this, init);
   }
 }
-RequestError.prototype.name = 'RequestError';
 
 export class TimeoutError extends RequestError {
+  readonly name = 'TimeoutError';
+
   static getStandardMessage(timeout?: number) {
     return timeout != null ? `Request timed out after ${timeout} milliseconds` : 'Request timed out';
   }
@@ -25,13 +27,13 @@ export class TimeoutError extends RequestError {
     super(TimeoutError.getStandardMessage(timeout), init);
   }
 }
-TimeoutError.prototype.name = 'TimeoutError';
 
 export class AbortError extends RequestError {
+  readonly name = 'AbortError';
+
   static readonly standardMessage = 'Request was aborted';
 
   constructor(init?: RequestErrorInit) {
     super(AbortError.standardMessage, init);
   }
 }
-AbortError.prototype.name = 'AbortError';

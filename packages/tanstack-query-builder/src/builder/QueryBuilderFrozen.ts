@@ -47,7 +47,7 @@ export class QueryBuilderFrozen<
 
   constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {}
 
-  protected mergeConfigs: (config: typeof this.config, other: Partial<typeof this.config>) => typeof this.config = (config, other) => {
+  protected mergeConfigs(config: typeof this.config, other: Partial<typeof this.config>): typeof this.config {
     return {
       ...config,
       ...other,
@@ -55,20 +55,20 @@ export class QueryBuilderFrozen<
       options: mergeBuilderOptions([config.options, other.options]),
       paginationOptions: mergeBuilderPaginationOptions([config.paginationOptions, other.paginationOptions]),
     };
-  };
+  }
 
-  protected mergeVars: (list: (Partial<TVars> | undefined)[]) => TVars = (list) => {
+  protected mergeVars(list: (Partial<TVars> | undefined)[]): TVars {
     return mergeVars(list, this.config.mergeVars);
-  };
+  }
 
-  protected preprocessVars: (vars: TVars) => TKey[0] = (vars) => {
+  protected preprocessVars(vars: TVars): TKey[0] {
     if (!this.config.preprocessorFn) return vars as TKey[0];
     return this.config.preprocessorFn(vars);
-  };
+  }
 
   //#region Query
 
-  getQueryFn: (operationType?: 'query' | 'queries' | 'infiniteQuery') => QueryFunction<TData, TKey, Partial<TVars>> = (
+  readonly getQueryFn: (operationType?: 'query' | 'queries' | 'infiniteQuery') => QueryFunction<TData, TKey, Partial<TVars>> = (
     operationType = 'query',
   ) => {
     return ({ client, meta, queryKey, signal, pageParam }) => {
@@ -84,18 +84,18 @@ export class QueryBuilderFrozen<
     };
   };
 
-  getQueryKeyHashFn: () => (key: TKey) => string = () => {
+  readonly getQueryKeyHashFn: () => (key: TKey) => string = () => {
     return (key) => {
       const sanitized = this.config.queryKeySanitizer ? this.config.queryKeySanitizer(key) : key;
       return hashKey(sanitized);
     };
   };
 
-  getQueryKey: (vars: TVars) => DataTag<TKey, TData, TError> = (vars) => {
+  readonly getQueryKey: (vars: TVars) => DataTag<TKey, TData, TError> = (vars) => {
     return [this.preprocessVars(this.mergeVars([this.config.vars, vars]))] as DataTag<TKey, TData, TError>;
   };
 
-  getQueryOptions: (
+  readonly getQueryOptions: (
     vars: TVars,
     opts?: typeof this._options,
     operationType?: 'query' | 'queries' | 'infiniteQuery',
@@ -111,25 +111,21 @@ export class QueryBuilderFrozen<
     ]) as TODO;
   };
 
-  useQuery: (vars: TVars, opts?: typeof this._options) => UseQueryResult<TData, TError> = (vars, opts) => {
+  readonly useQuery: (vars: TVars, opts?: typeof this._options) => UseQueryResult<TData, TError> = (vars, opts) => {
     return useQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   };
 
-  useSuspenseQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useSuspenseQuery<TData, TError, TData, TKey>> = (
-    vars,
-    opts,
-  ) => {
-    return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
-  };
+  readonly useSuspenseQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useSuspenseQuery<TData, TError, TData, TKey>> =
+    (vars, opts) => {
+      return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
+    };
 
-  usePrefetchQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof usePrefetchQuery<TData, TError, TData, TKey>> = (
-    vars,
-    opts,
-  ) => {
-    return usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
-  };
+  readonly usePrefetchQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof usePrefetchQuery<TData, TError, TData, TKey>> =
+    (vars, opts) => {
+      return usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
+    };
 
-  useIsFetching: (vars: TVars, filters?: QueryFilters) => number = (vars, filters) => {
+  readonly useIsFetching: (vars: TVars, filters?: QueryFilters) => number = (vars, filters) => {
     return useIsFetching({ queryKey: this.getQueryKey(vars), ...filters }, this.config.queryClient);
   };
 
@@ -137,7 +133,7 @@ export class QueryBuilderFrozen<
 
   //#region Queries
 
-  private useQueriesInternal: (useHook: typeof useQueries | typeof useSuspenseQueries) => (
+  private readonly useQueriesInternal: (useHook: typeof useQueries | typeof useSuspenseQueries) => (
     queries: {
       vars: TVars;
       options?: BuilderConfig<TVars, TData, TError, TKey>['options'];
@@ -167,11 +163,11 @@ export class QueryBuilderFrozen<
     return result;
   };
 
-  useQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
+  readonly useQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
     return this.useQueriesInternal(useQueries)(queries, sharedVars, sharedOpts);
   };
 
-  useSuspenseQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
+  readonly useSuspenseQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
     return this.useQueriesInternal(useSuspenseQueries)(queries, sharedVars, sharedOpts);
   };
 
@@ -179,7 +175,7 @@ export class QueryBuilderFrozen<
 
   //#region InfiniteQuery
 
-  getInfiniteQueryOptions = ((vars, opts) => {
+  readonly getInfiniteQueryOptions = ((vars, opts) => {
     // Remove incompatible options from the base query options
     const {
       enabled,
@@ -214,18 +210,18 @@ export class QueryBuilderFrozen<
     ) => WithRequired<BuilderPaginationOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey' | 'initialPageParam'>
   >;
 
-  useInfiniteQuery = ((vars, opts) => {
+  readonly useInfiniteQuery = ((vars, opts) => {
     return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   }) as HasPagination<
     TFlags,
     (vars: TVars, opts?: typeof this._pgOptions) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
   >;
 
-  usePrefetchInfiniteQuery = ((vars, opts) => {
+  readonly usePrefetchInfiniteQuery = ((vars, opts) => {
     return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   }) as HasPagination<TFlags, (vars: TVars, opts?: typeof this._pgOptions) => void>;
 
-  useSuspenseInfiniteQuery = ((vars, opts) => {
+  readonly useSuspenseInfiniteQuery = ((vars, opts) => {
     return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
   }) as HasPagination<
     TFlags,
@@ -236,7 +232,7 @@ export class QueryBuilderFrozen<
 
   //#region Mutation
 
-  getMutationFn: (queryClient: QueryClient, meta?: any) => MutationFunction<TData, TVars> = (queryClient, meta) => {
+  readonly getMutationFn: (queryClient: QueryClient, meta?: any) => MutationFunction<TData, TVars> = (queryClient, meta) => {
     return async (vars) => {
       const queryKey = [this.mergeVars([this.config.vars, vars])] as TKey;
       return this.config.queryFn({
@@ -251,7 +247,7 @@ export class QueryBuilderFrozen<
   };
 
   private randomKey?: string;
-  getMutationKey: () => MutationKey = () => {
+  readonly getMutationKey: () => MutationKey = () => {
     if (this.config.options?.mutationKey) return this.config.options.mutationKey;
 
     if (this.config.queryKeySanitizer && this.config.vars) return this.config.queryKeySanitizer([this.config.vars] as TKey);
@@ -259,7 +255,7 @@ export class QueryBuilderFrozen<
     return this.config.options?.mutationKey || [(this.randomKey ||= getRandomKey())];
   };
 
-  getMutationOptions: (queryClient: QueryClient, opts?: typeof this._options) => UseMutationOptions<TData, TError, TVars> = (
+  readonly getMutationOptions: (queryClient: QueryClient, opts?: typeof this._options) => UseMutationOptions<TData, TError, TVars> = (
     queryClient,
     opts,
   ) => {
@@ -273,7 +269,7 @@ export class QueryBuilderFrozen<
     ]);
   };
 
-  getMutationFilters: (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>) => MutationFilters<any, any, any> = (
+  readonly getMutationFilters: (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>) => MutationFilters<any, any, any> = (
     vars,
     filters,
   ) => {
@@ -293,16 +289,16 @@ export class QueryBuilderFrozen<
     };
   };
 
-  useMutation: (opts?: typeof this._options) => ReturnType<typeof useMutation<TData, TError, TVars>> = (opts) => {
+  readonly useMutation: (opts?: typeof this._options) => ReturnType<typeof useMutation<TData, TError, TVars>> = (opts) => {
     const queryClient = useQueryClient(this.config.queryClient);
     return useMutation(this.getMutationOptions(queryClient, opts), this.config.queryClient);
   };
 
-  useIsMutating: (vars: TVars, filters?: MutationFilters<TData, TError, TVars>) => number = (vars, filters) => {
+  readonly useIsMutating: (vars: TVars, filters?: MutationFilters<TData, TError, TVars>) => number = (vars, filters) => {
     return useIsMutating(this.getMutationFilters(vars, filters), this.config.queryClient);
   };
 
-  useMutationState: <TSelect = Mutation<TData, TError, TVars>>(
+  readonly useMutationState: <TSelect = Mutation<TData, TError, TVars>>(
     vars?: TVars,
     filters?: MutationFilters<TData, TError, TVars>,
     select?: (mt: Mutation<TData, TError, TVars>) => TSelect,
@@ -312,13 +308,13 @@ export class QueryBuilderFrozen<
 
   //#endregion
 
-  private _client?: QueryBuilderClient<TVars, TData, TError, TKey, TTags>;
+  #client?: QueryBuilderClient<TVars, TData, TError, TKey, TTags>;
   get client(): HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>> {
-    return (this._client ??= new QueryBuilderClient(this)) as any;
+    return (this.#client ??= new QueryBuilderClient(this)) as any;
   }
 
-  private _tags?: QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>;
+  #tags?: QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>;
   get tags(): HasClient<TFlags, QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>> {
-    return (this._tags ??= new QueryBuilderTagsManager(this)) as any;
+    return (this.#tags ??= new QueryBuilderTagsManager(this)) as any;
   }
 }

@@ -14,4 +14,5 @@ export default defineConfig({
   clean: true,
   minify: false,
   sourcemap: true,
+  metafile: true,
 });
