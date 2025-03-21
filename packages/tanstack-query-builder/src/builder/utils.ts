@@ -53,6 +53,6 @@ export function getRandomKey() {
   return Math.random().toString(36).substring(7);
 }
 
-export function assertBound<T extends IsBound<any, unknown>>(t: T): asserts t is Exclude<T, void> {
+export function assertBound<T extends IsBound<any, unknown>>(t: T): asserts t is T & Exclude<T, void> {
   if (t === undefined) throw new Error('Method called on unbound instance');
 }

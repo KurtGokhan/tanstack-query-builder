@@ -35,8 +35,7 @@ import { type BuilderOptions, BuilderPaginationOptions, mergeBuilderOptions, mer
 import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination, IsBound } from './types';
 import { areKeysEqual, assertBound, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
-type AnyBuilder<TFlags extends BuilderFlags> = QueryBuilderFrozen<any, any, any, any, any, TFlags>;
-type IsBoundThis<TFlags extends BuilderFlags> = IsBound<TFlags, AnyBuilder<TFlags>>;
+type IsBoundThis<TFlags extends BuilderFlags, TB extends QueryBuilderFrozen<any, any, any, any, any, TFlags>> = IsBound<TFlags, TB>;
 
 type UseQueriesArgs<TVars, TData, TError, TKey extends unknown[]> = [
   queries: {
@@ -113,7 +112,7 @@ export class QueryBuilderFrozen<
   //#region Query
 
   getQueryFn(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     operationType: 'query' | 'queries' | 'infiniteQuery' = 'query',
   ): QueryFunction<TData, TKey, Partial<TVars>> {
     assertBound(this);
@@ -130,7 +129,7 @@ export class QueryBuilderFrozen<
     };
   }
 
-  getQueryKeyHashFn(this: IsBoundThis<TFlags>): (key: TKey) => string {
+  getQueryKeyHashFn(this: IsBoundThis<TFlags, this>): (key: TKey) => string {
     assertBound(this);
     return (key) => {
       const sanitized = this.config.queryKeySanitizer ? this.config.queryKeySanitizer(key) : key;
@@ -138,13 +137,13 @@ export class QueryBuilderFrozen<
     };
   }
 
-  getQueryKey(this: IsBoundThis<TFlags>, vars: TVars): DataTag<TKey, TData, TError> {
+  getQueryKey(this: IsBoundThis<TFlags, this>, vars: TVars): DataTag<TKey, TData, TError> {
     assertBound(this);
     return [this.preprocessVars(this.mergeVars([this.config.vars, vars as TODO]))] as DataTag<TKey, TData, TError>;
   }
 
   getQueryOptions(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     vars: TVars,
     opts?: BuilderOptions<TVars, TData, TError, TKey>,
     operationType?: 'query' | 'queries' | 'infiniteQuery',
@@ -162,13 +161,13 @@ export class QueryBuilderFrozen<
     ]) as TODO;
   }
 
-  useQuery(this: IsBoundThis<TFlags>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): UseQueryResult<TData, TError> {
+  useQuery(this: IsBoundThis<TFlags, this>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): UseQueryResult<TData, TError> {
     assertBound(this);
     return useQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   }
 
   useSuspenseQuery(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     vars: TVars,
     opts?: BuilderOptions<TVars, TData, TError, TKey>,
   ): UseSuspenseQueryResult<TData, TError> {
@@ -176,12 +175,12 @@ export class QueryBuilderFrozen<
     return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   }
 
-  usePrefetchQuery(this: IsBoundThis<TFlags>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): void {
+  usePrefetchQuery(this: IsBoundThis<TFlags, this>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): void {
     assertBound(this);
     usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   }
 
-  useIsFetching(this: IsBoundThis<TFlags>, vars: TVars, filters?: QueryFilters): number {
+  useIsFetching(this: IsBoundThis<TFlags, this>, vars: TVars, filters?: QueryFilters): number {
     assertBound(this);
     return useIsFetching({ queryKey: this.getQueryKey(vars), ...filters }, this.config.queryClient);
   }
@@ -191,7 +190,7 @@ export class QueryBuilderFrozen<
   //#region Queries
 
   private useQueriesInternal(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     useHook: typeof useQueries | typeof useSuspenseQueries,
     ...[queries, sharedVars, sharedOpts]: UseQueriesArgs<TVars, TData, TError, TKey>
   ): BuilderQueriesResult<TVars, TData, TError, TKey> {
@@ -219,7 +218,7 @@ export class QueryBuilderFrozen<
   }
 
   useQueries(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     ...args: UseQueriesArgs<TVars, TData, TError, TKey>
   ): BuilderQueriesResult<TVars, TData, TError, TKey> {
     assertBound(this);
@@ -227,7 +226,7 @@ export class QueryBuilderFrozen<
   }
 
   useSuspenseQueries(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     ...args: UseQueriesArgs<TVars, TData, TError, TKey>
   ): BuilderQueriesResult<TVars, TData, TError, TKey> {
     assertBound(this);
@@ -241,7 +240,7 @@ export class QueryBuilderFrozen<
   declare getInfiniteQueryOptions: HasPagination<
     TFlags,
     (
-      this: IsBoundThis<TFlags>,
+      this: IsBoundThis<TFlags, this>,
       vars: TVars,
       opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => WithRequired<BuilderPaginationOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey' | 'initialPageParam'>
@@ -250,7 +249,7 @@ export class QueryBuilderFrozen<
   declare useInfiniteQuery: HasPagination<
     TFlags,
     (
-      this: IsBoundThis<TFlags>,
+      this: IsBoundThis<TFlags, this>,
       vars: TVars,
       opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
@@ -258,13 +257,13 @@ export class QueryBuilderFrozen<
 
   declare usePrefetchInfiniteQuery: HasPagination<
     TFlags,
-    (this: IsBoundThis<TFlags>, vars: TVars, opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>) => void
+    (this: IsBoundThis<TFlags, this>, vars: TVars, opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>) => void
   >;
 
   declare useSuspenseInfiniteQuery: HasPagination<
     TFlags,
     (
-      this: IsBoundThis<TFlags>,
+      this: IsBoundThis<TFlags, this>,
       vars: TVars,
       opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
@@ -274,7 +273,7 @@ export class QueryBuilderFrozen<
 
   //#region Mutation
 
-  getMutationFn(this: IsBoundThis<TFlags>, queryClient: QueryClient, meta?: any): MutationFunction<TData, TVars> {
+  getMutationFn(this: IsBoundThis<TFlags, this>, queryClient: QueryClient, meta?: any): MutationFunction<TData, TVars> {
     assertBound(this);
 
     return async (vars) => {
@@ -291,7 +290,7 @@ export class QueryBuilderFrozen<
   }
 
   #randomKey?: string;
-  getMutationKey(this: IsBoundThis<TFlags>): MutationKey {
+  getMutationKey(this: IsBoundThis<TFlags, this>): MutationKey {
     assertBound(this);
 
     if (this.config.options?.mutationKey) return this.config.options.mutationKey;
@@ -302,7 +301,7 @@ export class QueryBuilderFrozen<
   }
 
   getMutationOptions(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     queryClient: QueryClient,
     opts?: BuilderOptions<TVars, TData, TError, TKey>,
   ): UseMutationOptions<TData, TError, TVars> {
@@ -319,7 +318,7 @@ export class QueryBuilderFrozen<
   }
 
   getMutationFilters(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     vars?: TVars,
     filters?: MutationFilters<TData, TError, TVars>,
   ): MutationFilters<any, any, any> {
@@ -342,7 +341,7 @@ export class QueryBuilderFrozen<
   }
 
   useMutation(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     opts?: BuilderOptions<TVars, TData, TError, TKey>,
   ): ReturnType<typeof useMutation<TData, TError, TVars>> {
     assertBound(this);
@@ -350,13 +349,13 @@ export class QueryBuilderFrozen<
     return useMutation(this.getMutationOptions(queryClient, opts), this.config.queryClient);
   }
 
-  useIsMutating(this: IsBoundThis<TFlags>, vars: TVars, filters?: MutationFilters<TData, TError, TVars>): number {
+  useIsMutating(this: IsBoundThis<TFlags, this>, vars: TVars, filters?: MutationFilters<TData, TError, TVars>): number {
     assertBound(this);
     return useIsMutating(this.getMutationFilters(vars, filters), this.config.queryClient);
   }
 
   useMutationState<TSelect = Mutation<TData, TError, TVars>>(
-    this: IsBoundThis<TFlags>,
+    this: IsBoundThis<TFlags, this>,
     vars?: TVars,
     filters?: MutationFilters<TData, TError, TVars>,
     select?: (mt: Mutation<TData, TError, TVars>) => TSelect,

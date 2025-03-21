@@ -5,7 +5,10 @@ import { Prettify } from '../src/type-utils';
 
 describe('HttpQueryBuilder', () => {
   it('should have correct types when types are explicitly passed', () => {
-    const htp = new HttpQueryBuilder({})
+    const htp = new HttpQueryBuilder()
+      .withClient(null!)
+      .withTagTypes<{ post: { name: string }; posts: { name: string }[] }>()
+      .withTags('post')
       .withData<{ name: string }>()
       .withBody<{ name: string }>()
       .withHeaders<{ 'x-token': string }>()
