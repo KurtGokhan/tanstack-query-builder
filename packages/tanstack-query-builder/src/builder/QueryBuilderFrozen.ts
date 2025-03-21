@@ -32,10 +32,8 @@ import type { TODO, WithRequired } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
 import { type BuilderOptions, BuilderPaginationOptions, mergeBuilderOptions, mergeBuilderPaginationOptions } from './options';
-import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination, IsBound } from './types';
-import { areKeysEqual, assertBound, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
-
-type IsBoundThis<TFlags extends BuilderFlags, TB extends QueryBuilderFrozen<any, any, any, any, any, TFlags>> = IsBound<TFlags, TB>;
+import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination } from './types';
+import { areKeysEqual, assertThis, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
 type UseQueriesArgs<TVars, TData, TError, TKey extends unknown[]> = [
   queries: {
@@ -111,11 +109,8 @@ export class QueryBuilderFrozen<
 
   //#region Query
 
-  getQueryFn(
-    this: IsBoundThis<TFlags, this>,
-    operationType: 'query' | 'queries' | 'infiniteQuery' = 'query',
-  ): QueryFunction<TData, TKey, Partial<TVars>> {
-    assertBound(this);
+  getQueryFn(operationType: 'query' | 'queries' | 'infiniteQuery' = 'query'): QueryFunction<TData, TKey, Partial<TVars>> {
+    assertThis(this);
     return ({ client, meta, queryKey, signal, pageParam }) => {
       return this.config.queryFn({
         client,
@@ -129,26 +124,25 @@ export class QueryBuilderFrozen<
     };
   }
 
-  getQueryKeyHashFn(this: IsBoundThis<TFlags, this>): (key: TKey) => string {
-    assertBound(this);
+  getQueryKeyHashFn(): (key: TKey) => string {
+    assertThis(this);
     return (key) => {
       const sanitized = this.config.queryKeySanitizer ? this.config.queryKeySanitizer(key) : key;
       return hashKey(sanitized);
     };
   }
 
-  getQueryKey(this: IsBoundThis<TFlags, this>, vars: TVars): DataTag<TKey, TData, TError> {
-    assertBound(this);
+  getQueryKey(vars: TVars): DataTag<TKey, TData, TError> {
+    assertThis(this);
     return [this.preprocessVars(this.mergeVars([this.config.vars, vars as TODO]))] as DataTag<TKey, TData, TError>;
   }
 
   getQueryOptions(
-    this: IsBoundThis<TFlags, this>,
     vars: TVars,
     opts?: BuilderOptions<TVars, TData, TError, TKey>,
     operationType?: 'query' | 'queries' | 'infiniteQuery',
   ): WithRequired<BuilderOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey'> {
-    assertBound(this);
+    assertThis(this);
 
     return mergeBuilderOptions([
       {
@@ -161,27 +155,23 @@ export class QueryBuilderFrozen<
     ]) as TODO;
   }
 
-  useQuery(this: IsBoundThis<TFlags, this>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): UseQueryResult<TData, TError> {
-    assertBound(this);
+  useQuery(vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): UseQueryResult<TData, TError> {
+    assertThis(this);
     return useQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   }
 
-  useSuspenseQuery(
-    this: IsBoundThis<TFlags, this>,
-    vars: TVars,
-    opts?: BuilderOptions<TVars, TData, TError, TKey>,
-  ): UseSuspenseQueryResult<TData, TError> {
-    assertBound(this);
+  useSuspenseQuery(vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): UseSuspenseQueryResult<TData, TError> {
+    assertThis(this);
     return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   }
 
-  usePrefetchQuery(this: IsBoundThis<TFlags, this>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): void {
-    assertBound(this);
+  usePrefetchQuery(vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): void {
+    assertThis(this);
     usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
   }
 
-  useIsFetching(this: IsBoundThis<TFlags, this>, vars: TVars, filters?: QueryFilters): number {
-    assertBound(this);
+  useIsFetching(vars: TVars, filters?: QueryFilters): number {
+    assertThis(this);
     return useIsFetching({ queryKey: this.getQueryKey(vars), ...filters }, this.config.queryClient);
   }
 
@@ -190,11 +180,10 @@ export class QueryBuilderFrozen<
   //#region Queries
 
   private useQueriesInternal(
-    this: IsBoundThis<TFlags, this>,
     useHook: typeof useQueries | typeof useSuspenseQueries,
     ...[queries, sharedVars, sharedOpts]: UseQueriesArgs<TVars, TData, TError, TKey>
   ): BuilderQueriesResult<TVars, TData, TError, TKey> {
-    assertBound(this);
+    assertThis(this);
 
     type ResultType = BuilderQueriesResult<TVars, TData, TError, TKey>;
 
@@ -217,19 +206,13 @@ export class QueryBuilderFrozen<
     return result;
   }
 
-  useQueries(
-    this: IsBoundThis<TFlags, this>,
-    ...args: UseQueriesArgs<TVars, TData, TError, TKey>
-  ): BuilderQueriesResult<TVars, TData, TError, TKey> {
-    assertBound(this);
+  useQueries(...args: UseQueriesArgs<TVars, TData, TError, TKey>): BuilderQueriesResult<TVars, TData, TError, TKey> {
+    assertThis(this);
     return this.useQueriesInternal(useQueries, ...args);
   }
 
-  useSuspenseQueries(
-    this: IsBoundThis<TFlags, this>,
-    ...args: UseQueriesArgs<TVars, TData, TError, TKey>
-  ): BuilderQueriesResult<TVars, TData, TError, TKey> {
-    assertBound(this);
+  useSuspenseQueries(...args: UseQueriesArgs<TVars, TData, TError, TKey>): BuilderQueriesResult<TVars, TData, TError, TKey> {
+    assertThis(this);
     return this.useQueriesInternal(useSuspenseQueries, ...args);
   }
 
@@ -240,7 +223,6 @@ export class QueryBuilderFrozen<
   declare getInfiniteQueryOptions: HasPagination<
     TFlags,
     (
-      this: IsBoundThis<TFlags, this>,
       vars: TVars,
       opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => WithRequired<BuilderPaginationOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey' | 'initialPageParam'>
@@ -249,7 +231,6 @@ export class QueryBuilderFrozen<
   declare useInfiniteQuery: HasPagination<
     TFlags,
     (
-      this: IsBoundThis<TFlags, this>,
       vars: TVars,
       opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
@@ -257,13 +238,12 @@ export class QueryBuilderFrozen<
 
   declare usePrefetchInfiniteQuery: HasPagination<
     TFlags,
-    (this: IsBoundThis<TFlags, this>, vars: TVars, opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>) => void
+    (vars: TVars, opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>) => void
   >;
 
   declare useSuspenseInfiniteQuery: HasPagination<
     TFlags,
     (
-      this: IsBoundThis<TFlags, this>,
       vars: TVars,
       opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
@@ -273,8 +253,8 @@ export class QueryBuilderFrozen<
 
   //#region Mutation
 
-  getMutationFn(this: IsBoundThis<TFlags, this>, queryClient: QueryClient, meta?: any): MutationFunction<TData, TVars> {
-    assertBound(this);
+  getMutationFn(queryClient: QueryClient, meta?: any): MutationFunction<TData, TVars> {
+    assertThis(this);
 
     return async (vars) => {
       const queryKey = [this.mergeVars([this.config.vars, vars as TODO])] as TKey;
@@ -290,8 +270,8 @@ export class QueryBuilderFrozen<
   }
 
   #randomKey?: string;
-  getMutationKey(this: IsBoundThis<TFlags, this>): MutationKey {
-    assertBound(this);
+  getMutationKey(): MutationKey {
+    assertThis(this);
 
     if (this.config.options?.mutationKey) return this.config.options.mutationKey;
 
@@ -301,11 +281,10 @@ export class QueryBuilderFrozen<
   }
 
   getMutationOptions(
-    this: IsBoundThis<TFlags, this>,
     queryClient: QueryClient,
     opts?: BuilderOptions<TVars, TData, TError, TKey>,
   ): UseMutationOptions<TData, TError, TVars> {
-    assertBound(this);
+    assertThis(this);
 
     return mergeMutationOptions([
       {
@@ -317,12 +296,8 @@ export class QueryBuilderFrozen<
     ]);
   }
 
-  getMutationFilters(
-    this: IsBoundThis<TFlags, this>,
-    vars?: TVars,
-    filters?: MutationFilters<TData, TError, TVars>,
-  ): MutationFilters<any, any, any> {
-    assertBound(this);
+  getMutationFilters(vars?: TVars, filters?: MutationFilters<TData, TError, TVars>): MutationFilters<any, any, any> {
+    assertThis(this);
 
     const baseKey = this.preprocessVars(this.mergeVars([this.config.vars, vars as TODO]));
 
@@ -340,27 +315,23 @@ export class QueryBuilderFrozen<
     };
   }
 
-  useMutation(
-    this: IsBoundThis<TFlags, this>,
-    opts?: BuilderOptions<TVars, TData, TError, TKey>,
-  ): ReturnType<typeof useMutation<TData, TError, TVars>> {
-    assertBound(this);
+  useMutation(opts?: BuilderOptions<TVars, TData, TError, TKey>): ReturnType<typeof useMutation<TData, TError, TVars>> {
+    assertThis(this);
     const queryClient = useQueryClient(this.config.queryClient);
     return useMutation(this.getMutationOptions(queryClient, opts), this.config.queryClient);
   }
 
-  useIsMutating(this: IsBoundThis<TFlags, this>, vars: TVars, filters?: MutationFilters<TData, TError, TVars>): number {
-    assertBound(this);
+  useIsMutating(vars: TVars, filters?: MutationFilters<TData, TError, TVars>): number {
+    assertThis(this);
     return useIsMutating(this.getMutationFilters(vars, filters), this.config.queryClient);
   }
 
   useMutationState<TSelect = Mutation<TData, TError, TVars>>(
-    this: IsBoundThis<TFlags, this>,
     vars?: TVars,
     filters?: MutationFilters<TData, TError, TVars>,
     select?: (mt: Mutation<TData, TError, TVars>) => TSelect,
   ): TSelect[] {
-    assertBound(this);
+    assertThis(this);
     return useMutationState({ filters: this.getMutationFilters(vars, filters), select: select as any }, this.config.queryClient);
   }
 
@@ -370,7 +341,7 @@ export class QueryBuilderFrozen<
 //#region InfiniteQuery implementation
 
 QueryBuilderFrozen.prototype.getInfiniteQueryOptions = function getInfiniteQueryOptions(vars, opts) {
-  assertBound(this);
+  assertThis(this);
 
   // Remove incompatible options from the base query options
   const {
@@ -401,17 +372,17 @@ QueryBuilderFrozen.prototype.getInfiniteQueryOptions = function getInfiniteQuery
 };
 
 QueryBuilderFrozen.prototype.useInfiniteQuery = function (vars, opts) {
-  assertBound(this);
+  assertThis(this);
   return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
 };
 
 QueryBuilderFrozen.prototype.usePrefetchInfiniteQuery = function (vars, opts) {
-  assertBound(this);
+  assertThis(this);
   return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
 };
 
 QueryBuilderFrozen.prototype.useSuspenseInfiniteQuery = function (vars, opts) {
-  assertBound(this);
+  assertThis(this);
   return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
 };
 

@@ -6,7 +6,7 @@ import {
   type UseQueryOptions,
   hashKey,
 } from '@tanstack/react-query';
-import type { BuilderKeySanitizerFn, BuilderMergeVarsFn, IsBound } from './types';
+import type { BuilderKeySanitizerFn, BuilderMergeVarsFn } from './types';
 
 export function mergeQueryEnabled(
   opts: (UseQueryOptions<any, any, any, any>['enabled'] | undefined | null)[],
@@ -53,6 +53,6 @@ export function getRandomKey() {
   return Math.random().toString(36).substring(7);
 }
 
-export function assertBound<T extends IsBound<any, unknown>>(t: T): asserts t is T & Exclude<T, void> {
-  if (t === undefined) throw new Error('Method called on unbound instance');
+export function assertThis<T>(t: T): asserts t is T & {} {
+  if (t === undefined) throw new Error('Method called on unbound instance. Use `asBound` to bind methods.');
 }

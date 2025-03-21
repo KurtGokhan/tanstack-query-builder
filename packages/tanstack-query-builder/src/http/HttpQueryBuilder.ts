@@ -29,13 +29,12 @@ export class HttpQueryBuilder<
     super({ mergeVars, queryFn, queryKeySanitizer, ...config });
   }
 
-  withBody<TBody$>(this: this, body?: TBody$): HttpQueryBuilder<TParam, TSearch, TBody$, THeader, TMeta, TData, TError, TTags, TFlags> {
+  withBody<TBody$>(body?: TBody$): HttpQueryBuilder<TParam, TSearch, TBody$, THeader, TMeta, TData, TError, TTags, TFlags> {
     if (!body) return this as any;
     return this.withVars({ body }) as any;
   }
 
   withHeaders<THeaders$ extends HttpBaseHeaders>(
-    this: this,
     headers?: THeaders$,
   ): HttpQueryBuilder<TParam, TSearch, TBody, THeaders$, TMeta, TData, TError, TTags, TFlags> {
     if (!headers) return this as any;
@@ -43,7 +42,6 @@ export class HttpQueryBuilder<
   }
 
   withParams<TParams$ extends HttpBaseParams>(
-    this: this,
     params?: TParams$,
   ): HttpQueryBuilder<TParams$, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags> {
     if (!params) return this as any;
@@ -51,20 +49,18 @@ export class HttpQueryBuilder<
   }
 
   withSearch<TSearch$ extends HttpBaseSearch>(
-    this: this,
     search?: TSearch$,
   ): HttpQueryBuilder<TParam, TSearch$, TBody, THeader, TMeta, TData, TError, TTags, TFlags> {
     if (!search) return this as any;
     return this.withVars({ search }) as any;
   }
 
-  withMeta<TMeta$>(this: this, meta?: TMeta$): HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta$, TData, TError, TTags, TFlags> {
+  withMeta<TMeta$>(meta?: TMeta$): HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta$, TData, TError, TTags, TFlags> {
     if (!meta) return this as any;
     return this.withVars({ meta }) as any;
   }
 
   withPath<const TPath$ extends string>(
-    this: this,
     path: TPath$,
   ): ExtractPathParams<TPath$> extends void
     ? this
@@ -72,36 +68,52 @@ export class HttpQueryBuilder<
     return this.withVars({ path }) as any;
   }
 
-  withBaseUrl(this: this, baseUrl: string): this {
+  withBaseUrl(baseUrl: string): this {
     return this.withVars({ baseUrl }) as any;
   }
 
-  withMethod(this: this, method: HttpMethod): this {
+  withMethod(method: HttpMethod): this {
     return this.withVars({ method }) as any;
   }
 
-  declare withData: <TData$>(this: this) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData$, TError, TTags, TFlags, TKey>;
-  declare withError: <TError$>(this: this) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError$, TTags, TFlags, TKey>;
+  declare withData: <TData$>() => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData$, TError, TTags, TFlags, TKey>;
+  declare withError: <TError$>() => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError$, TTags, TFlags, TKey>;
   declare withClient: (
-    this: this,
     queryClient: QueryClient,
     opts?: { syncTagsWithOtherTabs?: boolean },
   ) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'withClient', TKey>;
 
   declare withPagination: (
-    this: this,
     paginationOptions: BuilderPaginationOptions<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>,
   ) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'withPagination', TKey>;
 
-  withTagTypes<TTag extends string, T = unknown>(
-    this: this,
-  ): HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags & Record<TTag, T>, TFlags, TKey>;
-  withTagTypes<TTags$ extends Record<string, unknown>>(
-    this: this,
-  ): HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags$, TFlags, TKey>;
-  withTagTypes(this: this): this {
+  withTagTypes<TTag extends string, T = unknown>(): HttpQueryBuilder<
+    TParam,
+    TSearch,
+    TBody,
+    THeader,
+    TMeta,
+    TData,
+    TError,
+    TTags & Record<TTag, T>,
+    TFlags,
+    TKey
+  >;
+  withTagTypes<TTags$ extends Record<string, unknown>>(): HttpQueryBuilder<
+    TParam,
+    TSearch,
+    TBody,
+    THeader,
+    TMeta,
+    TData,
+    TError,
+    TTags$,
+    TFlags,
+    TKey
+  >;
+  withTagTypes(): this {
     return this as any;
   }
 
-  declare asBound: (this: this) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'bound', TKey>;
+  declare asBound: () => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'bound', TKey>;
 }
