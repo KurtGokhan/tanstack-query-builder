@@ -24,65 +24,82 @@ export class QueryBuilderClient<
   private declare _pgOptions: BuilderConfig<TVars, TData, TError, TKey>['paginationOptions'];
   constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {}
 
-  readonly ensureData = (vars: TVars, opts?: typeof this._options) =>
-    this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
+  ensureData(vars: TVars, opts?: typeof this._options) {
+    return this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
+  }
 
-  readonly ensureInfiniteData = (vars: TVars, opts?: typeof this._pgOptions) =>
-    this.builder.config.queryClient?.ensureInfiniteQueryData(this.builder.getInfiniteQueryOptions(vars, opts));
+  ensureInfiniteData(vars: TVars, opts?: typeof this._pgOptions) {
+    return this.builder.config.queryClient?.ensureInfiniteQueryData(this.builder.getInfiniteQueryOptions(vars, opts));
+  }
 
-  readonly refetch = (vars: TVars, filters?: TFilters, opts?: RefetchOptions) =>
-    this.builder.config.queryClient?.refetchQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  refetch(vars: TVars, filters?: TFilters, opts?: RefetchOptions) {
+    return this.builder.config.queryClient?.refetchQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  }
 
-  readonly fetch = (vars: TVars, opts?: typeof this._options) =>
-    this.builder.config.queryClient?.fetchQuery(this.builder.getQueryOptions(vars, opts));
+  fetch(vars: TVars, opts?: typeof this._options) {
+    return this.builder.config.queryClient?.fetchQuery(this.builder.getQueryOptions(vars, opts));
+  }
 
-  readonly fetchInfinite = (vars: TVars, opts?: typeof this._pgOptions) =>
-    this.builder.config.queryClient?.fetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
+  fetchInfinite(vars: TVars, opts?: typeof this._pgOptions) {
+    return this.builder.config.queryClient?.fetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
+  }
 
-  readonly isFetching = (vars: TVars, filters?: TFilters) =>
-    this.builder.config.queryClient?.isFetching({ queryKey: this.builder.getQueryKey(vars), ...filters });
+  isFetching(vars: TVars, filters?: TFilters) {
+    return this.builder.config.queryClient?.isFetching({ queryKey: this.builder.getQueryKey(vars), ...filters });
+  }
 
-  readonly prefetch = (vars: TVars, opts?: typeof this._options) =>
-    this.builder.config.queryClient?.prefetchQuery(this.builder.getQueryOptions(vars, opts));
+  prefetch(vars: TVars, opts?: typeof this._options) {
+    return this.builder.config.queryClient?.prefetchQuery(this.builder.getQueryOptions(vars, opts));
+  }
 
-  readonly prefetchInfinite = (vars: TVars, opts?: typeof this._pgOptions) =>
-    this.builder.config.queryClient?.prefetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
+  prefetchInfinite(vars: TVars, opts?: typeof this._pgOptions) {
+    return this.builder.config.queryClient?.prefetchInfiniteQuery(this.builder.getInfiniteQueryOptions(vars, opts));
+  }
 
-  readonly reset = (vars: TVars, filters?: TFilters, opts?: ResetOptions) =>
-    this.builder.config.queryClient?.resetQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  reset(vars: TVars, filters?: TFilters, opts?: ResetOptions) {
+    return this.builder.config.queryClient?.resetQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  }
 
-  readonly remove = (vars: TVars, filters?: TFilters) =>
-    this.builder.config.queryClient?.removeQueries({ queryKey: this.builder.getQueryKey(vars), ...filters });
+  remove(vars: TVars, filters?: TFilters) {
+    return this.builder.config.queryClient?.removeQueries({ queryKey: this.builder.getQueryKey(vars), ...filters });
+  }
 
-  readonly cancel = (vars: TVars, filters?: TFilters, opts?: CancelOptions) =>
-    this.builder.config.queryClient?.cancelQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  cancel(vars: TVars, filters?: TFilters, opts?: CancelOptions) {
+    return this.builder.config.queryClient?.cancelQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  }
 
-  readonly invalidate = (vars: TVars, filters?: TFilters, opts?: InvalidateOptions) =>
-    this.builder.config.queryClient?.invalidateQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  invalidate(vars: TVars, filters?: TFilters, opts?: InvalidateOptions) {
+    return this.builder.config.queryClient?.invalidateQueries({ queryKey: this.builder.getQueryKey(vars), ...filters }, opts);
+  }
 
-  readonly getData = (vars: TVars) => this.builder.config.queryClient?.getQueryData<TData>(this.builder.getQueryKey(vars));
+  getData(vars: TVars) {
+    return this.builder.config.queryClient?.getQueryData<TData>(this.builder.getQueryKey(vars));
+  }
 
-  readonly setData = (vars: TVars, updater: SetDataUpdater<TData>, opts?: SetDataOptions) =>
-    this.builder.config.queryClient?.setQueryData<TData>(this.builder.getQueryKey(vars), updater, opts);
+  setData(vars: TVars, updater: SetDataUpdater<TData>, opts?: SetDataOptions) {
+    return this.builder.config.queryClient?.setQueryData<TData>(this.builder.getQueryKey(vars), updater, opts);
+  }
 
-  readonly getState = (vars: TVars) => this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
+  getState(vars: TVars) {
+    return this.builder.config.queryClient?.getQueryState<TData, TError>(this.builder.getQueryKey(vars));
+  }
 
-  readonly getMutation = (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) => {
+  getMutation(vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) {
     const client = queryClient || this.builder.config.queryClient!;
     return client.getMutationCache().find(this.builder.getMutationFilters(vars, filters));
-  };
+  }
 
-  readonly isMutating = (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) => {
+  isMutating(vars?: TVars, filters?: MutationFilters<TData, TError, TVars>, queryClient?: QueryClient) {
     const client = queryClient || this.builder.config.queryClient!;
     return client.isMutating(this.builder.getMutationFilters(vars, filters));
-  };
+  }
 
-  readonly mutate = async (vars: TVars, opts?: typeof this._options, queryClient?: QueryClient) => {
+  async mutate(vars: TVars, opts?: typeof this._options, queryClient?: QueryClient) {
     const client = queryClient || this.builder.config.queryClient!;
     const options = this.builder.getMutationOptions(client, opts);
     const observer = new MutationObserver<TData, TError, TVars>(client, options);
     return observer.mutate(vars, options).finally(() => observer.reset());
-  };
+  }
 }
 
 type SetDataUpdater<T> = T | undefined | ((oldData: T | undefined) => T | undefined);

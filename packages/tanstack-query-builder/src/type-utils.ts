@@ -19,9 +19,7 @@ export type KeysOfValue<T, TCondition> = {
   [K in keyof T]: T[K] extends TCondition ? K : never;
 }[keyof T];
 
-export type HasFlag<T extends string, TFlag extends string, TTrue = true, TFalse = never> = T extends `${string}${TFlag}${string}`
-  ? TTrue
-  : TFalse;
+export type HasFlag<T extends string, TFlag extends string, TTrue = true, TFalse = never> = T extends TFlag ? TTrue : TFalse;
 
 export type WhenRequired<T, TReq> = T extends undefined
   ? Partial<TReq>

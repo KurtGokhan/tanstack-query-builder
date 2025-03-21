@@ -24,19 +24,30 @@ export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[
     return [operate, mutation] as const;
   }
 
-  readonly operate = ({ tags = [], operation = 'invalidate', filters, options }: TagOperationOptions<TTags>) =>
-    operateOnTags({ queryClient: this.builder.config.queryClient!, tags, operation }, filters, options);
+  operate({ tags = [], operation = 'invalidate', filters, options }: TagOperationOptions<TTags>) {
+    return operateOnTags({ queryClient: this.builder.config.queryClient!, tags, operation }, filters, options);
+  }
 
-  readonly cancel = (args: Omit<TagOperationOptions<TTags>, 'operation'>) => this.operate({ ...args, operation: 'cancel' });
-  readonly invalidate = (args: Omit<TagOperationOptions<TTags>, 'operation'>) => this.operate({ ...args, operation: 'invalidate' });
-  readonly refetch = (args: Omit<TagOperationOptions<TTags>, 'operation'>) => this.operate({ ...args, operation: 'refetch' });
-  readonly remove = (args: Omit<TagOperationOptions<TTags>, 'operation'>) => this.operate({ ...args, operation: 'remove' });
-  readonly reset = (args: Omit<TagOperationOptions<TTags>, 'operation'>) => this.operate({ ...args, operation: 'reset' });
+  cancel(args: Omit<TagOperationOptions<TTags>, 'operation'>) {
+    return this.operate({ ...args, operation: 'cancel' });
+  }
+  invalidate(args: Omit<TagOperationOptions<TTags>, 'operation'>) {
+    return this.operate({ ...args, operation: 'invalidate' });
+  }
+  refetch(args: Omit<TagOperationOptions<TTags>, 'operation'>) {
+    return this.operate({ ...args, operation: 'refetch' });
+  }
+  remove(args: Omit<TagOperationOptions<TTags>, 'operation'>) {
+    return this.operate({ ...args, operation: 'remove' });
+  }
+  reset(args: Omit<TagOperationOptions<TTags>, 'operation'>) {
+    return this.operate({ ...args, operation: 'reset' });
+  }
 
   /**
    * This function can be used to update the queries in cache based on given tags.
    */
-  readonly update = ({
+  update({
     tags = [],
     optimistic = false,
     client = this.builder.config.queryClient,
@@ -44,6 +55,7 @@ export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[
   }: {
     tags: readonly QueryUpdateTag<TVars, TData, TError, TTags>[];
     optimistic?: boolean;
-  } & WithOptional<QueryTagContext<TVars, TData, TError>, 'client'>) =>
+  } & WithOptional<QueryTagContext<TVars, TData, TError>, 'client'>) {
     updateTags({ tags, queryClient: client!, ctx: { client: client!, ...ctx }, optimistic });
+  }
 }

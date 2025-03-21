@@ -110,7 +110,11 @@ export class QueryBuilder<
     return this.withConfig({ paginationOptions }) as any;
   }
 
-  freeze(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, TFlags> {
+  asFrozen(): QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, TFlags> {
     return this;
+  }
+
+  asBound(): QueryBuilder<TVars, TData, TError, TKey, TTags, TFlags | 'bound'> {
+    return this.withConfig({ bound: true });
   }
 }

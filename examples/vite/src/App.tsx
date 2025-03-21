@@ -22,6 +22,8 @@ const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUrl(baseU
   refreshable: unknown;
 }>();
 
+console.log(builder);
+
 const resetMutation = builder.withPath('/reset').withMethod('post').withUpdates('*');
 
 const postsQuery = builder
@@ -34,7 +36,7 @@ const postsQuery = builder
     getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
   });
 
-const postQuery = builder
+const { useQuery: usePost, ...postQuery } = builder
   .withTags('refreshable')
   .withPath('/posts/:id')
   .withData<PostData>()
@@ -43,7 +45,8 @@ const postQuery = builder
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);
     return { ...res, titleUppercase: res.title.toUpperCase() };
-  });
+  })
+  .asBound();
 
 const commentsQuery = builder
   .withTags('refreshable')
@@ -148,7 +151,7 @@ function AppCore() {
 }
 
 function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
-  const post = postQuery.useQuery({ id: postId });
+  const post = usePost({ id: postId });
   const comments = commentsQuery.useQuery({ search: { postId: postId } });
   const [showEdit, setShowEdit] = useState(false);
   const editPost = editPostMutation.useMutation();

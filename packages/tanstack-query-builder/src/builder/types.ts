@@ -12,6 +12,7 @@ export type BuilderConfig<TVars, TData, TError, TKey extends unknown[]> = {
   preprocessorFn?: (vars: TVars) => TKey[0];
   options?: BuilderOptions<TVars, TData, TError, TKey>;
   paginationOptions?: BuilderPaginationOptions<TVars, TData, TError, TKey>;
+  bound?: boolean;
 };
 
 export type BuilderMergeVarsFn<TVars> = (vars1: TVars | Partial<TVars>, vars2: TVars | Partial<TVars>) => TVars | Partial<TVars>;
@@ -33,5 +34,6 @@ export type BuilderKeySanitizerFn<TKey extends unknown[]> = (key: TKey) => Query
 
 export type HasClient<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'withClient', TTruthy>;
 export type HasPagination<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'withPagination', TTruthy>;
+export type IsBound<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'bound', void, TTruthy>;
 
-export type BuilderFlags = '' | 'withClient' | 'withPagination';
+export type BuilderFlags = '' | 'withClient' | 'withPagination' | 'bound';

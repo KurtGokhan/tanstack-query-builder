@@ -12,6 +12,7 @@ import {
   UseMutationOptions,
   UseQueryResult,
   UseSuspenseInfiniteQueryResult,
+  UseSuspenseQueryResult,
   hashKey,
   useInfiniteQuery,
   useIsFetching,
@@ -31,8 +32,46 @@ import type { TODO, WithRequired } from '../type-utils';
 import { QueryBuilderClient } from './QueryBuilderClient';
 import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
 import { type BuilderOptions, BuilderPaginationOptions, mergeBuilderOptions, mergeBuilderPaginationOptions } from './options';
-import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination } from './types';
-import { areKeysEqual, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
+import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination, IsBound } from './types';
+import { areKeysEqual, assertBound, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
+
+type AnyBuilder<TFlags extends BuilderFlags> = QueryBuilderFrozen<any, any, any, any, any, TFlags>;
+type IsBoundThis<TFlags extends BuilderFlags> = IsBound<TFlags, AnyBuilder<TFlags>>;
+
+type UseQueriesArgs<TVars, TData, TError, TKey extends unknown[]> = [
+  queries: {
+    vars: TVars;
+    options?: BuilderConfig<TVars, TData, TError, TKey>['options'];
+    mapKey?: PropertyKey;
+  }[],
+  sharedVars?: TVars,
+  sharedOpts?: BuilderOptions<TVars, TData, TError, TKey>,
+];
+
+const methodsToBind = [
+  'getQueryFn',
+  'getQueryKeyHashFn',
+  'getQueryKey',
+  'getQueryOptions',
+  'useQuery',
+  'useSuspenseQuery',
+  'usePrefetchQuery',
+  'useIsFetching',
+  'useQueriesInternal',
+  'useQueries',
+  'useSuspenseQueries',
+  'getInfiniteQueryOptions',
+  'useInfiniteQuery',
+  'usePrefetchInfiniteQuery',
+  'useSuspenseInfiniteQuery',
+  'getMutationFn',
+  'getMutationKey',
+  'getMutationOptions',
+  'getMutationFilters',
+  'useMutation',
+  'useIsMutating',
+  'useMutationState',
+];
 
 export class QueryBuilderFrozen<
   TVars,
@@ -42,10 +81,15 @@ export class QueryBuilderFrozen<
   TTags extends Record<string, unknown> = Record<string, unknown>,
   TFlags extends BuilderFlags = '',
 > {
-  protected declare _options: BuilderOptions<TVars, TData, TError, TKey>;
-  protected declare _pgOptions: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>;
+  constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {
+    if (config.bound) {
+      const self = this as unknown as any;
+      for (const method of methodsToBind) self[method] = self[method].bind(self);
+    }
+  }
 
-  constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {}
+  readonly client = new QueryBuilderClient(this) as HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>>;
+  readonly tags = new QueryBuilderTagsManager(this) as HasClient<TFlags, QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>>;
 
   protected mergeConfigs(config: typeof this.config, other: Partial<typeof this.config>): typeof this.config {
     return {
@@ -68,9 +112,11 @@ export class QueryBuilderFrozen<
 
   //#region Query
 
-  readonly getQueryFn: (operationType?: 'query' | 'queries' | 'infiniteQuery') => QueryFunction<TData, TKey, Partial<TVars>> = (
-    operationType = 'query',
-  ) => {
+  getQueryFn(
+    this: IsBoundThis<TFlags>,
+    operationType: 'query' | 'queries' | 'infiniteQuery' = 'query',
+  ): QueryFunction<TData, TKey, Partial<TVars>> {
+    assertBound(this);
     return ({ client, meta, queryKey, signal, pageParam }) => {
       return this.config.queryFn({
         client,
@@ -82,24 +128,29 @@ export class QueryBuilderFrozen<
         operationType,
       });
     };
-  };
+  }
 
-  readonly getQueryKeyHashFn: () => (key: TKey) => string = () => {
+  getQueryKeyHashFn(this: IsBoundThis<TFlags>): (key: TKey) => string {
+    assertBound(this);
     return (key) => {
       const sanitized = this.config.queryKeySanitizer ? this.config.queryKeySanitizer(key) : key;
       return hashKey(sanitized);
     };
-  };
+  }
 
-  readonly getQueryKey: (vars: TVars) => DataTag<TKey, TData, TError> = (vars) => {
-    return [this.preprocessVars(this.mergeVars([this.config.vars, vars]))] as DataTag<TKey, TData, TError>;
-  };
+  getQueryKey(this: IsBoundThis<TFlags>, vars: TVars): DataTag<TKey, TData, TError> {
+    assertBound(this);
+    return [this.preprocessVars(this.mergeVars([this.config.vars, vars as TODO]))] as DataTag<TKey, TData, TError>;
+  }
 
-  readonly getQueryOptions: (
+  getQueryOptions(
+    this: IsBoundThis<TFlags>,
     vars: TVars,
-    opts?: typeof this._options,
+    opts?: BuilderOptions<TVars, TData, TError, TKey>,
     operationType?: 'query' | 'queries' | 'infiniteQuery',
-  ) => WithRequired<BuilderOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey'> = (vars, opts, operationType) => {
+  ): WithRequired<BuilderOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey'> {
+    assertBound(this);
+
     return mergeBuilderOptions([
       {
         queryFn: this.getQueryFn(operationType),
@@ -109,45 +160,49 @@ export class QueryBuilderFrozen<
       this.config.options,
       opts,
     ]) as TODO;
-  };
+  }
 
-  readonly useQuery: (vars: TVars, opts?: typeof this._options) => UseQueryResult<TData, TError> = (vars, opts) => {
+  useQuery(this: IsBoundThis<TFlags>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): UseQueryResult<TData, TError> {
+    assertBound(this);
     return useQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
-  };
+  }
 
-  readonly useSuspenseQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof useSuspenseQuery<TData, TError, TData, TKey>> =
-    (vars, opts) => {
-      return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
-    };
+  useSuspenseQuery(
+    this: IsBoundThis<TFlags>,
+    vars: TVars,
+    opts?: BuilderOptions<TVars, TData, TError, TKey>,
+  ): UseSuspenseQueryResult<TData, TError> {
+    assertBound(this);
+    return useSuspenseQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
+  }
 
-  readonly usePrefetchQuery: (vars: TVars, opts?: typeof this._options) => ReturnType<typeof usePrefetchQuery<TData, TError, TData, TKey>> =
-    (vars, opts) => {
-      return usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
-    };
+  usePrefetchQuery(this: IsBoundThis<TFlags>, vars: TVars, opts?: BuilderOptions<TVars, TData, TError, TKey>): void {
+    assertBound(this);
+    usePrefetchQuery(this.getQueryOptions(vars, opts), this.config.queryClient);
+  }
 
-  readonly useIsFetching: (vars: TVars, filters?: QueryFilters) => number = (vars, filters) => {
+  useIsFetching(this: IsBoundThis<TFlags>, vars: TVars, filters?: QueryFilters): number {
+    assertBound(this);
     return useIsFetching({ queryKey: this.getQueryKey(vars), ...filters }, this.config.queryClient);
-  };
+  }
 
   //#endregion
 
   //#region Queries
 
-  private readonly useQueriesInternal: (useHook: typeof useQueries | typeof useSuspenseQueries) => (
-    queries: {
-      vars: TVars;
-      options?: BuilderConfig<TVars, TData, TError, TKey>['options'];
-      mapKey?: PropertyKey;
-    }[],
-    sharedVars?: TVars,
-    sharedOpts?: typeof this._options,
-  ) => BuilderQueriesResult<TVars, TData, TError, TKey> = (useHook) => (queries, sharedVars, sharedOpts) => {
+  private useQueriesInternal(
+    this: IsBoundThis<TFlags>,
+    useHook: typeof useQueries | typeof useSuspenseQueries,
+    ...[queries, sharedVars, sharedOpts]: UseQueriesArgs<TVars, TData, TError, TKey>
+  ): BuilderQueriesResult<TVars, TData, TError, TKey> {
+    assertBound(this);
+
     type ResultType = BuilderQueriesResult<TVars, TData, TError, TKey>;
 
     const mapKeys = queries.map((q) => q.mapKey);
 
     const queryList = queries.map(({ vars, options }) =>
-      this.getQueryOptions(this.mergeVars([sharedVars!, vars]), mergeBuilderOptions([sharedOpts, options]), 'queries'),
+      this.getQueryOptions(this.mergeVars([sharedVars!, vars as any]), mergeBuilderOptions([sharedOpts, options]), 'queries'),
     );
 
     const result = useHook({ queries: queryList }) as ResultType;
@@ -161,80 +216,69 @@ export class QueryBuilderFrozen<
     result.queryMap = queryMap;
 
     return result;
-  };
+  }
 
-  readonly useQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
-    return this.useQueriesInternal(useQueries)(queries, sharedVars, sharedOpts);
-  };
+  useQueries(
+    this: IsBoundThis<TFlags>,
+    ...args: UseQueriesArgs<TVars, TData, TError, TKey>
+  ): BuilderQueriesResult<TVars, TData, TError, TKey> {
+    assertBound(this);
+    return this.useQueriesInternal(useQueries, ...args);
+  }
 
-  readonly useSuspenseQueries: ReturnType<typeof this.useQueriesInternal> = (queries, sharedVars, sharedOpts) => {
-    return this.useQueriesInternal(useSuspenseQueries)(queries, sharedVars, sharedOpts);
-  };
+  useSuspenseQueries(
+    this: IsBoundThis<TFlags>,
+    ...args: UseQueriesArgs<TVars, TData, TError, TKey>
+  ): BuilderQueriesResult<TVars, TData, TError, TKey> {
+    assertBound(this);
+    return this.useQueriesInternal(useSuspenseQueries, ...args);
+  }
 
   //#endregion
 
   //#region InfiniteQuery
 
-  readonly getInfiniteQueryOptions = ((vars, opts) => {
-    // Remove incompatible options from the base query options
-    const {
-      enabled,
-      staleTime,
-      initialData,
-      placeholderData,
-      refetchInterval,
-      refetchOnWindowFocus,
-      refetchOnReconnect,
-      refetchOnMount,
-      select,
-      persister,
-      behavior,
-      ...options
-    } = this.config.options || {};
-
-    return mergeBuilderPaginationOptions([
-      {
-        queryFn: this.getQueryFn('infiniteQuery'),
-        queryKeyHashFn: this.getQueryKeyHashFn(),
-        queryKey: this.getQueryKey(vars),
-      },
-      options,
-      this.config.paginationOptions,
-      opts,
-    ]);
-  }) as HasPagination<
+  declare getInfiniteQueryOptions: HasPagination<
     TFlags,
     (
+      this: IsBoundThis<TFlags>,
       vars: TVars,
-      opts?: typeof this._pgOptions,
+      opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
     ) => WithRequired<BuilderPaginationOptions<TVars, TData, TError, TKey>, 'queryFn' | 'queryKey' | 'initialPageParam'>
   >;
 
-  readonly useInfiniteQuery = ((vars, opts) => {
-    return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  }) as HasPagination<
+  declare useInfiniteQuery: HasPagination<
     TFlags,
-    (vars: TVars, opts?: typeof this._pgOptions) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
+    (
+      this: IsBoundThis<TFlags>,
+      vars: TVars,
+      opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
+    ) => UseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
   >;
 
-  readonly usePrefetchInfiniteQuery = ((vars, opts) => {
-    return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  }) as HasPagination<TFlags, (vars: TVars, opts?: typeof this._pgOptions) => void>;
-
-  readonly useSuspenseInfiniteQuery = ((vars, opts) => {
-    return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
-  }) as HasPagination<
+  declare usePrefetchInfiniteQuery: HasPagination<
     TFlags,
-    (vars: TVars, opts?: typeof this._pgOptions) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
+    (this: IsBoundThis<TFlags>, vars: TVars, opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>) => void
+  >;
+
+  declare useSuspenseInfiniteQuery: HasPagination<
+    TFlags,
+    (
+      this: IsBoundThis<TFlags>,
+      vars: TVars,
+      opts?: Partial<BuilderPaginationOptions<TVars, TData, TError, TKey>>,
+    ) => UseSuspenseInfiniteQueryResult<InfiniteData<TData, Partial<TVars>>, TError>
   >;
 
   //#endregion
 
   //#region Mutation
 
-  readonly getMutationFn: (queryClient: QueryClient, meta?: any) => MutationFunction<TData, TVars> = (queryClient, meta) => {
+  getMutationFn(this: IsBoundThis<TFlags>, queryClient: QueryClient, meta?: any): MutationFunction<TData, TVars> {
+    assertBound(this);
+
     return async (vars) => {
-      const queryKey = [this.mergeVars([this.config.vars, vars])] as TKey;
+      const queryKey = [this.mergeVars([this.config.vars, vars as TODO])] as TKey;
       return this.config.queryFn({
         queryKey,
         meta,
@@ -244,21 +288,26 @@ export class QueryBuilderFrozen<
         operationType: 'mutation',
       });
     };
-  };
+  }
 
-  private randomKey?: string;
-  readonly getMutationKey: () => MutationKey = () => {
+  #randomKey?: string;
+  getMutationKey(this: IsBoundThis<TFlags>): MutationKey {
+    assertBound(this);
+
     if (this.config.options?.mutationKey) return this.config.options.mutationKey;
 
     if (this.config.queryKeySanitizer && this.config.vars) return this.config.queryKeySanitizer([this.config.vars] as TKey);
 
-    return this.config.options?.mutationKey || [(this.randomKey ||= getRandomKey())];
-  };
+    return this.config.options?.mutationKey || [(this.#randomKey ||= getRandomKey())];
+  }
 
-  readonly getMutationOptions: (queryClient: QueryClient, opts?: typeof this._options) => UseMutationOptions<TData, TError, TVars> = (
-    queryClient,
-    opts,
-  ) => {
+  getMutationOptions(
+    this: IsBoundThis<TFlags>,
+    queryClient: QueryClient,
+    opts?: BuilderOptions<TVars, TData, TError, TKey>,
+  ): UseMutationOptions<TData, TError, TVars> {
+    assertBound(this);
+
     return mergeMutationOptions([
       {
         mutationKey: this.getMutationKey(),
@@ -267,13 +316,16 @@ export class QueryBuilderFrozen<
       this.config.options,
       opts,
     ]);
-  };
+  }
 
-  readonly getMutationFilters: (vars?: TVars, filters?: MutationFilters<TData, TError, TVars>) => MutationFilters<any, any, any> = (
-    vars,
-    filters,
-  ) => {
-    const baseKey = this.preprocessVars(this.mergeVars([this.config.vars, vars]));
+  getMutationFilters(
+    this: IsBoundThis<TFlags>,
+    vars?: TVars,
+    filters?: MutationFilters<TData, TError, TVars>,
+  ): MutationFilters<any, any, any> {
+    assertBound(this);
+
+    const baseKey = this.preprocessVars(this.mergeVars([this.config.vars, vars as TODO]));
 
     return {
       mutationKey: this.getMutationKey(),
@@ -287,34 +339,81 @@ export class QueryBuilderFrozen<
         return areKeysEqual([curKey], [baseKey], this.config.queryKeySanitizer);
       },
     };
-  };
+  }
 
-  readonly useMutation: (opts?: typeof this._options) => ReturnType<typeof useMutation<TData, TError, TVars>> = (opts) => {
+  useMutation(
+    this: IsBoundThis<TFlags>,
+    opts?: BuilderOptions<TVars, TData, TError, TKey>,
+  ): ReturnType<typeof useMutation<TData, TError, TVars>> {
+    assertBound(this);
     const queryClient = useQueryClient(this.config.queryClient);
     return useMutation(this.getMutationOptions(queryClient, opts), this.config.queryClient);
-  };
+  }
 
-  readonly useIsMutating: (vars: TVars, filters?: MutationFilters<TData, TError, TVars>) => number = (vars, filters) => {
+  useIsMutating(this: IsBoundThis<TFlags>, vars: TVars, filters?: MutationFilters<TData, TError, TVars>): number {
+    assertBound(this);
     return useIsMutating(this.getMutationFilters(vars, filters), this.config.queryClient);
-  };
+  }
 
-  readonly useMutationState: <TSelect = Mutation<TData, TError, TVars>>(
+  useMutationState<TSelect = Mutation<TData, TError, TVars>>(
+    this: IsBoundThis<TFlags>,
     vars?: TVars,
     filters?: MutationFilters<TData, TError, TVars>,
     select?: (mt: Mutation<TData, TError, TVars>) => TSelect,
-  ) => TSelect[] = (vars, filters, select) => {
+  ): TSelect[] {
+    assertBound(this);
     return useMutationState({ filters: this.getMutationFilters(vars, filters), select: select as any }, this.config.queryClient);
-  };
+  }
 
   //#endregion
-
-  #client?: QueryBuilderClient<TVars, TData, TError, TKey, TTags>;
-  get client(): HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>> {
-    return (this.#client ??= new QueryBuilderClient(this)) as any;
-  }
-
-  #tags?: QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>;
-  get tags(): HasClient<TFlags, QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>> {
-    return (this.#tags ??= new QueryBuilderTagsManager(this)) as any;
-  }
 }
+
+//#region InfiniteQuery implementation
+
+QueryBuilderFrozen.prototype.getInfiniteQueryOptions = function getInfiniteQueryOptions(vars, opts) {
+  assertBound(this);
+
+  // Remove incompatible options from the base query options
+  const {
+    enabled,
+    staleTime,
+    initialData,
+    placeholderData,
+    refetchInterval,
+    refetchOnWindowFocus,
+    refetchOnReconnect,
+    refetchOnMount,
+    select,
+    persister,
+    behavior,
+    ...options
+  } = this.config.options || {};
+
+  return mergeBuilderPaginationOptions([
+    {
+      queryFn: this.getQueryFn('infiniteQuery'),
+      queryKeyHashFn: this.getQueryKeyHashFn(),
+      queryKey: this.getQueryKey(vars),
+    },
+    options,
+    this.config.paginationOptions,
+    opts,
+  ]) as TODO;
+};
+
+QueryBuilderFrozen.prototype.useInfiniteQuery = function (vars, opts) {
+  assertBound(this);
+  return useInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
+};
+
+QueryBuilderFrozen.prototype.usePrefetchInfiniteQuery = function (vars, opts) {
+  assertBound(this);
+  return usePrefetchInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
+};
+
+QueryBuilderFrozen.prototype.useSuspenseInfiniteQuery = function (vars, opts) {
+  assertBound(this);
+  return useSuspenseInfiniteQuery(this.getInfiniteQueryOptions(vars, opts), this.config.queryClient);
+};
+
+//#endregion

@@ -114,4 +114,6 @@ export class HttpQueryBuilder<
   withTagTypes(): this {
     return this as any;
   }
+
+  declare asBound: () => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'bound', TKey>;
 }
