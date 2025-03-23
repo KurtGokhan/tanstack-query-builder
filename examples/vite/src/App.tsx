@@ -1,19 +1,14 @@
-import { setupWorker } from 'msw/browser';
-import { useRef, useState } from 'react';
-import { CommentData, PostData, baseUrl, getMockHandlers } from 'tanstack-query-builder-example-mocks';
-import './App.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { useRef, useState } from 'react';
+import { CommentData, PostData, baseUrl, getMockHandlers } from 'tanstack-query-builder-example-mocks';
+import { setupMSW } from 'tanstack-query-builder-example-mocks/setup-msw';
 import { HttpQueryBuilder } from 'tanstack-query-builder/http';
 import { queryClient } from './client';
+import './App.css';
 import './index.css';
 
-const isTest = import.meta.env.MODE === 'test';
-
-await setupWorker(...getMockHandlers(!isTest)).start({
-  onUnhandledRequest: 'bypass',
-  quiet: true,
-});
+await setupMSW(...getMockHandlers()).start({ onUnhandledRequest: 'bypass', quiet: true, waitUntilReady: true });
 
 const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUrl(baseUrl).withTagTypes<{
   post: PostData;
@@ -21,8 +16,6 @@ const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUrl(baseU
   comments: CommentData;
   refreshable: unknown;
 }>();
-
-console.log(builder);
 
 const resetMutation = builder.withPath('/reset').withMethod('post').withUpdates('*');
 

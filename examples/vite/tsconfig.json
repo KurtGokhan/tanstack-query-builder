@@ -15,7 +15,8 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "customConditions": ["tanstack-query-builder@dev"]
   },
   "include": ["src", "**/*.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.test.json" }]

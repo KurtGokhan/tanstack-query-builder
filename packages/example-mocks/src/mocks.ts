@@ -23,7 +23,7 @@ function createMockData() {
   return { users, posts, comments };
 }
 
-export function getMockHandlers(withLocalStorage = true) {
+export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'test') {
   function saveMockData(saveData = { users, posts, comments }) {
     if (!withLocalStorage) return;
     localStorage.setItem('mockData', JSON.stringify(saveData));

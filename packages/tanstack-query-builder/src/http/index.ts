@@ -1,2 +1,2 @@
-export * from './request';
 export * from './HttpQueryBuilder';
+export * from './request';

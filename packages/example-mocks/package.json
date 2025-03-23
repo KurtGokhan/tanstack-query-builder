@@ -5,7 +5,11 @@
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./setup-msw": {
+      "default": "./src/setup-msw/setup.ts",
+      "stackblitz": "./src/setup-msw/setup.native.ts"
+    }
   },
   "scripts": {
     "start": "vite",
