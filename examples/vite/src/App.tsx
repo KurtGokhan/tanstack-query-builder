@@ -5,7 +5,6 @@ import { CommentData, PostData, baseUrl, getMockHandlers } from 'tanstack-query-
 import { setupMSW } from 'tanstack-query-builder-example-mocks/setup-msw';
 import { HttpQueryBuilder } from 'tanstack-query-builder/http';
 import { queryClient } from './client';
-import './App.css';
 import './index.css';
 
 await setupMSW(...getMockHandlers()).start({ onUnhandledRequest: 'bypass', quiet: true, waitUntilReady: true });
@@ -96,46 +95,63 @@ function AppCore() {
 
   return (
     <>
-      <button onClick={reload} disabled={posts.isFetching}>
-        Reload
-      </button>
+      <div className="p-4">
+        <button onClick={reload} disabled={posts.isFetching} className="btn btn-primary mr-2">
+          Reload
+        </button>
 
-      <button onClick={() => reset.mutateAsync({})} disabled={reset.isPending}>
-        Reset
-      </button>
+        <button onClick={() => reset.mutateAsync({})} disabled={reset.isPending} className="btn btn-secondary mr-2">
+          Reset
+        </button>
 
-      <label>
-        <input type="checkbox" onChange={(e) => setEnablePrefetch(e.target.checked)} checked={enablePrefetch} />
-        Enable prefetch
-      </label>
+        <label className="flex items-center">
+          <input type="checkbox" onChange={(e) => setEnablePrefetch(e.target.checked)} checked={enablePrefetch} className="mr-2" />
+          Enable prefetch on hover
+        </label>
+      </div>
 
-      {posts.isLoading
-        ? 'Loading...'
-        : posts.isError
-          ? posts.error.message
-          : posts.data?.pages?.flat().map((post) => (
-              <div key={post.id}>
-                <a>
-                  <h2 onClick={() => setPostId(post.id)} onMouseOver={() => enablePrefetch && postQuery.client.prefetch({ id: post.id })}>
-                    {post.id} - {post.title}
-                  </h2>
-                </a>
-
-                <button
-                  onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } }).catch(() => {})}
-                  disabled={deletePostMutation.client.isMutating({ params: { id: post.id } }) > 0}
+      {posts.isLoading ? (
+        <div className="text-center">Loading...</div>
+      ) : posts.isError ? (
+        <div className="text-red-500">{posts.error.message}</div>
+      ) : (
+        posts.data?.pages?.flat().map((post) => (
+          <div key={post.id} className="p-4 border-b flex flex-row">
+            <div className="flex flex-col grow">
+              <a>
+                <h2
+                  onClick={() => setPostId(post.id)}
+                  onMouseOver={() => {
+                    if (!enablePrefetch) return;
+                    postQuery.client.prefetch({ id: post.id });
+                    commentsQuery.client.prefetch({ search: { postId: post.id } });
+                  }}
+                  className="text-xl font-bold cursor-pointer text-blue-800 hover:underline"
                 >
-                  Delete
-                </button>
+                  {post.id} - {post.title}
+                </h2>
+              </a>
 
-                {deleteErrors.includes(post.id) && <span style={{ color: 'red' }}>Error deleting post</span>}
+              <p className="mt-2 whitespace-pre-wrap">{post.body}</p>
+            </div>
 
-                <p>{post.body}</p>
-              </div>
-            ))}
+            <div className="flex flex-col items-end">
+              <button
+                onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } }).catch(() => {})}
+                disabled={deletePostMutation.client.isMutating({ params: { id: post.id } }) > 0}
+                className="btn btn-danger mt-2"
+              >
+                Delete
+              </button>
+
+              {deleteErrors.includes(post.id) && <span className="text-red-500 ml-4">Error deleting post</span>}
+            </div>
+          </div>
+        ))
+      )}
 
       {posts.hasNextPage && (
-        <button onClick={() => posts.fetchNextPage()} disabled={posts.isFetchingNextPage}>
+        <button onClick={() => posts.fetchNextPage()} disabled={posts.isFetchingNextPage} className="btn btn-primary mt-4">
           Load next page
         </button>
       )}
@@ -157,27 +173,29 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
       {!showEdit ? (
         <>
           {post.isLoading ? (
-            'Loading...'
+            <div className="text-center">Loading...</div>
           ) : post.isError ? (
-            post.error.message
+            <div className="text-red-500">{post.error.message}</div>
           ) : (
-            <div>
-              <h2>{post.data?.titleUppercase}</h2>
-              <p>{post.data?.body}</p>
-              <button onClick={onBack}>Back</button>
-              <button onClick={() => setShowEdit(true)} disabled={editPost.isPending}>
+            <div className="p-4">
+              <h2 className="text-2xl font-bold">{post.data?.titleUppercase}</h2>
+              <p className="mt-2 whitespace-pre-wrap">{post.data?.body}</p>
+              <button onClick={onBack} className="btn btn-secondary mt-4 mr-2">
+                Back
+              </button>
+              <button onClick={() => setShowEdit(true)} disabled={editPost.isPending} className="btn btn-primary mt-4">
                 Edit post
               </button>
             </div>
           )}
         </>
       ) : (
-        <>
-          <h2>Edit post</h2>
+        <div className="p-4">
+          <h2 className="text-2xl font-bold">Edit post</h2>
 
-          <input ref={titleRef} defaultValue={post.data?.title} style={{ display: 'block' }} />
+          <input ref={titleRef} defaultValue={post.data?.title} className="block w-full mt-2 p-2 border rounded" />
 
-          <textarea ref={bodyRef} defaultValue={post.data?.body} style={{ display: 'block', width: 400 }} />
+          <textarea ref={bodyRef} defaultValue={post.data?.body} className="block w-full mt-2 p-2 border rounded" />
 
           <button
             onClick={() => {
@@ -193,24 +211,27 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
               setShowEdit(false);
             }}
             disabled={editPost.isPending}
+            className="btn btn-primary mt-4"
           >
             Save
           </button>
-        </>
+        </div>
       )}
 
-      <h3>Comments</h3>
+      <h3 className="text-xl font-bold m-4">Comments</h3>
 
-      {comments.isLoading
-        ? 'Loading comments...'
-        : comments.isError
-          ? comments.error.message
-          : comments.data?.map((comment) => (
-              <div key={comment.id}>
-                <h5>{comment.name}</h5>
-                <p>{comment.body}</p>
-              </div>
-            ))}
+      {comments.isLoading ? (
+        <div className="text-center">Loading comments...</div>
+      ) : comments.isError ? (
+        <div className="text-red-500">{comments.error.message}</div>
+      ) : (
+        comments.data?.map((comment) => (
+          <div key={comment.id} className="p-4 border-b">
+            <h5 className="text-lg font-bold">{comment.name}</h5>
+            <p className="mt-2">{comment.body}</p>
+          </div>
+        ))
+      )}
     </>
   );
 }

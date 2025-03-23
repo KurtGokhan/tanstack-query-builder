@@ -40,19 +40,12 @@ function getStackblitzEl(projectId: string) {
     forceEmbedLayout: true,
     view: 'preview',
     height: '100%',
-    hideNavigation: true,
-    hideExplorer: true,
+    openFile: 'src/App.tsx',
   };
 
   const isGithub = projectId.startsWith('KurtGokhan');
-  const promise = isGithub ? StackBlitzSDK.embedGithubProject(el, projectId, opts) : StackBlitzSDK.embedProjectId(el, projectId, opts);
-
-  promise.then(() => {
-    const iframe = elParent.querySelector('iframe');
-    // if (!iframe) return;
-    // iframe.style.width = '100%';
-    // iframe.style.height = '100%';
-  });
+  if (isGithub) StackBlitzSDK.embedGithubProject(el, projectId, opts);
+  else StackBlitzSDK.embedProjectId(el, projectId, opts);
 
   cache[projectId] = elParent;
   return elParent;
@@ -65,12 +58,7 @@ export function Stackblitz(props: Props) {
 function StackblitzCore({ embedId }: Props) {
   const el = getStackblitzEl(embedId);
 
-  const ref = useCallback(
-    (node) => {
-      node?.appendChild(el);
-    },
-    [el],
-  );
+  const ref = useCallback((node) => node?.appendChild(el), [el]);
 
   return <div ref={ref} key={embedId} style={{ height: 600 }} />;
 }
