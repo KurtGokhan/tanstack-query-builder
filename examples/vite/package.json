@@ -12,23 +12,23 @@
     "test:browser": "vitest --workspace=vitest.workspace.ts"
   },
   "dependencies": {
-    "@tanstack/react-query-devtools": "^5.66.11",
+    "@tanstack/react-query-devtools": "^5.69.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tanstack-query-builder": "*",
-    "tanstack-query-builder-example-mocks": "*"
+    "tanstack-query-builder": "^0.9.1",
+    "tanstack-query-builder-example-mocks": "^0.9.1"
   },
   "devDependencies": {
-    "@types/react": "^19.0.10",
+    "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/browser": "^3.0.7",
+    "@vitest/browser": "^3.0.9",
     "msw": "^2.7.3",
-    "playwright": "^1.50.1",
-    "sass": "^1.85.1",
+    "playwright": "^1.51.1",
+    "sass": "^1.86.0",
     "typescript": "^5.8.2",
-    "vite": "^6.2.0",
-    "vitest": "^3.0.7",
+    "vite": "^6.2.2",
+    "vitest": "^3.0.9",
     "vitest-browser-react": "^0.1.1"
   },
   "msw": {
