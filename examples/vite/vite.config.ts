@@ -11,7 +11,7 @@ export default defineConfig({
   optimizeDeps: { exclude: ['tanstack-query-builder'] },
   server: { port: 3000 },
   resolve: {
-    conditions: [...(isStackblitz ? ['stackblitz', 'node'] : []), 'tanstack-query-builder@dev'],
+    conditions: [...(isStackblitz ? ['stackblitz', 'node'] : ['browser']), 'tanstack-query-builder@dev'],
   },
   test: {
     globals: true,

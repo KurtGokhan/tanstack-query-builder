@@ -7,7 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./setup-msw": {
-      "default": "./src/setup-msw/setup.ts",
+      "browser": "./src/setup-msw/setup.ts",
       "stackblitz": "./src/setup-msw/setup.native.ts"
     }
   },
