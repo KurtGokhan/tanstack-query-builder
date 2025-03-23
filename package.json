@@ -18,6 +18,7 @@
   },
   "scripts": {
     "start": "npm run start --workspace=tanstack-query-builder-example-vite",
+    "docs": "npm run start --workspace=tanstack-query-builder-website",
     "test": "vitest",
     "lint": "biome lint",
     "format": "biome format",
