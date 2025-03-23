@@ -1,3 +1,4 @@
+import BrowserOnly from '@docusaurus/BrowserOnly';
 import StackBlitzSDK, { EmbedOptions } from '@stackblitz/sdk';
 import { useCallback } from 'react';
 import React from 'react';
@@ -8,18 +9,25 @@ interface Props {
 
 const cache: Record<string, HTMLDivElement> = {};
 
-const elRoot = document.createElement('div');
-elRoot.style.visibility = 'hidden';
-elRoot.style.pointerEvents = 'none';
-elRoot.style.width = '0px';
-elRoot.style.height = '0px';
-elRoot.style.position = 'absolute';
+let elRoot: HTMLDivElement | null = null;
 
-document.body.appendChild(elRoot);
+function getRootElement() {
+  const elRoot = document.createElement('div');
+  elRoot.style.visibility = 'hidden';
+  elRoot.style.pointerEvents = 'none';
+  elRoot.style.width = '0px';
+  elRoot.style.height = '0px';
+  elRoot.style.position = 'absolute';
+
+  document.body.appendChild(elRoot);
+  return elRoot;
+}
 
 function getStackblitzEl(projectId: string) {
   const existing = cache[projectId];
   if (existing) return existing;
+
+  elRoot = elRoot || getRootElement();
 
   const elParent = document.createElement('div');
   elParent.style.display = 'contents';
@@ -50,7 +58,11 @@ function getStackblitzEl(projectId: string) {
   return elParent;
 }
 
-export function Stackblitz({ embedId }: Props) {
+export function Stackblitz(props: Props) {
+  return <BrowserOnly>{() => <StackblitzCore {...props} />}</BrowserOnly>;
+}
+
+function StackblitzCore({ embedId }: Props) {
   const el = getStackblitzEl(embedId);
 
   const ref = useCallback(
