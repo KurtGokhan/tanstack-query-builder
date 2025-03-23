@@ -23,8 +23,7 @@
     "format": "biome format",
     "check": "biome check",
     "prepare": "husky",
-    "version": "node scripts/versionAllPackages.mts",
-    "publish": "npm run publish --workspaces --if-present"
+    "version": "node scripts/versionAllPackages.mts"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
