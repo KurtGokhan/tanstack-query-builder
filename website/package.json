@@ -1,6 +1,6 @@
 {
   "name": "website",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -20,11 +20,11 @@
     "@docusaurus/remark-plugin-npm2yarn": "^3.7.0",
     "@mdx-js/react": "^3.1.0",
     "clsx": "^2.1.1",
-    "tanstack-query-builder": "*",
     "prism-react-renderer": "^2.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-is": "^19.0.0"
+    "react-is": "^19.0.0",
+    "tanstack-query-builder": "^0.9.2"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.7.0",
