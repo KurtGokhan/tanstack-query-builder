@@ -1,12 +1,12 @@
-export type PostData = { id: number; title: string; body: string; userId: number };
+export type ArticleData = { id: number; title: string; body: string; userId: number };
 
-export function createMockPosts() {
-  const mockPosts: PostData[] = [
+export function createMockArticles() {
+  const mockArticles: ArticleData[] = [
     {
       id: 0,
       userId: 0,
       title: 'Exploring the Future of AI',
-      body: 'Artificial intelligence is transforming industries, from healthcare to finance. This post explores the latest advancements and future possibilities.',
+      body: 'Artificial intelligence is transforming industries, from healthcare to finance. This article explores the latest advancements and future possibilities.',
     },
     {
       id: 1,
@@ -94,5 +94,5 @@ export function createMockPosts() {
     },
   ];
 
-  return mockPosts;
+  return mockArticles;
 }

@@ -1,7 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useRef, useState } from 'react';
-import { CommentData, PostData, baseUrl, getMockHandlers } from 'tanstack-query-builder-example-mocks';
+import { ArticleData, CommentData, baseUrl, getMockHandlers } from 'tanstack-query-builder-example-mocks';
 import { setupMSW } from 'tanstack-query-builder-example-mocks/setup-msw';
 import { HttpQueryBuilder } from 'tanstack-query-builder/http';
 import { queryClient } from './client';
@@ -10,29 +10,29 @@ import './index.css';
 await setupMSW(...getMockHandlers()).start({ onUnhandledRequest: 'bypass', quiet: true, waitUntilReady: true });
 
 const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUrl(baseUrl).withTagTypes<{
-  post: PostData;
-  posts: PostData[];
+  article: ArticleData;
+  articles: ArticleData[];
   comments: CommentData;
   refreshable: unknown;
 }>();
 
 const resetMutation = builder.withPath('/reset').withMethod('post').withUpdates('*');
 
-const postsQuery = builder
-  .withTags('refreshable', 'posts')
-  .withPath('/posts')
-  .withData<PostData[]>()
+const articlesQuery = builder
+  .withTags('refreshable', 'articles')
+  .withPath('/articles')
+  .withData<ArticleData[]>()
   .withSearch<{ page?: number }>()
   .withPagination({
     initialPageParam: { search: { page: 0 } },
     getNextPageParam: (prev, __, lastVars) => (!prev?.length ? null : { search: { page: (lastVars?.search?.page || 0) + 1 } }),
   });
 
-const { useQuery: usePost, ...postQuery } = builder
+const { useQuery: useArticle, ...articleQuery } = builder
   .withTags('refreshable')
-  .withPath('/posts/:id')
-  .withData<PostData>()
-  .withTags((ctx) => ({ type: 'post', id: ctx.data.id }))
+  .withPath('/articles/:id')
+  .withData<ArticleData>()
+  .withTags((ctx) => ({ type: 'article', id: ctx.data.id }))
   .withPreprocessor<{ id: number }>((vars) => ({ ...vars, params: { id: vars.id } }))
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);
@@ -43,21 +43,21 @@ const { useQuery: usePost, ...postQuery } = builder
 const commentsQuery = builder
   .withTags('refreshable')
   .withPath('/comments')
-  .withSearch<{ postId: number | null }>()
+  .withSearch<{ articleId: number | null }>()
   .withData<CommentData[]>();
 
-const editPostMutation = builder
-  .withPath('/posts/:id')
+const editArticleMutation = builder
+  .withPath('/articles/:id')
   .withMethod('put')
-  .withBody<Partial<PostData>>()
+  .withBody<Partial<ArticleData>>()
   .withUpdates(
     {
-      type: 'posts',
+      type: 'articles',
       optimistic: true,
       updater: 'update-body-by-id',
     },
     (ctx) => ({
-      type: 'post',
+      type: 'article',
       id: ctx.vars.params.id,
       optimistic: true,
       updater: 'merge-body',
@@ -74,29 +74,29 @@ const editPostMutation = builder
     return res;
   });
 
-const deletePostMutation = builder.withMethod('delete').withPath('/posts/:id').withUpdates({
-  type: 'posts',
+const deleteArticleMutation = builder.withMethod('delete').withPath('/articles/:id').withUpdates({
+  type: 'articles',
   optimistic: true,
   updater: 'delete-params-by-id',
 });
 
 function AppCore() {
   const [enablePrefetch, setEnablePrefetch] = useState(false);
-  const [postId, setPostId] = useState<number | null>(null);
+  const [articleId, setArticleId] = useState<number | null>(null);
 
-  const posts = postsQuery.useInfiniteQuery({}, { enabled: postId == null });
+  const articles = articlesQuery.useInfiniteQuery({}, { enabled: articleId == null });
   const reset = resetMutation.useMutation();
 
-  const deleteErrors = deletePostMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
+  const deleteErrors = deleteArticleMutation.useMutationState(undefined, { status: 'error' }, (x) => x.state.variables?.params.id);
 
   const reload = () => builder.tags.reset({ tags: 'refreshable' });
 
-  if (postId != null) return <PostPage postId={postId} onBack={() => setPostId(null)} />;
+  if (articleId != null) return <ArticlePage articleId={articleId} onBack={() => setArticleId(null)} />;
 
   return (
     <>
       <div className="p-4">
-        <button onClick={reload} disabled={posts.isFetching} className="btn btn-primary mr-2">
+        <button onClick={reload} disabled={articles.isFetching} className="btn btn-primary mr-2">
           Reload
         </button>
 
@@ -110,48 +110,48 @@ function AppCore() {
         </label>
       </div>
 
-      {posts.isLoading ? (
+      {articles.isLoading ? (
         <div className="text-center">Loading...</div>
-      ) : posts.isError ? (
-        <div className="text-red-500">{posts.error.message}</div>
+      ) : articles.isError ? (
+        <div className="text-red-500">{articles.error.message}</div>
       ) : (
-        posts.data?.pages?.flat().map((post) => (
-          <div key={post.id} className="p-4 border-b flex flex-row">
+        articles.data?.pages?.flat().map((article) => (
+          <div key={article.id} className="p-4 border-b flex flex-row">
             <div className="flex flex-col grow">
               <a>
                 <h2
-                  onClick={() => setPostId(post.id)}
+                  onClick={() => setArticleId(article.id)}
                   onMouseOver={() => {
                     if (!enablePrefetch) return;
-                    postQuery.client.prefetch({ id: post.id });
-                    commentsQuery.client.prefetch({ search: { postId: post.id } });
+                    articleQuery.client.prefetch({ id: article.id });
+                    commentsQuery.client.prefetch({ search: { articleId: article.id } });
                   }}
                   className="text-xl font-bold cursor-pointer text-blue-800 hover:underline"
                 >
-                  {post.id} - {post.title}
+                  {article.id} - {article.title}
                 </h2>
               </a>
 
-              <p className="mt-2 whitespace-pre-wrap">{post.body}</p>
+              <p className="mt-2 whitespace-pre-wrap">{article.body}</p>
             </div>
 
             <div className="flex flex-col items-end">
               <button
-                onClick={() => deletePostMutation.client.mutate({ params: { id: post.id } }).catch(() => {})}
-                disabled={deletePostMutation.client.isMutating({ params: { id: post.id } }) > 0}
+                onClick={() => deleteArticleMutation.client.mutate({ params: { id: article.id } }).catch(() => {})}
+                disabled={deleteArticleMutation.client.isMutating({ params: { id: article.id } }) > 0}
                 className="btn btn-danger mt-2"
               >
                 Delete
               </button>
 
-              {deleteErrors.includes(post.id) && <span className="text-red-500 ml-4">Error deleting post</span>}
+              {deleteErrors.includes(article.id) && <span className="text-red-500 ml-4">Error deleting article</span>}
             </div>
           </div>
         ))
       )}
 
-      {posts.hasNextPage && (
-        <button onClick={() => posts.fetchNextPage()} disabled={posts.isFetchingNextPage} className="btn btn-primary mt-4">
+      {articles.hasNextPage && (
+        <button onClick={() => articles.fetchNextPage()} disabled={articles.isFetchingNextPage} className="btn btn-primary mt-4">
           Load next page
         </button>
       )}
@@ -159,11 +159,11 @@ function AppCore() {
   );
 }
 
-function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
-  const post = usePost({ id: postId });
-  const comments = commentsQuery.useQuery({ search: { postId: postId } });
+function ArticlePage({ articleId, onBack }: { articleId: number; onBack: () => void }) {
+  const article = useArticle({ id: articleId });
+  const comments = commentsQuery.useQuery({ search: { articleId: articleId } });
   const [showEdit, setShowEdit] = useState(false);
-  const editPost = editPostMutation.useMutation();
+  const editArticle = editArticleMutation.useMutation();
 
   const titleRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
@@ -172,37 +172,37 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
     <>
       {!showEdit ? (
         <>
-          {post.isLoading ? (
+          {article.isLoading ? (
             <div className="text-center">Loading...</div>
-          ) : post.isError ? (
-            <div className="text-red-500">{post.error.message}</div>
+          ) : article.isError ? (
+            <div className="text-red-500">{article.error.message}</div>
           ) : (
             <div className="p-4">
-              <h2 className="text-2xl font-bold">{post.data?.titleUppercase}</h2>
-              <p className="mt-2 whitespace-pre-wrap">{post.data?.body}</p>
+              <h2 className="text-2xl font-bold">{article.data?.titleUppercase}</h2>
+              <p className="mt-2 whitespace-pre-wrap">{article.data?.body}</p>
               <button onClick={onBack} className="btn btn-secondary mt-4 mr-2">
                 Back
               </button>
-              <button onClick={() => setShowEdit(true)} disabled={editPost.isPending} className="btn btn-primary mt-4">
-                Edit post
+              <button onClick={() => setShowEdit(true)} disabled={editArticle.isPending} className="btn btn-primary mt-4">
+                Edit article
               </button>
             </div>
           )}
         </>
       ) : (
         <div className="p-4">
-          <h2 className="text-2xl font-bold">Edit post</h2>
+          <h2 className="text-2xl font-bold">Edit article</h2>
 
-          <input ref={titleRef} defaultValue={post.data?.title} className="block w-full mt-2 p-2 border rounded" />
+          <input ref={titleRef} defaultValue={article.data?.title} className="block w-full mt-2 p-2 border rounded" />
 
-          <textarea ref={bodyRef} defaultValue={post.data?.body} className="block w-full mt-2 p-2 border rounded" />
+          <textarea ref={bodyRef} defaultValue={article.data?.body} className="block w-full mt-2 p-2 border rounded" />
 
           <button
             onClick={() => {
-              editPost.mutateAsync({
-                params: { id: postId },
+              editArticle.mutateAsync({
+                params: { id: articleId },
                 body: {
-                  id: postId,
+                  id: articleId,
                   title: titleRef.current!.value,
                   body: bodyRef.current!.value,
                 },
@@ -210,7 +210,7 @@ function PostPage({ postId, onBack }: { postId: number; onBack: () => void }) {
 
               setShowEdit(false);
             }}
-            disabled={editPost.isPending}
+            disabled={editArticle.isPending}
             className="btn btn-primary mt-4"
           >
             Save

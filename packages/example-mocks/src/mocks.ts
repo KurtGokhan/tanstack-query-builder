@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
+import { ArticleData, createMockArticles } from './articles';
 import { createMockComments } from './comments';
-import { PostData, createMockPosts } from './posts';
 
 export type UserData = { id: number; name: string; email: string; username: string; website: string };
 
@@ -17,14 +17,14 @@ function createMockData() {
     },
   ];
 
-  const posts = createMockPosts();
+  const articles = createMockArticles();
   const comments = createMockComments();
 
-  return { users, posts, comments };
+  return { users, articles, comments };
 }
 
 export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'test') {
-  function saveMockData(saveData = { users, posts, comments }) {
+  function saveMockData(saveData = { users, articles, comments }) {
     if (!withLocalStorage) return;
     localStorage.setItem('mockData', JSON.stringify(saveData));
   }
@@ -41,7 +41,7 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
         const ls = localStorage.getItem('mockData');
         if (ls) {
           const data = JSON.parse(ls);
-          if (data.users && data.posts && data.comments) return data as ReturnType<typeof createMockData>;
+          if (data.users && data.articles && data.comments) return data as ReturnType<typeof createMockData>;
         }
       }
     } catch (e) {}
@@ -49,13 +49,13 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
     return recreateMockData();
   }
 
-  let { users, posts, comments } = getMockData();
+  let { users, articles, comments } = getMockData();
 
   window.addEventListener('storage', (event) => {
     if (event.key === 'mockData') {
-      const { users: newUsers, posts: newPosts, comments: newComments } = getMockData();
+      const { users: newUsers, articles: newArticles, comments: newComments } = getMockData();
       users = newUsers;
-      posts = newPosts;
+      articles = newArticles;
       comments = newComments;
     }
   });
@@ -65,7 +65,7 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
       await delay();
       const allData = recreateMockData();
       users = allData.users;
-      posts = allData.posts;
+      articles = allData.articles;
       comments = allData.comments;
 
       return HttpResponse.json(undefined, { status: 204 });
@@ -74,55 +74,55 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
       await delay();
       return HttpResponse.json(users);
     }),
-    http.get(`${baseUrl}/posts`, async (req) => {
+    http.get(`${baseUrl}/articles`, async (req) => {
       await delay();
       const page = Number(new URL(req.request.url).searchParams.get('page')) || 0;
       const pageSize = 5;
-      return HttpResponse.json(posts.slice(page * pageSize, (page + 1) * pageSize));
+      return HttpResponse.json(articles.slice(page * pageSize, (page + 1) * pageSize));
     }),
-    http.get(`${baseUrl}/posts/:id`, async (req) => {
+    http.get(`${baseUrl}/articles/:id`, async (req) => {
       await delay();
       const { id } = req.params;
-      const post = posts.find((post) => post.id === Number(id));
-      if (!post) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
-      return HttpResponse.json(post);
+      const article = articles.find((article) => article.id === Number(id));
+      if (!article) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+      return HttpResponse.json(article);
     }),
     http.get(`${baseUrl}/comments`, async (req) => {
       await delay();
       const url = new URL(req.request.url);
-      const postId = Number(url.searchParams.get('postId'));
-      const postComments = comments.filter((comment) => comment.postId === postId);
-      return HttpResponse.json(postComments);
+      const articleId = Number(url.searchParams.get('articleId'));
+      const articleComments = comments.filter((comment) => comment.articleId === articleId);
+      return HttpResponse.json(articleComments);
     }),
-    http.delete(`${baseUrl}/posts/:id`, async (req) => {
+    http.delete(`${baseUrl}/articles/:id`, async (req) => {
       await delay(1000);
       const { id } = req.params;
       if (id === '0') return HttpResponse.json({ error: '[Mock] Failed to delete' }, { status: 500 });
 
-      const postIndex = posts.findIndex((post) => post.id === Number(id));
-      if (postIndex === -1) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+      const articleIndex = articles.findIndex((article) => article.id === Number(id));
+      if (articleIndex === -1) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
 
-      posts.splice(postIndex, 1);
+      articles.splice(articleIndex, 1);
       saveMockData();
       return HttpResponse.json(undefined, { status: 204 });
     }),
-    http.post(`${baseUrl}/posts`, async (req) => {
+    http.post(`${baseUrl}/articles`, async (req) => {
       await delay();
-      const newPost = (await req.request.json()) as PostData;
-      newPost.id = Math.max(...posts.map((x) => x.id)) + 1;
-      posts.push(newPost);
+      const newArticle = (await req.request.json()) as ArticleData;
+      newArticle.id = Math.max(...articles.map((x) => x.id)) + 1;
+      articles.push(newArticle);
       saveMockData();
-      return HttpResponse.json(newPost, { status: 201 });
+      return HttpResponse.json(newArticle, { status: 201 });
     }),
-    http.put(`${baseUrl}/posts/:id`, async (req) => {
+    http.put(`${baseUrl}/articles/:id`, async (req) => {
       await delay();
       const { id } = req.params;
-      const updatedPost = (await req.request.json()) as PostData;
-      const postIndex = posts.findIndex((post) => post.id === Number(id));
-      if (postIndex === -1) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
-      Object.assign(posts[postIndex], updatedPost);
+      const updatedArticle = (await req.request.json()) as ArticleData;
+      const articleIndex = articles.findIndex((article) => article.id === Number(id));
+      if (articleIndex === -1) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+      Object.assign(articles[articleIndex], updatedArticle);
       saveMockData();
-      return HttpResponse.json(posts[postIndex]);
+      return HttpResponse.json(articles[articleIndex]);
     }),
   ];
 

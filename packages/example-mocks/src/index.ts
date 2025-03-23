@@ -1,3 +1,3 @@
 export * from './mocks';
-export * from './posts';
+export * from './articles';
 export * from './comments';
