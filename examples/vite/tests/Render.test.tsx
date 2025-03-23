@@ -14,7 +14,7 @@ test('Renders the app', async () => {
   await expect.element(getByText('Reload')).toBeInTheDocument();
 });
 
-test('Loads posts', async () => {
+test('Loads articles', async () => {
   const { getByText } = render(<App />);
   await expect.element(getByText('Loading...')).toBeInTheDocument();
   await expect.element(getByText('0 - Exploring the Future of AI')).toBeInTheDocument();
@@ -36,7 +36,7 @@ test('Loads next page when clicked', async () => {
   await expect.element(getByText('Load next page')).not.toBeInTheDocument();
 });
 
-test('Deletes posts immediately on clicking delete button', async () => {
+test('Deletes articles immediately on clicking delete button', async () => {
   const { getByText } = render(<App />);
 
   const el = getByText('1 - 10 Tips for Better Time Management');
@@ -47,7 +47,7 @@ test('Deletes posts immediately on clicking delete button', async () => {
   await expect.element(el).not.toBeInTheDocument();
 });
 
-test('Deletes the post but reverts the deletion after server fails', async () => {
+test('Deletes the article but reverts the deletion after server fails', async () => {
   const { getByText } = render(<App />);
 
   const el = getByText('0 - Exploring the Future of AI');
@@ -58,10 +58,10 @@ test('Deletes the post but reverts the deletion after server fails', async () =>
   await expect.element(el).not.toBeInTheDocument();
 
   await expect.element(el, { timeout: 4000 }).toBeInTheDocument();
-  await expect.element(getByText('Error deleting post')).toBeInTheDocument();
+  await expect.element(getByText('Error deleting article')).toBeInTheDocument();
 });
 
-test('Posts deleted in other tabs are synced', async () => {
+test('Articles deleted in other tabs are synced', async () => {
   const { getByText } = render(<App />);
 
   const el = getByText('1 - 10 Tips for Better Time Management');
@@ -69,8 +69,8 @@ test('Posts deleted in other tabs are synced', async () => {
   await expect.element(el).toBeInTheDocument();
 
   // Simulate delete in another tab and send sync message
-  await fetch(`${baseUrl}/posts/1`, { method: 'DELETE' });
-  new BroadcastChannel('tanstack-query-builder-tags').postMessage({ type: 'invalidate', data: [{ type: 'posts' }] });
+  await fetch(`${baseUrl}/articles/1`, { method: 'DELETE' });
+  new BroadcastChannel('tanstack-query-builder-tags').postMessage({ type: 'invalidate', data: [{ type: 'articles' }] });
 
   await expect.element(el).not.toBeInTheDocument();
 });
