@@ -26,11 +26,11 @@ jobs:
       - run: npm ci
 
       - run: npm run publish
-        working-directory: ./packages/tanstack-query-builder
+        working-directory: packages/tanstack-query-builder
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - run: npm run publish
-        working-directory: ./packages/tanstack-query-builder-example-mocks
+        working-directory: packages/example-mocks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
