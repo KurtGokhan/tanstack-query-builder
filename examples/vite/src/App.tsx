@@ -151,8 +151,9 @@ function AppCore() {
       )}
 
       {articles.hasNextPage && (
-        <button onClick={() => articles.fetchNextPage()} disabled={articles.isFetchingNextPage} className="btn btn-primary mt-4">
+        <button onClick={() => articles.fetchNextPage()} disabled={articles.isFetching} className="btn btn-primary m-4">
           Load next page
+          {articles.isFetching && <span className="loader" />}
         </button>
       )}
     </>

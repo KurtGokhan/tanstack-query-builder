@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 .btn {
-  @apply px-4 py-2 rounded;
+  @apply px-4 py-2 rounded inline-flex flex-row gap-1;
+
+  &[disabled] {
+    @apply bg-gray-300 text-gray-500 hover:bg-gray-300 cursor-not-allowed;
+  }
 }
 
 .btn-primary {
@@ -16,4 +20,9 @@
 
 .btn-danger {
   @apply bg-red-500 text-white hover:bg-red-700;
+}
+
+.loader {
+  @apply inline-block w-5 h-5 border-[3px] border-transparent border-t-gray-200 rounded-full animate-spin align-middle;
+  animation-duration: 400ms;
 }
