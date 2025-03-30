@@ -5,6 +5,7 @@ import React from 'react';
 
 interface Props {
   embedId: 'string';
+  exampleId?: string;
 }
 
 const cache: Record<string, HTMLDivElement> = {};
@@ -23,7 +24,7 @@ function getRootElement() {
   return elRoot;
 }
 
-function getStackblitzEl(projectId: string) {
+function getStackblitzEl(projectId: string, exampleId?: string) {
   const existing = cache[projectId];
   if (existing) return existing;
 
@@ -40,12 +41,15 @@ function getStackblitzEl(projectId: string) {
     forceEmbedLayout: true,
     view: 'preview',
     height: '100%',
-    openFile: 'src/App.tsx',
+    openFile: exampleId ? `src/${exampleId}/example.tsx` : undefined,
   };
 
   const isGithub = projectId.startsWith('KurtGokhan');
-  if (isGithub) StackBlitzSDK.embedGithubProject(el, projectId, opts);
-  else StackBlitzSDK.embedProjectId(el, projectId, opts);
+
+  const embedFn = isGithub ? StackBlitzSDK.embedGithubProject : StackBlitzSDK.embedProjectId;
+  const embedPromise = embedFn(el, projectId, opts);
+
+  embedPromise.then((p) => p.preview.setUrl(`/${exampleId || ''}`));
 
   cache[projectId] = elParent;
   return elParent;
@@ -55,8 +59,8 @@ export function Stackblitz(props: Props) {
   return <BrowserOnly>{() => <StackblitzCore {...props} />}</BrowserOnly>;
 }
 
-function StackblitzCore({ embedId }: Props) {
-  const el = getStackblitzEl(embedId);
+function StackblitzCore({ embedId, exampleId }: Props) {
+  const el = getStackblitzEl(embedId, exampleId);
 
   const ref = useCallback((node) => node?.appendChild(el), [el]);
 
