@@ -44,7 +44,7 @@ function AppCore() {
               <a>
                 <h2
                   className="link"
-                  onClick={() => nav({ to: '/main-example/$id', params: { id: String(article.id) } })}
+                  onClick={() => nav({ to: '/main/$id', params: { id: String(article.id) } })}
                   onMouseOver={() => {
                     if (!enablePrefetch) return;
                     articleQuery.client.prefetch({ id: article.id });

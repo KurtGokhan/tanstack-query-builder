@@ -11,7 +11,7 @@ const isStackblitz = process.env.SHELL === '/bin/jsh';
 export default defineConfig({
   plugins: [TanStackRouterVite({ target: 'react', autoCodeSplitting: true }), react()],
   optimizeDeps: { exclude: ['tanstack-query-builder'] },
-  server: { port: 3000 },
+  server: { port: 3100 },
   resolve: {
     alias: {
       src: path.resolve(import.meta.dirname, 'src'),

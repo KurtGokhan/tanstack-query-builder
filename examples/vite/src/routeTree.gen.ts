@@ -12,8 +12,8 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as MainExampleIndexImport } from './routes/main-example/index'
-import { Route as MainExampleIdImport } from './routes/main-example/$id'
+import { Route as MainIndexImport } from './routes/main/index'
+import { Route as MainIdImport } from './routes/main/$id'
 
 // Create/Update Routes
 
@@ -23,15 +23,15 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const MainExampleIndexRoute = MainExampleIndexImport.update({
-  id: '/main-example/',
-  path: '/main-example/',
+const MainIndexRoute = MainIndexImport.update({
+  id: '/main/',
+  path: '/main/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const MainExampleIdRoute = MainExampleIdImport.update({
-  id: '/main-example/$id',
-  path: '/main-example/$id',
+const MainIdRoute = MainIdImport.update({
+  id: '/main/$id',
+  path: '/main/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -46,18 +46,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/main-example/$id': {
-      id: '/main-example/$id'
-      path: '/main-example/$id'
-      fullPath: '/main-example/$id'
-      preLoaderRoute: typeof MainExampleIdImport
+    '/main/$id': {
+      id: '/main/$id'
+      path: '/main/$id'
+      fullPath: '/main/$id'
+      preLoaderRoute: typeof MainIdImport
       parentRoute: typeof rootRoute
     }
-    '/main-example/': {
-      id: '/main-example/'
-      path: '/main-example'
-      fullPath: '/main-example'
-      preLoaderRoute: typeof MainExampleIndexImport
+    '/main/': {
+      id: '/main/'
+      path: '/main'
+      fullPath: '/main'
+      preLoaderRoute: typeof MainIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -67,42 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/main-example/$id': typeof MainExampleIdRoute
-  '/main-example': typeof MainExampleIndexRoute
+  '/main/$id': typeof MainIdRoute
+  '/main': typeof MainIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/main-example/$id': typeof MainExampleIdRoute
-  '/main-example': typeof MainExampleIndexRoute
+  '/main/$id': typeof MainIdRoute
+  '/main': typeof MainIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/main-example/$id': typeof MainExampleIdRoute
-  '/main-example/': typeof MainExampleIndexRoute
+  '/main/$id': typeof MainIdRoute
+  '/main/': typeof MainIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/main-example/$id' | '/main-example'
+  fullPaths: '/' | '/main/$id' | '/main'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/main-example/$id' | '/main-example'
-  id: '__root__' | '/' | '/main-example/$id' | '/main-example/'
+  to: '/' | '/main/$id' | '/main'
+  id: '__root__' | '/' | '/main/$id' | '/main/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  MainExampleIdRoute: typeof MainExampleIdRoute
-  MainExampleIndexRoute: typeof MainExampleIndexRoute
+  MainIdRoute: typeof MainIdRoute
+  MainIndexRoute: typeof MainIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  MainExampleIdRoute: MainExampleIdRoute,
-  MainExampleIndexRoute: MainExampleIndexRoute,
+  MainIdRoute: MainIdRoute,
+  MainIndexRoute: MainIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -116,18 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/main-example/$id",
-        "/main-example/"
+        "/main/$id",
+        "/main/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/main-example/$id": {
-      "filePath": "main-example/$id.tsx"
+    "/main/$id": {
+      "filePath": "main/$id.tsx"
     },
-    "/main-example/": {
-      "filePath": "main-example/index.tsx"
+    "/main/": {
+      "filePath": "main/index.tsx"
     }
   }
 }

@@ -8,7 +8,7 @@ import { render } from 'vitest-browser-react';
 import '../src/index.css';
 import 'src/examples/main/example';
 
-const history = createMemoryHistory({ initialEntries: ['/main-example'] });
+const history = createMemoryHistory({ initialEntries: ['/main'] });
 const TestRenderer = () => <AppRouter history={history} />;
 
 beforeEach(async () => {

@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { commentsQuery, editArticleMutation, useArticle } from './example';
 
 export function ArticlePage() {
-  const id = Number.parseInt(useParams({ from: '/main-example/$id' }).id);
+  const id = Number.parseInt(useParams({ from: '/main/$id' }).id);
   const nav = useNavigate();
   const article = useArticle({ id });
   const comments = commentsQuery.useQuery({ search: { articleId: id } });

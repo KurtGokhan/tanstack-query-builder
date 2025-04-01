@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import React from 'react';
 
 interface Props {
-  embedId: 'string';
+  embedId?: string;
   exampleId?: string;
 }
 
@@ -41,7 +41,7 @@ function getStackblitzEl(projectId: string, exampleId?: string) {
     forceEmbedLayout: true,
     view: 'preview',
     height: '100%',
-    openFile: exampleId ? `src/${exampleId}/example.tsx` : undefined,
+    openFile: exampleId ? `src/examples/${exampleId}/example.tsx` : undefined,
   };
 
   const isGithub = projectId.startsWith('KurtGokhan');
@@ -49,7 +49,12 @@ function getStackblitzEl(projectId: string, exampleId?: string) {
   const embedFn = isGithub ? StackBlitzSDK.embedGithubProject : StackBlitzSDK.embedProjectId;
   const embedPromise = embedFn(el, projectId, opts);
 
-  embedPromise.then((p) => p.preview.setUrl(`/${exampleId || ''}`));
+  embedPromise.then(async (p) => {
+    try {
+      await p.preview.getUrl();
+      if (exampleId) p.preview.setUrl(`/${exampleId || ''}`);
+    } catch (e) {}
+  });
 
   cache[projectId] = elParent;
   return elParent;
@@ -59,7 +64,7 @@ export function Stackblitz(props: Props) {
   return <BrowserOnly>{() => <StackblitzCore {...props} />}</BrowserOnly>;
 }
 
-function StackblitzCore({ embedId, exampleId }: Props) {
+function StackblitzCore({ embedId = 'KurtGokhan/tanstack-query-builder/tree/main/examples/vite', exampleId = 'main' }: Props) {
   const el = getStackblitzEl(embedId, exampleId);
 
   const ref = useCallback((node) => node?.appendChild(el), [el]);
