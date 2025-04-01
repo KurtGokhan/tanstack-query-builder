@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 title: Introduction
 ---
 
@@ -11,4 +11,52 @@ title: Introduction
 npm install tanstack-query-builder
 ```
 
-<Stackblitz exampleId="main" />
+## Usage
+
+To start, you can create a `HttpQueryBuilder` instance with some shared configuration.
+
+```ts
+import { QueryClient } from "@tanstack/react-query";
+import { HttpQueryBuilder } from "tanstack-query-builder/http";
+
+const client = new QueryClient();
+
+const builder = new HttpQueryBuilder()
+  .withClient(client)
+  .withBaseUrl("https://api.example.com")
+  .withTagTypes<{
+    article: ArticleData;
+    articles: ArticleData[];
+  }>();
+```
+
+After that, you can create new instances from the base builder you created.
+
+```ts
+const articleQuery = builder
+  .withTags("article")
+  .withPath("/articles/:id")
+  .withData<ArticleData>();
+```
+
+Then you can use the `articleQuery` instance in a React component.
+
+```tsx
+function Article({ id }: { id: string }) {
+  const { data, isLoading } = articleQuery.useQuery(
+    { params: { id } },
+    { enabled: Boolean(id) }
+  );
+
+  if (isLoading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      <h1>{data.title}</h1>
+      <p>{data.content}</p>
+    </div>
+  );
+}
+```
+
+For more features and examples, check out the [API documentation](/api).

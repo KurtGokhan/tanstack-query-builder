@@ -1,0 +1,238 @@
+---
+title: Builder API
+sidebar_position: 0
+---
+
+## Base Builder API
+
+A builder is created like `new HttpQueryBuilder()`.
+The builder instance has a fluent API, meaning you can chain methods together to create a new instance with the desired configuration.
+
+You must configure the builder before using it.
+Therefore, it's important to know the available methods that can be used to configure the builder.
+
+### withClient
+
+```ts
+withClient(client: QueryClient): this
+```
+
+Sets the query client for this builder.
+This is required in order to enable [client](#client) and [tags](#tags) interfaces.
+Imperative operations done through those interfaces will be done with the provided query client.
+This method also enables the ability to sync tag invalidation with other browser tabs.
+
+### withConfig
+
+```ts
+withConfig(config): this
+```
+
+Creates a new query builder with additional config.
+This is generally used internally and should not be used directly.
+
+### withPreprocessor
+
+```ts
+withPreprocessor(preprocessor): this
+```
+
+Adds a preprocessor function to the query.
+The preprocessor function is called before the query function is called.
+
+### withMiddleware
+
+```ts
+withMiddleware(middleware): this
+```
+
+Adds a middleware function to the query.
+The middleware function wraps the query function and
+can be used to modify the input variables, the output data, or the error.
+
+A middleware has many use cases, such as:
+
+- Logging
+- Caching
+- Error handling
+- Retrying
+- Transforming the data
+- Adding authentication
+- Side effects
+
+If input variables are modified, preprocessors should be preferred over middleware functions.
+
+### withTags
+
+```ts
+withTags(tags): this
+```
+
+Adds a tag to the query.
+The tag is used to invalidate or update the query when the tag is updated.
+To learn more about tags, see the [tag based invalidation](/tags) section of the documentation.
+
+### withTagTypes
+
+```ts
+withTagTypes<T>(): this
+```
+
+Declares the type of tags of the query.
+This is used to strongly type the tags which can be helpful when using [withUpdates](#withupdates).
+
+### withUpdates
+
+```ts
+withUpdates(updates): this
+```
+
+Adds a declarative update to the mutation.
+This is used to invalidate or update the queries that were marked with [withTags](#withtags).
+To learn more about tags, see the [tag based invalidation](/tags) section of the documentation.
+
+### withData
+
+```ts
+withData<T>(): this
+```
+
+Declares the type of returned data of the query.
+
+### withError
+
+```ts
+withError<T>(): this
+```
+
+Declares the type of error of the query.
+
+### withVars
+
+```ts
+withVars<T>(defaults?: Partial<T>, resetVars: boolean = false): this
+```
+
+Declares the type of variables of the query.
+Optionally, you can pass the first argument to set the default variables,
+which will be merged with the variables passed to the query.
+
+This method is generally used internally. If you are using a `HttpQueryBuilder`, you should use its specific methods such as [`withSearch`](#withsearch).
+
+### asBound
+
+```ts
+asBound(): this
+```
+
+Binds all query methods to this class instance, so that they can be called after object destructuring such as `const { useQuery } = builder.asBound()`.
+
+### asFrozen
+
+```ts
+asFrozen(): this
+```
+
+Returns a frozen version of this builder. The frozen version cannot be modified using `with*` methods.
+
+### client
+
+```ts
+get client(): QueryBuilderClient
+```
+
+Exposes some methods to perform imperative operations on the query client, such as `prefetch`, `invalidate`, `refetch`, `remove` and more.
+See [Client API Reference](./client) to learn more.
+
+### tags
+
+```ts
+get tags(): QueryBuilderTagsManager
+```
+
+Exposes some methods to perform imperative tag operations.
+See [Tags Manager API Reference](./tags) to learn more.
+
+## HTTP Builder API
+
+A `HttpQueryBuilder` is a subclass of the `QueryBuilder` and is used to create HTTP queries.
+The queries created by this builder will make HTTP requests with the specified configuration.
+
+### withBaseUrl
+
+```ts
+withBaseUrl(url: string): this
+```
+
+Sets the base URL for the HTTP request.
+The base URL will be prepended to relative URLs.
+
+### withPath
+
+```ts
+withPath(path: string): this
+```
+
+Sets the path for the HTTP request.
+The path can contain path parameters which are defined with the format `/path/:param1/:param2`.
+The path parameters are automatically extracted and typed strongly as if declared with [`withParams`](#withparams).
+
+### withMethod
+
+```ts
+withMethod(method: HttpMethod): this
+```
+
+Sets the HTTP method for the request.
+The method can be one of the following: `get`, `post`, `put`, `patch`, `delete`, `options`, `head`.
+The default method is `get`.
+
+### withBody
+
+```ts
+withBody<T>(body?: Partial<T>): this
+```
+
+Defines the type of body of the request.
+Optionally, you can pass the first argument to set the default body.
+
+### withParams
+
+```ts
+withParams<T>(params?: Partial<T>): this
+```
+
+Defines the type of path parameters of the request.
+Optionally, you can pass the first argument to set the default parameters.
+Note that when [`withPath`](#withpath) is used, the path parameters are automatically extracted.
+This method doesn't have to be used in that case.
+
+### withSearch
+
+```ts
+withSearch<T>(search?: Partial<T>): this
+```
+
+Defines the type of search parameters of the request.
+Optionally, you can pass the first argument to set the default search parameters.
+
+### withHeaders
+
+```ts
+withHeaders<T>(headers?: Partial<T>): this
+```
+
+Defines the type of headers of the request.
+Optionally, you can pass the first argument to set the default headers.
+
+### withMeta
+
+```ts
+withMeta<T>(meta?: Partial<T>): this
+```
+
+Defines the type of metadata of the request.
+Optionally, you can pass the first argument to set the default metadata.
+
+This can be used to pass additional parameters that are not part of the request.
+Metadata is usually used in middleware functions for advanced use cases.

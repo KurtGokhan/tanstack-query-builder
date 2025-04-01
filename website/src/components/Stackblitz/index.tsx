@@ -39,7 +39,7 @@ function getStackblitzEl(projectId: string, exampleId?: string) {
 
   const opts: EmbedOptions = {
     forceEmbedLayout: true,
-    view: 'preview',
+    view: 'default',
     height: '100%',
     openFile: exampleId ? `src/examples/${exampleId}/example.tsx` : undefined,
   };
@@ -49,16 +49,21 @@ function getStackblitzEl(projectId: string, exampleId?: string) {
   const embedFn = isGithub ? StackBlitzSDK.embedGithubProject : StackBlitzSDK.embedProjectId;
   const embedPromise = embedFn(el, projectId, opts);
 
-  embedPromise.then(async (p) => {
-    // Set URL fails, probably because the preview is not loaded yet
-    // so we need to poll until it is loaded
-    const interval = setInterval(async () => {
-      try {
-        await p.preview.setUrl(`/${exampleId || ''}`);
-        clearInterval(interval);
-      } catch (e) {}
-    }, 300);
-  });
+  embedPromise.then(
+    async (p) => {
+      // Set URL fails, probably because the preview is not loaded yet
+      // so we need to poll until it is loaded
+      const interval = setInterval(async () => {
+        try {
+          await p.preview.setUrl(`/${exampleId || ''}`);
+          clearInterval(interval);
+        } catch (e) {}
+      }, 300);
+    },
+    (e) => {
+      console.error('Error embedding Stackblitz project', e);
+    },
+  );
 
   cache[projectId] = elParent;
   return elParent;

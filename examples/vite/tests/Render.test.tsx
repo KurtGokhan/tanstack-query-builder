@@ -1,3 +1,4 @@
+import { QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory } from '@tanstack/react-router';
 import { queryClient } from 'src/client';
 import { AppRouter } from 'src/router';
@@ -9,7 +10,11 @@ import '../src/index.css';
 import 'src/examples/main/example';
 
 const history = createMemoryHistory({ initialEntries: ['/main'] });
-const TestRenderer = () => <AppRouter history={history} />;
+const TestRenderer = () => (
+  <QueryClientProvider client={queryClient}>
+    <AppRouter history={history} />
+  </QueryClientProvider>
+);
 
 beforeEach(async () => {
   await fetch(`${baseUrl}/reset`, { method: 'POST' });

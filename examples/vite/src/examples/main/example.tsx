@@ -1,9 +1,6 @@
 import { queryClient } from 'src/client';
-import { ArticleData, CommentData, baseUrl, getMockHandlers } from 'tanstack-query-builder-example-mocks';
-import { setupMSW } from 'tanstack-query-builder-example-mocks/setup-msw';
+import { ArticleData, CommentData, baseUrl } from 'tanstack-query-builder-example-mocks';
 import { HttpQueryBuilder } from 'tanstack-query-builder/http';
-
-await setupMSW(...getMockHandlers()).start({ onUnhandledRequest: 'bypass', quiet: true, waitUntilReady: true });
 
 export const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUrl(baseUrl).withTagTypes<{
   article: ArticleData;

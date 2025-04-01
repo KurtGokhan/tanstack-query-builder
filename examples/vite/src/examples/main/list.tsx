@@ -1,11 +1,8 @@
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { queryClient } from '../../client';
 import { articleQuery, articlesQuery, builder, commentsQuery, deleteArticleMutation, resetMutation } from './example';
 
-function AppCore() {
+export function MainExample() {
   const [enablePrefetch, setEnablePrefetch] = useState(false);
   const nav = useNavigate();
 
@@ -80,14 +77,5 @@ function AppCore() {
         </button>
       )}
     </>
-  );
-}
-
-export function MainExample() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AppCore />
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
   );
 }
