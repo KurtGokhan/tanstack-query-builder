@@ -44,12 +44,12 @@
     "publish": "npm run bundle && npm run attw && npm run publint && npm publish ./dist --provenance --access public"
   },
   "devDependencies": {
-    "@tanstack/react-query": "^5.69.0",
+    "@tanstack/react-query": "^5.71.1",
     "@types/react": "19.0.12",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.9"
+    "vitest": "^3.1.1"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.66.0",
