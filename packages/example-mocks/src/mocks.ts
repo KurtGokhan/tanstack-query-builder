@@ -6,6 +6,10 @@ export type UserData = { id: number; name: string; email: string; username: stri
 
 export const baseUrl = 'https://mock.blog.example.com';
 
+const isTest = import.meta.env.MODE === 'test';
+
+const stdDelay = () => (isTest ? delay(50) : delay(600 + Math.random() * 400));
+
 function createMockData() {
   const users: UserData[] = [
     {
@@ -23,7 +27,7 @@ function createMockData() {
   return { users, articles, comments };
 }
 
-export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'test') {
+export function getMockHandlers(withLocalStorage = !isTest) {
   function saveMockData(saveData = { users, articles, comments }) {
     if (!withLocalStorage) return;
     localStorage.setItem('mockData', JSON.stringify(saveData));
@@ -62,7 +66,7 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
 
   const mockHandlers = [
     http.post(`${baseUrl}/reset`, async () => {
-      await delay();
+      await stdDelay();
       const allData = recreateMockData();
       users = allData.users;
       articles = allData.articles;
@@ -71,24 +75,24 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
       return HttpResponse.json(undefined, { status: 204 });
     }),
     http.get(`${baseUrl}/users`, async () => {
-      await delay();
+      await stdDelay();
       return HttpResponse.json(users);
     }),
     http.get(`${baseUrl}/articles`, async (req) => {
-      await delay();
+      await stdDelay();
       const page = Number(new URL(req.request.url).searchParams.get('page')) || 0;
       const pageSize = 5;
       return HttpResponse.json(articles.slice(page * pageSize, (page + 1) * pageSize));
     }),
     http.get(`${baseUrl}/articles/:id`, async (req) => {
-      await delay();
+      await stdDelay();
       const { id } = req.params;
       const article = articles.find((article) => article.id === Number(id));
       if (!article) return HttpResponse.json({ error: 'Not found' }, { status: 404 });
       return HttpResponse.json(article);
     }),
     http.get(`${baseUrl}/comments`, async (req) => {
-      await delay();
+      await stdDelay();
       const url = new URL(req.request.url);
       const articleId = Number(url.searchParams.get('articleId'));
       const articleComments = comments.filter((comment) => comment.articleId === articleId);
@@ -107,7 +111,7 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
       return HttpResponse.json(undefined, { status: 204 });
     }),
     http.post(`${baseUrl}/articles`, async (req) => {
-      await delay();
+      await stdDelay();
       const newArticle = (await req.request.json()) as ArticleData;
       newArticle.id = Math.max(...articles.map((x) => x.id)) + 1;
       articles.push(newArticle);
@@ -115,7 +119,7 @@ export function getMockHandlers(withLocalStorage = import.meta.env.MODE !== 'tes
       return HttpResponse.json(newArticle, { status: 201 });
     }),
     http.put(`${baseUrl}/articles/:id`, async (req) => {
-      await delay();
+      await stdDelay();
       const { id } = req.params;
       const updatedArticle = (await req.request.json()) as ArticleData;
       const articleIndex = articles.findIndex((article) => article.id === Number(id));

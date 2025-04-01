@@ -13,12 +13,14 @@
   },
   "dependencies": {
     "@tanstack/react-query-devtools": "^5.69.0",
+    "@tanstack/react-router": "^1.114.29",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tanstack-query-builder": "^0.9.3",
     "tanstack-query-builder-example-mocks": "^0.9.3"
   },
   "devDependencies": {
+    "@tanstack/router-plugin": "^1.114.30",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",

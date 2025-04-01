@@ -26,3 +26,7 @@
   @apply inline-block w-5 h-5 border-[3px] border-transparent border-t-gray-200 rounded-full animate-spin align-middle;
   animation-duration: 400ms;
 }
+
+.link {
+  @apply text-xl font-bold cursor-pointer text-blue-800 hover:underline;
+}

@@ -34,6 +34,5 @@ export type BuilderKeySanitizerFn<TKey extends unknown[]> = (key: TKey) => Query
 
 export type HasClient<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'withClient', TTruthy>;
 export type HasPagination<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'withPagination', TTruthy>;
-export type IsBound<TFlags extends BuilderFlags, TTruthy = true> = HasFlag<TFlags, 'bound', void, TTruthy>;
 
 export type BuilderFlags = '' | 'withClient' | 'withPagination' | 'bound';

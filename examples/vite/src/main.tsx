@@ -1,5 +1,10 @@
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
+import './index.css';
+import { AppRouter } from './router';
 
-const root = createRoot(document.getElementById('root') as HTMLElement);
-root.render(<App />);
+const rootElement = document.getElementById('root')!;
+if (!rootElement.innerHTML) {
+  const root = createRoot(rootElement);
+  root.render(<StrictMode children={<AppRouter />} />);
+}

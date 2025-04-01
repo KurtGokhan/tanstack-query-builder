@@ -1,8 +1,15 @@
+import { createMemoryHistory } from '@tanstack/react-router';
+import { queryClient } from 'src/client';
+import { AppRouter } from 'src/router';
 import { baseUrl } from 'tanstack-query-builder-example-mocks';
 import { expect, test } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { App } from '../src/App';
-import { queryClient } from '../src/client';
+
+import '../src/index.css';
+import 'src/examples/main/example';
+
+const history = createMemoryHistory({ initialEntries: ['/main-example'] });
+const TestRenderer = () => <AppRouter history={history} />;
 
 beforeEach(async () => {
   await fetch(`${baseUrl}/reset`, { method: 'POST' });
@@ -10,18 +17,18 @@ beforeEach(async () => {
 });
 
 test('Renders the app', async () => {
-  const { getByText } = render(<App />);
+  const { getByText } = render(<TestRenderer />);
   await expect.element(getByText('Reload')).toBeInTheDocument();
 });
 
 test('Loads articles', async () => {
-  const { getByText } = render(<App />);
+  const { getByText } = render(<TestRenderer />);
   await expect.element(getByText('Loading...')).toBeInTheDocument();
   await expect.element(getByText('0 - Exploring the Future of AI')).toBeInTheDocument();
 });
 
 test('Loads next page when clicked', async () => {
-  const { getByText } = render(<App />);
+  const { getByText } = render(<TestRenderer />);
   const loadBtn = getByText('Load next page');
   await expect.element(loadBtn).toBeInTheDocument();
 
@@ -37,7 +44,7 @@ test('Loads next page when clicked', async () => {
 });
 
 test('Deletes articles immediately on clicking delete button', async () => {
-  const { getByText } = render(<App />);
+  const { getByText } = render(<TestRenderer />);
 
   const el = getByText('1 - 10 Tips for Better Time Management');
 
@@ -48,7 +55,7 @@ test('Deletes articles immediately on clicking delete button', async () => {
 });
 
 test('Deletes the article but reverts the deletion after server fails', async () => {
-  const { getByText } = render(<App />);
+  const { getByText } = render(<TestRenderer />);
 
   const el = getByText('0 - Exploring the Future of AI');
 
@@ -62,7 +69,7 @@ test('Deletes the article but reverts the deletion after server fails', async ()
 });
 
 test('Articles deleted in other tabs are synced', async () => {
-  const { getByText } = render(<App />);
+  const { getByText } = render(<TestRenderer />);
 
   const el = getByText('1 - 10 Tips for Better Time Management');
 
