@@ -50,10 +50,14 @@ function getStackblitzEl(projectId: string, exampleId?: string) {
   const embedPromise = embedFn(el, projectId, opts);
 
   embedPromise.then(async (p) => {
-    try {
-      await p.preview.getUrl();
-      if (exampleId) p.preview.setUrl(`/${exampleId || ''}`);
-    } catch (e) {}
+    // Set URL fails, probably because the preview is not loaded yet
+    // so we need to poll until it is loaded
+    const interval = setInterval(async () => {
+      try {
+        await p.preview.setUrl(`/${exampleId || ''}`);
+        clearInterval(interval);
+      } catch (e) {}
+    }, 300);
   });
 
   cache[projectId] = elParent;
