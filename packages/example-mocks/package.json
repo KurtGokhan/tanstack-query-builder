@@ -3,6 +3,17 @@
   "version": "1.0.0",
   "type": "module",
   "main": "./src/index.ts",
+  "homepage": "https://gkurt.com/tanstack-query-builder/",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/KurtGokhan/tanstack-query-builder.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Gokhan Kurt",
+    "email": "krtgkn@gmail.com",
+    "url": "https://github.com/KurtGokhan"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./setup-msw": {
