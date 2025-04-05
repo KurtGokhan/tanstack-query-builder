@@ -3,4 +3,118 @@ title: Tag Based Invalidation
 sidebar_position: 50
 ---
 
-Work in progress. This page is not finished yet.
+## What are tags
+
+Tanstack Query encourages invalidating queries with query keys.
+But in our opinion query keys are hard to manage, as they are highly variable and not type safe.
+
+For this reason, we introduce a concept of tags.
+Tags are a way to mark queries with a specific label. You can easily manipulate the query cache by using these tags.
+
+## How to use tags
+
+You can start by strongly typing the data type that corresponds to each tag:
+
+```ts
+const builder = new HttpQueryBuilder().withTagTypes<{
+  article: ArticleData;
+  articles: ArticleData[];
+  refreshable: unknown;
+}>();
+```
+
+We recommend using single data type for each tag. But in case a tag can be used for multiple data types, you can use a union type or `unknown` type like the `refreshable` tag in the example above.
+
+Then you can use the tags in your queries:
+
+```ts
+const listArticlesQuery = builder
+  .withPath("/articles")
+  // highlight-next-line
+  .withTag("articles", "refreshable");
+```
+
+The parameter passed to `withTag` can be a function that returns tags. This function will be called with the query data and variables.
+
+```ts
+const singleArticleQuery = builder
+  .withPath("/articles/:id")
+  // highlight-next-line
+  .withTag(({ vars }) => ({ type: "article", id: vars.params.id }));
+```
+
+Then, you can invalidate the queries in the mutations:
+
+```ts
+const deleteArticleMutation = builder
+  .withPath("/articles/:id")
+  .withMethod("delete")
+  // Invalidate the list of articles:
+  // highlight-next-line
+  .withUpdates({ type: "articles" })
+  // Invalidate the single article with given id:
+  // highlight-next-line
+  .withUpdates(({ vars }) => ({ type: "article", id: vars.params.id }));
+```
+
+## Optimistic updates
+
+You can also use the tags for updating the query cache.
+The `withUpdates` method accepts an `updater` function for this purpose.
+
+```ts
+const deleteArticleMutation = builder
+  .withPath("/articles/:id")
+  .withMethod("delete")
+  .withUpdates({
+    type: "articles",
+    optimistic: true,
+    // Remove the article with given id from the cache:
+    // highlight-next-line
+    updater: ({ vars }, cache) => cache.filter((x) => x.id !== vars.params.id),
+  });
+```
+
+When `optimistic` is set to `true`, the update is done optimistically.
+Optimistic updates are applied immediately, before the mutation is completed.
+This is useful for providing a better user experience, as the UI can be updated immediately
+without waiting for the server response as opposed to the default behavior
+where the UI is updated only after the server response is received.
+If an error occurs during the mutation, the optimistic update is rolled back automatically.
+
+### Predefined updater functions (Experimental)
+
+:::warning
+This feature is experimental and may change in the future.
+:::
+
+You can use predefined updater functions for common operations.
+
+```ts
+const deleteArticleMutation = builder
+  .withPath("/articles/:id")
+  .withMethod("delete")
+  .withUpdates({
+    type: "articles",
+    // highlight-next-line
+    updater: "delete-params-by-id",
+  });
+```
+
+<details>
+<summary>
+Explanation
+</summary>
+
+The predefined functions are referred as a string. This string has a format of `<operation>-<context>-by-<field>` which can be broken down as follows:
+
+- `<operation>`: The operation to be performed. This can be one of `clear, merge, replace, create, update, upsert, delete, switch`.
+- `<context>`: The body of the update that will be used in the operation. This can be one of `data, vars, body, params, search, meta`
+- `<field>`: The field to be used in the context to match with the data in the cache. This is usually a unique identifier. This can be any field in the context.
+
+Some examples:
+
+- `delete-params-by-id`: remove the item from a list, where `params.id` matches the `id` field of the item.
+- `merge-body-by-id`: merge the `body` to the item in a list, where `body.id` matches the `id` field of the item.
+
+</details>
