@@ -97,7 +97,7 @@ const deleteArticleMutation = builder
   .withUpdates({
     type: "articles",
     // highlight-next-line
-    updater: "delete-params-by-id",
+    updater: "delete-with-params-by-id",
   });
 ```
 
@@ -106,7 +106,7 @@ const deleteArticleMutation = builder
 Explanation
 </summary>
 
-The predefined functions are referred as a string. This string has a format of `<operation>-<context>-by-<field>` which can be broken down as follows:
+The predefined functions are referred as a string. This string has a format of `<operation>-with-<context>-by-<field>` which can be broken down as follows:
 
 - `<operation>`: The operation to be performed. This can be one of `clear, merge, replace, create, update, upsert, delete, switch`.
 - `<context>`: The body of the update that will be used in the operation. This can be one of `data, vars, body, params, search, meta`
@@ -114,7 +114,7 @@ The predefined functions are referred as a string. This string has a format of `
 
 Some examples:
 
-- `delete-params-by-id`: remove the item from a list, where `params.id` matches the `id` field of the item.
-- `merge-body-by-id`: merge the `body` to the item in a list, where `body.id` matches the `id` field of the item.
+- `delete-with-params-by-id`: remove the item from a list, where `params.id` matches the `id` field of the item.
+- `merge-with-body-by-id`: merge the `body` to the item in a list, where `body.id` matches the `id` field of the item.
 
 </details>

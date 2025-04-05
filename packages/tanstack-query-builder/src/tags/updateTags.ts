@@ -38,7 +38,7 @@ export function updateTags({
 
     const updater = typeof tag === 'object' && tag.updater;
     if (!updater) continue;
-    const updaterFn = getUpdater(updater, tag);
+    const updaterFn = getUpdater(updater);
     if (!updaterFn) continue;
 
     /**

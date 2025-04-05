@@ -1,12 +1,11 @@
-import type { QueryTagObject, QueryUpdater, QueryUpdaterFn } from './types';
+import type { QueryUpdater, QueryUpdaterFn } from './types';
 
 export function getUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown>(
   updater: QueryUpdater<TVars, TData, TErr, TTarget>,
-  tag: QueryTagObject,
 ): QueryUpdaterFn<TVars, TData, TErr, TTarget> | undefined {
   if (typeof updater === 'function') return updater;
 
-  const [_, updaterType, updaterKey, __, byKey] = updater.match(/^(\w+)-(\w+)(-by-(\w+))?$/) || [];
+  const [_, updaterType, updaterKey, __, byKey] = updater.match(/^(\w+)-with-(\w+)(-by-(\w+))?$/) || [];
 
   const getFromCtx = (ctx: any) => {
     if (updaterKey === 'data') return ctx.data;

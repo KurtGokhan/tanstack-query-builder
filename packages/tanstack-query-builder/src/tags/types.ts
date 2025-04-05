@@ -39,11 +39,12 @@ export type QueryUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarg
   | QueryUpdaterFn<TVars, TData, TErr, TTarget>
   | PredefinedUpdater<TVars, TData, TErr, TTarget>;
 
+type FlatPredefinedOp = 'clear' | 'merge' | 'replace';
+type DeepPredefinedOp = 'create' | 'update' | 'upsert' | 'delete' | 'switch';
+
 export type PredefinedUpdater<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> =
-  | `clear-${UpdaterSelector<TVars>}`
-  | `merge-${UpdaterSelector<TVars>}`
-  | `replace-${UpdaterSelector<TVars>}`
-  | `${'create' | 'update' | 'upsert' | 'delete' | 'switch'}-${UpdaterSelector<TVars>}-by-${KeyOfTarget<TTarget>}`;
+  | `${FlatPredefinedOp}-with-${UpdaterSelector<TVars>}`
+  | `${DeepPredefinedOp}-with-${UpdaterSelector<TVars>}-by-${KeyOfTarget<TTarget>}`;
 
 type UpdaterSelector<TVars> = 'data' | 'vars' | Extract<KeysOfValue<TVars, Record<string, unknown> | undefined>, string>;
 type KeyOfTarget<TTarget> = KeyOfItem<TTarget> & string & {};

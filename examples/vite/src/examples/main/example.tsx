@@ -47,13 +47,13 @@ export const editArticleMutation = builder
     {
       type: 'articles',
       optimistic: true,
-      updater: 'update-body-by-id',
+      updater: 'update-with-body-by-id',
     },
     (ctx) => ({
       type: 'article',
       id: ctx.vars.params.id,
       optimistic: true,
-      updater: 'merge-body',
+      updater: 'merge-with-body',
     }),
   )
   .withMiddleware(async (ctx, next) => {
@@ -70,5 +70,5 @@ export const editArticleMutation = builder
 export const deleteArticleMutation = builder.withMethod('delete').withPath('/articles/:id').withUpdates({
   type: 'articles',
   optimistic: true,
-  updater: 'delete-params-by-id',
+  updater: 'delete-with-params-by-id',
 });
