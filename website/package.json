@@ -25,12 +25,12 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-is": "^19.1.0",
-    "tanstack-query-builder": "^0.9.3"
+    "tanstack-query-builder": "^1.0.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.7.0",
     "@tsconfig/docusaurus": "^2.0.3",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "browserslist": {
     "production": [">0.5%", "not dead", "not op_mini all"],

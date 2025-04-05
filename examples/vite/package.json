@@ -12,27 +12,27 @@
     "test:browser": "vitest --workspace=vitest.workspace.ts"
   },
   "dependencies": {
-    "@tanstack/react-query-devtools": "^5.71.1",
-    "@tanstack/react-router": "^1.114.29",
+    "@tanstack/react-query-devtools": "^5.71.10",
+    "@tanstack/react-router": "^1.114.34",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tanstack-query-builder": "^0.9.3",
-    "tanstack-query-builder-example-mocks": "^0.9.3"
+    "tanstack-query-builder": "^1.0.0",
+    "tanstack-query-builder-example-mocks": "^1.0.0"
   },
   "devDependencies": {
-    "@tanstack/router-plugin": "^1.114.31",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
+    "@tanstack/router-plugin": "^1.114.34",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.1",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser": "^3.1.1",
     "autoprefixer": "^10.4.21",
     "msw": "^2.7.3",
     "playwright": "^1.51.1",
     "postcss": "^8.5.3",
-    "sass": "^1.86.1",
+    "sass": "^1.86.3",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.5",
     "vitest": "^3.1.1",
     "vitest-browser-react": "^0.1.1"
   },
