@@ -56,3 +56,7 @@ export function getRandomKey() {
 export function assertThis<T>(t: T): asserts t is T & {} {
   if (t === undefined) throw new Error('Method called on unbound instance. Use `asBound` to bind methods.');
 }
+
+export function bindMethods(self: Record<string, any>, methodsToBind: string[]) {
+  for (const method of methodsToBind) self[method] = self[method].bind(self);
+}

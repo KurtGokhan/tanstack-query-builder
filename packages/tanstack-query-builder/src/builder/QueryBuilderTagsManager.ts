@@ -4,9 +4,14 @@ import type { QueryTagContext, QueryUpdateTag, TagOperationOptions } from '../ta
 import { updateTags } from '../tags/updateTags';
 import type { WithOptional } from '../type-utils';
 import type { QueryBuilderFrozen } from './QueryBuilderFrozen';
+import { bindMethods } from './utils';
+
+const methodsToBind = ['useOperation', 'operate', 'cancel', 'invalidate', 'refetch', 'remove', 'reset', 'update'];
 
 export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[], TTags extends Record<string, unknown>> {
-  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {}
+  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {
+    if (builder.config.bound) bindMethods(this, methodsToBind);
+  }
 
   /**
    * This hook returns a function that can be used to operate on queries based on tags.

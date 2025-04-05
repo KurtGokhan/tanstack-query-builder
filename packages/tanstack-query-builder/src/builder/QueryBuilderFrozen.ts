@@ -33,7 +33,7 @@ import { QueryBuilderClient } from './QueryBuilderClient';
 import { QueryBuilderTagsManager } from './QueryBuilderTagsManager';
 import { type BuilderOptions, BuilderPaginationOptions, mergeBuilderOptions, mergeBuilderPaginationOptions } from './options';
 import type { BuilderConfig, BuilderFlags, BuilderQueriesResult, HasClient, HasPagination } from './types';
-import { areKeysEqual, assertThis, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
+import { areKeysEqual, assertThis, bindMethods, getRandomKey, mergeMutationOptions, mergeVars } from './utils';
 
 type UseQueriesArgs<TVars, TData, TError, TKey extends unknown[]> = [
   queries: {
@@ -79,10 +79,7 @@ export class QueryBuilderFrozen<
   TFlags extends BuilderFlags = '',
 > {
   constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {
-    if (config.bound) {
-      const self = this as unknown as any;
-      for (const method of methodsToBind) self[method] = self[method].bind(self);
-    }
+    if (config.bound) bindMethods(this, methodsToBind);
   }
 
   readonly client = new QueryBuilderClient(this) as HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>>;

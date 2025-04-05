@@ -11,6 +11,28 @@ import type {
 import { MutationObserver } from '@tanstack/react-query';
 import type { QueryBuilderFrozen } from './QueryBuilderFrozen';
 import type { BuilderConfig } from './types';
+import { bindMethods } from './utils';
+
+const methodsToBind = [
+  'ensureData',
+  'ensureInfiniteData',
+  'refetch',
+  'fetch',
+  'fetchInfinite',
+  'isFetching',
+  'prefetch',
+  'prefetchInfinite',
+  'reset',
+  'remove',
+  'cancel',
+  'invalidate',
+  'getData',
+  'setData',
+  'getState',
+  'getMutation',
+  'isMutating',
+  'mutate',
+];
 
 export class QueryBuilderClient<
   TVars,
@@ -22,7 +44,10 @@ export class QueryBuilderClient<
 > {
   private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];
   private declare _pgOptions: BuilderConfig<TVars, TData, TError, TKey>['paginationOptions'];
-  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {}
+
+  constructor(private builder: QueryBuilderFrozen<TVars, TData, TError, TKey, TTags, any>) {
+    if (builder.config.bound) bindMethods(this, methodsToBind);
+  }
 
   ensureData(vars: TVars, opts?: typeof this._options) {
     return this.builder.config.queryClient?.ensureQueryData(this.builder.getQueryOptions(vars, opts));
