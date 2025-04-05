@@ -11,6 +11,10 @@ But in our opinion query keys are hard to manage, as they are highly variable an
 For this reason, we introduce a concept of tags.
 Tags are a way to mark queries with a specific label. You can easily manipulate the query cache by using these tags.
 
+This feature is heavily inspired by the same feature in
+[RTK Query](https://redux-toolkit.js.org/rtk-query/usage/automated-refetching#definitions)
+and works similarly.
+
 ## How to use tags
 
 You can start by strongly typing the data type that corresponds to each tag:
@@ -55,6 +59,19 @@ const deleteArticleMutation = builder
   // Invalidate the single article with given id:
   // highlight-next-line
   .withUpdates(({ vars }) => ({ type: "article", id: vars.params.id }));
+```
+
+## Syncing between browser tabs
+
+When invalidating queries with tags, same tags are also invalidated in other browser tabs.
+This is enabled by default after calling [`withClient`](./api/builder#withclient).
+You can disable this behavior by passing the option to the `withClient` method.
+
+```ts
+const builder = new HttpQueryBuilder().withClient(queryClient, {
+  // highlight-next-line
+  syncTagsWithOtherTabs: false,
+});
 ```
 
 ## Optimistic updates

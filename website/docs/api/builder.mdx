@@ -14,7 +14,7 @@ Therefore, it's important to know the available methods that can be used to conf
 ### withClient
 
 ```ts
-withClient(client: QueryClient): this
+withClient(client: QueryClient, options): this
 ```
 
 Sets the query client for this builder.
@@ -90,6 +90,17 @@ withUpdates(updates): this
 Adds a declarative update to the mutation.
 This is used to invalidate or update the queries that were marked with [withTags](#withtags).
 To learn more about tags, see the [tag based invalidation](/tags) section of the documentation.
+
+### withPagination
+
+```ts
+withPagination(paginationOptions): this
+```
+
+Adds infinite query support to the query.
+Requires `getNextPageParam` to be passed in options.
+This is required in order to enable the hooks like `useInfiniteQuery`.
+Additional options can also be provided which are passed to the underlying hook.
 
 ### withData
 
