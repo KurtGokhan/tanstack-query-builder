@@ -1,6 +1,46 @@
 ---
 title: Client API
 sidebar_position: 10
+hide_table_of_contents: true
 ---
 
-Work in progress. This page is not finished yet.
+The Client API provides imperative methods, similar to how QueryClient and QueryCache can be used in Tanstack Query.
+It can be accessed via [`builder.client`](./builder#client) in the `QueryBuilder` instance. Available methods are:
+
+```ts
+ensureData(vars, queryOptions): Promise<Data>;
+ensureInfiniteData(vars, paginationOptions): Promise<InfiniteData>;
+refetch(vars, queryFilters, refetchOptions): Promise<void>;
+fetch(vars, queryOptions): Promise<Data>;
+fetchInfinite(vars, queryOptions): Promise<InfiniteData>;
+isFetching(vars, queryFilters): number;
+prefetch(vars, queryOptions): Promise<Data>;
+prefetchInfinite(vars, paginationOptions): Promise<InfiniteData>;
+reset(vars, queryFilters, resetOptions): Promise<void>;
+remove(vars, queryFilters): void;
+cancel(vars, queryFilters, cancelOptions): Promise<void>;
+invalidate(vars, queryFilters, invalidateOptions): Promise<void>;
+getData(vars, queryFilters): Data | undefined;
+setData(vars, updater, setDataOptions): Data | undefined;
+getState(vars): QueryState;
+getMutation(vars, mutationFilters): Mutation;
+isMutating(vars, mutationFilters): number;
+mutate(vars, mutationOptions): Promise<Data>;
+```
+
+The main use case for these methods is to manipulate the cache outside of React components.
+For example, you can use `ensureData` in a router before the route is loaded,
+to ensure that the data for a specific article is in the cache, and if not, fetch it from the server.
+
+Most of these methods correspond to the methods in [`QueryClient`](https://tanstack.com/query/latest/docs/reference/QueryClient) of Tanstack Query. For example, `ensureData` is similar to `ensureQueryData`, and `refetch` is similar to `refetchQueries`.
+The main difference is that these methods are pre-populated with the variables in the builder, so you don't need to pass them again. For example, suppose we have a builder like this:
+
+```ts
+const articlesQuery = builder.withPath("/articles/:id").withData<ArticleData>();
+```
+
+We can fetch the data for a specific article imperatively like this:
+
+```ts
+const article = await articlesQuery.client.fetch({ params: { id: 1 } });
+```

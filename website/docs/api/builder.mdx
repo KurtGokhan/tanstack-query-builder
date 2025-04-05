@@ -133,7 +133,8 @@ Binds all query methods to this class instance, so that they can be called after
 asFrozen(): this
 ```
 
-Returns a frozen version of this builder. The frozen version cannot be modified using `with*` methods.
+Returns a frozen version of this builder. The frozen version cannot be modified using `with*` methods, so those methods will not be available.
+The methods in the [Query API](./query) will still be available.
 
 ### client
 
