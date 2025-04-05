@@ -8,7 +8,7 @@ import { defineConfig } from 'vite';
 const isStackblitz = process.env.SHELL === '/bin/jsh';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [TanStackRouterVite({ target: 'react', autoCodeSplitting: true }), react()],
   optimizeDeps: { exclude: ['tanstack-query-builder'] },
   server: { port: 3100 },
@@ -16,7 +16,10 @@ export default defineConfig({
     alias: {
       src: path.resolve(import.meta.dirname, 'src'),
     },
-    conditions: [...(isStackblitz ? ['stackblitz', 'node'] : ['browser']), 'tanstack-query-builder@dev'],
+    conditions: [
+      ...(isStackblitz ? ['stackblitz', 'node'] : ['browser']),
+      ...(mode !== 'production' ? ['tanstack-query-builder@dev'] : []),
+    ],
   },
   test: {
     globals: true,
@@ -36,4 +39,4 @@ export default defineConfig({
       ],
     },
   },
-});
+}));

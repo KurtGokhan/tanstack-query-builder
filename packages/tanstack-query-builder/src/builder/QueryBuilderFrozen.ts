@@ -80,10 +80,12 @@ export class QueryBuilderFrozen<
 > {
   constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {
     if (config.bound) bindMethods(this, methodsToBind);
+    this.client = new QueryBuilderClient(this) as typeof this.client;
+    this.tags = new QueryBuilderTagsManager(this) as typeof this.tags;
   }
 
-  readonly client = new QueryBuilderClient(this) as HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>>;
-  readonly tags = new QueryBuilderTagsManager(this) as HasClient<TFlags, QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>>;
+  readonly client: HasClient<TFlags, QueryBuilderClient<TVars, TData, TError, TKey, TTags>>;
+  readonly tags: HasClient<TFlags, QueryBuilderTagsManager<TVars, TData, TError, TKey, TTags>>;
 
   protected mergeConfigs(config: typeof this.config, other: Partial<typeof this.config>): typeof this.config {
     return {
