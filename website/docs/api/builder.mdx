@@ -144,6 +144,8 @@ get client(): QueryBuilderClient
 Exposes some methods to perform imperative operations on the query client, such as `prefetch`, `invalidate`, `refetch`, `remove` and more.
 See [Client API Reference](./client) to learn more.
 
+Note that this API is only available if [`withClient`](#withclient) was called.
+
 ### tags
 
 ```ts
@@ -151,7 +153,9 @@ get tags(): QueryBuilderTagsManager
 ```
 
 Exposes some methods to perform imperative tag operations.
-See [Tags Manager API Reference](./tags) to learn more.
+See [Tags API Reference](./tags) to learn more.
+
+Note that this API is only available if [`withClient`](#withclient) was called.
 
 ## HTTP Builder API
 

@@ -19,12 +19,10 @@ export function updateTags({
   tags,
   queryClient,
   ctx,
-  optimistic,
 }: {
   tags: readonly QueryUpdateTag<any, any, any, any>[];
   queryClient: QueryClient;
   ctx: QueryTagContext<unknown>;
-  optimistic?: boolean;
 }): UpdateTagsUndoer[] {
   if (!tags?.length) return [];
 
@@ -76,7 +74,7 @@ export function updateTags({
 
       let observer: QueryObserver<any, any> | InfiniteQueryObserver<any, any> | null = null;
 
-      const updateType = optimistic ? ('optimistic' as const) : ('pessimistic' as const);
+      const updateType = tag.optimistic ? ('optimistic' as const) : ('pessimistic' as const);
       const meta = { updated: updateType };
 
       let subscribePaused = false;

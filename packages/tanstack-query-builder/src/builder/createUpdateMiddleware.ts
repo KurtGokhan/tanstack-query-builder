@@ -25,7 +25,6 @@ export const createUpdateMiddleware: CreateUpdateMiddleware = (tags) =>
         queryClient: ctx.client,
         tags: preUpdates.filter((x) => x.updater),
         ctx: preCtx,
-        optimistic: true,
       });
 
       invalidates.push(...preUpdates);

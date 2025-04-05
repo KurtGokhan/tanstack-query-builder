@@ -1,6 +1,82 @@
 ---
-title: Tags Manager API
+title: Tags API
 sidebar_position: 20
 ---
 
-Work in progress. This page is not finished yet.
+The Tags API provides imperative methods invalidate or update tags in the cache.
+It can be accessed via [`builder.tags`](./builder#tags) in the `QueryBuilder` instance.
+
+## Methods
+
+### useOperation
+
+```ts
+useOperation(options: TagOperationOptions): [operate, MutationResult]
+```
+
+This is a hook that returns a function to operate on the tags, and the result of the operation.
+This function uses the `useMutation` hook under the hood, so it can be used in a similar way.
+For example the `operate` function can be awaited, or `isPending` of the result be used to check if the operation is pending.
+
+### operate
+
+```ts
+operate(options: TagOperationOptions): Promise<void>
+```
+
+This function behaves like the `useOperation` hook, but can also be used outside of React components.
+
+There are also shorthands for all of the operations, which are: `invalidate`, `refetch`, `reset`, `cancel`, and `remove`.
+These shorthands have the same signature as the `operate` function with the `operation` option set to the corresponding operation.
+
+### update
+
+```ts
+update(options: TagUpdateOptions): Promise<void>
+```
+
+This function updates the queries that are tagged with the specified tags.
+It can be used to update the queries in the cache without refetching them.
+You don't need to use this function for most cases, it can be useful in some advanced scenarios.
+
+## Types
+
+### TagOperationOptions
+
+```ts
+type TagOperationOptions = {
+  tags?: TagList;
+  operation?: "invalidate" | "refetch" | "reset" | "cancel" | "remove";
+  filters?: InvalidateQueryFilters;
+  options?: InvalidateOptions;
+};
+```
+
+### TagList
+
+This type is used to define the tags that will be used in operations like invalidate or update.
+It can be a single tag, an array of tags, or a function that returns a tag list. Each tag can be a string, an object with a `type` and `id`.
+
+Some examples:
+
+```ts
+// When defining tags:
+builder.withTags("articles");
+builder.withTags(({ data }) => ({ type: "article", id: data.id }));
+builder.withTags("articles", "entities");
+
+// Usage in Tags APIs:
+builder.tags.invalidate({ tags: "articles" });
+builder.tags.invalidate({ tags: { type: "article", id: 1 } });
+builder.tags.invalidate({ tags: ["articles", { type: "article", id: 1 }] });
+
+// When updating tags:
+builder.withUpdates(({ vars }) => ({
+  type: "article",
+  id: vars.params.id,
+  optimistic: true,
+  updater: () => {
+    /* update logic */
+  },
+}));
+```

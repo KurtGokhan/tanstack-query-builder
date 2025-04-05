@@ -49,13 +49,11 @@ export class QueryBuilderTagsManager<TVars, TData, TError, TKey extends unknown[
    */
   update({
     tags = [],
-    optimistic = false,
     client = this.builder.config.queryClient,
     ...ctx
   }: {
     tags: readonly QueryUpdateTag<TVars, TData, TError, TTags>[];
-    optimistic?: boolean;
   } & WithOptional<QueryTagContext<TVars, TData, TError>, 'client'>) {
-    updateTags({ tags, queryClient: client!, ctx: { client: client!, ...ctx }, optimistic });
+    updateTags({ tags, queryClient: client!, ctx: { client: client!, ...ctx } });
   }
 }
