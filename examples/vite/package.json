@@ -1,7 +1,7 @@
 {
   "name": "tanstack-query-builder-example-vite",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "start": "vite",
@@ -16,8 +16,8 @@
     "@tanstack/react-router": "^1.114.34",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tanstack-query-builder": "^1.0.0",
-    "tanstack-query-builder-example-mocks": "^1.0.0"
+    "tanstack-query-builder": "^1.0.1",
+    "tanstack-query-builder-example-mocks": "^1.0.1"
   },
   "devDependencies": {
     "@tanstack/router-plugin": "^1.114.34",

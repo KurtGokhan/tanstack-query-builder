@@ -1,6 +1,6 @@
 {
   "name": "tanstack-query-builder-website",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -25,7 +25,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-is": "^19.1.0",
-    "tanstack-query-builder": "^1.0.0"
+    "tanstack-query-builder": "^1.0.1"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.7.0",
