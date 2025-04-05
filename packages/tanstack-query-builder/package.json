@@ -41,7 +41,7 @@
     "bundle": "npm run build && node ../../scripts/copyPackageJson.mts",
     "attw": "npx --yes @arethetypeswrong/cli@latest --pack dist",
     "publint": "cd dist && npx --yes publint@latest",
-    "publish": "npm run bundle && npm run attw && npm run publint && npm publish ./dist --provenance --access public"
+    "publish-to-npm": "npm run bundle && npm run attw && npm run publint && npm publish ./dist --provenance --access public"
   },
   "devDependencies": {
     "@tanstack/react-query": "^5.71.10",

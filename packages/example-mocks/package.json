@@ -25,7 +25,7 @@
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
-    "publish": "npm publish --provenance --access public"
+    "publish-to-npm": "npm publish --provenance --access public"
   },
   "devDependencies": {
     "msw": "^2.7.3",
