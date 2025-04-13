@@ -5,40 +5,44 @@ type ArticleData = { id: number; title: string; body: string; userId: number };
 
 const client = new QueryClient();
 
-const builder = new HttpQueryBuilder().withClient(client).withBaseUrl('https://api.example.com').withTagTypes<{
-  articles: ArticleData[];
-  refreshable: unknown;
-}>();
+const builder = new HttpQueryBuilder().withClient(client).withBaseUrl('https://api.example.com');
 
-const articlesQuery = builder.withTags('refreshable', 'articles').withPath('/articles').withData<ArticleData[]>();
+const articlesQuery = builder //
+  .withPath('/articles')
+  .withData<ArticleData[]>()
+  .withTags('articles');
 
-const deleteArticleMutation = builder.withUpdates('articles').withMethod('delete').withPath('/articles/:id');
+const deleteArticleMutation = builder //
+  .withMethod('delete')
+  .withPath('/articles/:id')
+  .withUpdates('articles');
 
-export function MyApp() {
-  const [refresh, { isPending: isRefreshing }] = builder.tags.useOperation({ tags: 'refreshable' });
-  const articles = articlesQuery.useQuery({});
-  const deleteArticle = deleteArticleMutation.useMutation();
-
-  const onDelete = (id: number) => deleteArticle.mutateAsync({ params: { id } });
-
-  if (!articles.isSuccess) return <>Loading...</>;
+export function App() {
+  const { isLoading, data } = articlesQuery.useQuery({});
 
   return (
     <>
-      <button onClick={() => refresh()} disabled={isRefreshing}>
-        Refresh all articles
-      </button>
+      {isLoading && <p>Loading...</p>}
 
-      {articles.data.map((article) => (
-        <div key={article.id}>
-          <h2>{article.title}</h2>
-          <p>{article.body}</p>
-
-          <button onClick={() => onDelete(article.id)} disabled={deleteArticle.isPending}>
-            Delete
-          </button>
-        </div>
+      {data?.map((article) => (
+        <ArticleView key={article.id} article={article} />
       ))}
     </>
+  );
+}
+
+function ArticleView({ article }: { article: ArticleData }) {
+  const { mutateAsync, isPending } = deleteArticleMutation.useMutation();
+  const onDelete = () => mutateAsync({ params: { id: article.id } });
+
+  return (
+    <div key={article.id}>
+      <h2>{article.title}</h2>
+      <p>{article.body}</p>
+
+      <button disabled={isPending} onClick={onDelete}>
+        Delete
+      </button>
+    </div>
   );
 }

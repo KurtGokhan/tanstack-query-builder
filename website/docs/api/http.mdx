@@ -7,6 +7,12 @@ Various options can be passed to the HTTP client on each request. These options 
 
 ## Options
 
+The following options can be passed to the HTTP client on each request.
+
+Note that some of these options will not be used in the construction of the query key, meaning that they will not refetch the query when they change.
+Options that may change the response will be used in key creation.
+These are `method`, `baseUrl`, `path`, `params`, `search`, `headers`, `body`, `responseType` and additionally `key`.
+
 ### `method`
 
 The HTTP method to be used for the request. It's `GET` by default and can also be `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, or `TRACE`.

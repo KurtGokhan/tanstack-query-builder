@@ -179,7 +179,7 @@ export class QueryBuilderFrozen<
   //#region Queries
 
   private useQueriesInternal(
-    useHook: typeof useQueries | typeof useSuspenseQueries,
+    useQueriesImpl: typeof useQueries | typeof useSuspenseQueries,
     ...[queries, sharedVars, sharedOpts]: UseQueriesArgs<TVars, TData, TError, TKey>
   ): BuilderQueriesResult<TVars, TData, TError, TKey> {
     assertThis(this);
@@ -192,7 +192,7 @@ export class QueryBuilderFrozen<
       this.getQueryOptions(this.mergeVars([sharedVars!, vars as any]), mergeBuilderOptions([sharedOpts, options]), 'queries'),
     );
 
-    const result = useHook({ queries: queryList }) as ResultType;
+    const result = useQueriesImpl({ queries: queryList }) as ResultType;
 
     const queryMap: ResultType['queryMap'] = {};
     for (let index = 0; index < mapKeys.length; index++) {
