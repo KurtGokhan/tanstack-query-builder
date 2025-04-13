@@ -1,0 +1,82 @@
+---
+title: HTTP Options
+sidebar_position: 7
+---
+
+Various options can be passed to the HTTP client on each request. These options can be used to customize the behavior of the HTTP client, such as setting headers, timeouts, and more.
+
+## Options
+
+### `method`
+
+The HTTP method to be used for the request. It's `GET` by default and can also be `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`, `OPTIONS`, or `TRACE`.
+This can also be set with the [`withMethod`](./builder#withmethod) method of the builder.
+
+### `baseUrl`
+
+The base URL to be used to construct the URL of the request. This option is prepended to the `path` if it's not an absolute URL.
+It is useful for setting a common base URL for all requests, such as an API endpoint.
+This can also be set with the [`withBaseUrl`](./builder#withbaseurl) method of the builder.
+
+### `path`
+
+The path to the resource. This is a required option. It can be an absolute URL or a relative URL. If it's a relative URL, it will be prepended with the `baseUrl` option.
+This can also be set with the [`withPath`](./builder#withpath) method of the builder.
+
+### `params`
+
+The path can contain path parameters, which are replaced with the values passed in the `params` option.
+The path parameters are defined with the `:paramName` syntax.
+For example, if the path is `/users/:id`, and the `params` option is `{ id: 1 }`, the final URL will be `/users/1`.
+The typing and default params can be set with the [`withParams`](./builder#withparams) method of the builder.
+
+### `search`
+
+The search parameters to be added to the URL. This option is an object with the parameter names as keys and the parameter values as values.
+The search parameters are added to the URL as a query string. For example, if the path is `/users`, and the `search` option is `{ id: 1 }`, the final URL will be `/users?id=1`.
+The typing and default search parameters can be set with the [`withSearch`](./builder#withsearch) method of the builder.
+
+### `headers`
+
+The headers to be sent with the request. This option is an object with the header names as keys and the header values as values.
+The typing and default headers can be set with the [`withHeaders`](./builder#withheaders) method of the builder.
+
+### `body`
+
+The body of the request. This option can be a string, an object, or a buffer. If it's an object, it will be serialized to JSON and the `Content-Type` header will be set to `application/json`.
+The typing and default body can be set with the [`withBody`](./builder#withbody) method of the builder.
+
+### `meta`
+
+The meta information to be sent with the request.
+The typing and default meta can be set with the [`withMeta`](./builder#withmeta) method of the builder.
+
+### `responseType`
+
+The type of the response. This option can be `json`, `text`, `blob`, `arraybuffer`, or `response`. The default may be inferred from the response or be `json` if it can't be inferred.
+
+### `timeout`
+
+The timeout for the request in milliseconds. If the request takes longer than this time, it will be aborted.
+The default timeout is `0`, which means no timeout.
+
+### `delay`
+
+The request will be delayed by the specified number of milliseconds.
+Useful for debouncing requests that might be triggered multiple times in a short period of time.
+Can also be used to simulate slow network.
+
+### `abortable`
+
+Whether the request can be aborted. If this option is `true`, the request will be aborted if query is cancelled.
+
+### `concurrency`
+
+An object accepting optional `limit` and `key` properties.
+
+- `key`: The key to be used to identify the pool the request belongs to. Concurrent requests with the same key will be grouped together and share the same pool. Can be left empty to use the default pool.
+- `limit`: The maximum number of concurrent requests in the pool. If the limit is reached, the request will be queued until a slot is available. There is no limit by default.
+
+### `key`
+
+Additional key that will be used to identify the request. When the key changes, the request will be refetched.
