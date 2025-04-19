@@ -28,7 +28,7 @@
     "publish-to-npm": "npm publish --provenance --access public"
   },
   "devDependencies": {
-    "msw": "^2.7.3",
+    "msw": "^2.7.5",
     "typescript": "^5.8.3"
   }
 }

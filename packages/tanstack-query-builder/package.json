@@ -44,8 +44,8 @@
     "publish-to-npm": "npm run bundle && npm run attw && npm run publint && npm publish ./dist --provenance --access public"
   },
   "devDependencies": {
-    "@tanstack/react-query": "^5.71.10",
-    "@types/react": "19.0.12",
+    "@tanstack/react-query": "^5.74.4",
+    "@types/react": "19.1.2",
     "react": "^19.1.0",
     "tsup": "^8.4.0",
     "typescript": "^5.8.3",
