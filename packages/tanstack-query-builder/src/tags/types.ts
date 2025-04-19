@@ -20,15 +20,29 @@ export type QueryTagContext<TVars = void, TData = unknown, TErr = unknown> = {
   error?: TErr;
 };
 
-export type QueryTagCallback<TVars = void, TData = unknown, TErr = unknown, TTag = QueryTag> = (
-  ctx: QueryTagContext<TVars, TData, TErr>,
-) => TTag | readonly TTag[];
+export type QueryTagCallback<
+  TVars = void,
+  TData = unknown,
+  TErr = unknown,
+  TTag extends QueryTagObject<any> = QueryTagObject<any>,
+  TTags extends TagMap = TagMap,
+> = (ctx: QueryTagContext<TVars, unknown extends TData ? InferDataFromQueryTagOption<TTag, TTags> : TData, TErr>) => TTag | readonly TTag[];
 
 export type QueryTagStaticOption<TTag extends QueryTagObject<any> = QueryTagObject<any>> = '*' | QueryTag<TTag> | readonly QueryTag<TTag>[];
 
-export type QueryTagOption<TVars = unknown, TData = unknown, TErr = unknown, TTag extends QueryTagObject<any> = QueryTagObject<any>> =
-  | QueryTagStaticOption<TTag>
-  | QueryTagCallback<TVars, TData, TErr, TTag>;
+export type QueryTagOption<
+  TVars = unknown,
+  TData = unknown,
+  TErr = unknown,
+  TTag extends QueryTagObject<any> = QueryTagObject<any>,
+  TTags extends TagMap = TagMap,
+> = QueryTagStaticOption<TTag> | QueryTagCallback<TVars, TData, TErr, TTag, TTags>;
+
+export type InferDataFromQueryTagOption<TTag extends QueryTagOption<any, any, any, any>, TTags extends TagMap> = TTag extends string
+  ? TTags[TTag]
+  : TTag extends QueryTagCallback<any, infer TData, any, any>
+    ? TData
+    : unknown;
 
 export type QueryUpdaterFn<TVars = unknown, TData = unknown, TErr = unknown, TTarget = unknown> = (
   ctx: QueryTagContext<TVars, TData, TErr>,

@@ -12,9 +12,8 @@ export const builder = new HttpQueryBuilder().withClient(queryClient).withBaseUr
 export const resetMutation = builder.withPath('/reset').withMethod('post').withUpdates('*');
 
 export const articlesQuery = builder
-  .withTags('refreshable', 'articles')
+  .withTags('articles', 'refreshable')
   .withPath('/articles')
-  .withData<ArticleData[]>()
   .withSearch<{ page?: number }>()
   .withPagination({
     initialPageParam: { search: { page: 0 } },
@@ -22,10 +21,9 @@ export const articlesQuery = builder
   });
 
 export const { useQuery: useArticle, ...articleQuery } = builder
-  .withTags('refreshable')
-  .withPath('/articles/:id')
-  .withData<ArticleData>()
+  .withTags('article', 'refreshable')
   .withTags((ctx) => ({ type: 'article', id: ctx.data.id }))
+  .withPath('/articles/:id')
   .withPreprocessor<{ id: number }>((vars) => ({ ...vars, params: { id: vars.id } }))
   .withMiddleware(async (ctx, next) => {
     const res = await next(ctx);

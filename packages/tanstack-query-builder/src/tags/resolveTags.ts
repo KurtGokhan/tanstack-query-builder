@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { QueryTag, QueryTagContext, QueryTagObject, QueryTagOption } from './types';
 
 export type ResolveTagsParams<TVars = void, TData = unknown, TErr = unknown, TTag extends QueryTagObject = QueryTagObject> = {
-  tags?: QueryTagOption<TVars, TData, TErr, TTag> | QueryTagOption<TVars, TData, TErr, TTag>[] | null;
+  tags?: QueryTagOption<TVars, TData, TErr, TTag, any> | QueryTagOption<TVars, TData, TErr, TTag, any>[] | null;
   vars: TVars;
   data?: TData;
   error?: unknown;
@@ -21,7 +21,7 @@ export function resolveTags<TVars = void, TTag extends QueryTagObject = QueryTag
 }: ResolveTagsParams<TVars, any, any, TTag> & { client: QueryClient }): TTag[] {
   const resolvedTags =
     typeof tags === 'function'
-      ? resolveTags({ tags: tags(ctx as QueryTagContext<TVars>), ...ctx })
+      ? resolveTags({ tags: tags(ctx as QueryTagContext<TVars, any>), ...ctx })
       : Array.isArray(tags)
         ? tags.flatMap((tag) => resolveTags({ tags: tag, ...ctx }))
         : // If there is an error, tags passed as array will be ignored. User should pass tags as function to handle error case if needed.

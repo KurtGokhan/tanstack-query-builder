@@ -4,7 +4,7 @@ import type { QueryTagCache, QueryTagObject, QueryTagOption } from '../tags/type
 import type { MiddlewareFn } from './createMiddlewareFunction';
 
 type CreateTagMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
-  tags: QueryTagOption<any, any, any>[],
+  tags: QueryTagOption<any, any, any, any>[],
   cacheId: string | number,
 ) => MiddlewareFn<TVars, TData, TError, TKey>;
 

@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { operateOnTags } from '../tags/operateOnTags';
-import type { QueryTagObject, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
+import type { InferDataFromQueryTagOption, QueryTagObject, QueryTagOption, QueryUpdateTagObject } from '../tags/types';
 import { TODO } from '../type-utils';
 import { QueryBuilderFrozen } from './QueryBuilderFrozen';
 import { type MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
@@ -112,15 +112,18 @@ export class QueryBuilder<
    * Adds a tag to the query.
    * The tag is used to invalidate or update the query when the tag is updated.
    */
-  withTags(...tags: QueryTagOption<TVars, TData, TError, QueryTagObject<TTags>>[]): this {
-    return this.withMiddleware(createTagMiddleware(tags.flat(), QueryBuilder.tagCacheId++)) as unknown as this;
+  withTags<const TTagOpt extends QueryTagOption<TVars, TData, TError, QueryTagObject<TTags>, TTags>>(
+    primaryTag: TTagOpt,
+    ...otherTags: QueryTagOption<TVars, TData, TError, QueryTagObject<TTags>, TTags>[]
+  ): unknown extends TData ? QueryBuilder<TVars, InferDataFromQueryTagOption<TTagOpt, TTags>, TError, TKey, TTags, TFlags> : this {
+    return this.withMiddleware(createTagMiddleware([primaryTag, ...otherTags].flat(), QueryBuilder.tagCacheId++)) as unknown as any;
   }
 
   /**
    * Adds a declarative update to the mutation.
    * This is used to invalidate or update the queries that were marked with {@link withTags}.
    */
-  withUpdates(...tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, TTags>>[]): this {
+  withUpdates(...tags: QueryTagOption<TVars, TData, TError, QueryUpdateTagObject<TVars, TData, TError, TTags>, TTags>[]): this {
     return this.withMiddleware(createUpdateMiddleware<TVars, TData, TError, TKey, TTags>(tags)) as unknown as this;
   }
 

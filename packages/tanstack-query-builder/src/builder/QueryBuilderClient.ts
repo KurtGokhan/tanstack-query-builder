@@ -40,7 +40,7 @@ export class QueryBuilderClient<
   TError,
   TKey extends unknown[],
   TTags extends Record<string, unknown>,
-  TFilters = QueryFilters<TData, TError, TData, TKey>,
+  TFilters = QueryFilters<TKey>,
 > {
   private declare _options: BuilderConfig<TVars, TData, TError, TKey>['options'];
   private declare _pgOptions: BuilderConfig<TVars, TData, TError, TKey>['paginationOptions'];

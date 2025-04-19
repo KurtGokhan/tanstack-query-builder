@@ -3,6 +3,7 @@ import { QueryBuilder } from '../builder/QueryBuilder';
 import type { BuilderPaginationOptions } from '../builder/options';
 import type { BuilderConfig, BuilderFlags } from '../builder/types';
 import type { RequestError } from '../http/errors';
+import { InferDataFromQueryTagOption, QueryTagObject, QueryTagOption } from '../tags/types';
 import type { WithOptional } from '../type-utils';
 import type { HttpBaseHeaders, HttpBaseParams, HttpBaseSearch, HttpBuilderVars } from './builder-types';
 import { createHttpMergeVarsFn, createHttpQueryFn, createHttpQueryKeySanitizer } from './builder-utils';
@@ -127,6 +128,21 @@ export class HttpQueryBuilder<
   declare withPagination: (
     paginationOptions: BuilderPaginationOptions<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, TKey>,
   ) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData, TError, TTags, TFlags | 'withPagination', TKey>;
+
+  declare withTags: <
+    const TTagOpt extends QueryTagOption<
+      HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>,
+      TData,
+      TError,
+      QueryTagObject<TTags>,
+      TTags
+    >,
+  >(
+    primaryTag: TTagOpt,
+    ...otherTags: QueryTagOption<HttpBuilderVars<TParam, TSearch, TBody, THeader, TMeta>, TData, TError, QueryTagObject<TTags>, TTags>[]
+  ) => unknown extends TData
+    ? HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, InferDataFromQueryTagOption<TTagOpt, TTags>, TError, TTags, TFlags, TKey>
+    : this;
 
   withTagTypes<TTag extends string, T = unknown>(): HttpQueryBuilder<
     TParam,
