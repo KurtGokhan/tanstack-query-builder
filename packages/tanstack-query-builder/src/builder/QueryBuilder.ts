@@ -4,6 +4,7 @@ import type { InferDataFromQueryTagOption, QueryTagObject, QueryTagOption, Query
 import { TODO } from '../type-utils';
 import { QueryBuilderFrozen } from './QueryBuilderFrozen';
 import { type MiddlewareFn, createMiddlewareFunction } from './createMiddlewareFunction';
+import { PostprocessorFn } from './createMiddlewareFunction';
 import { type PreprocessorFn, createPreprocessorFunction, identityPreprocessor } from './createPreprocessorFunction';
 import { createTagMiddleware } from './createTagMiddleware';
 import { createUpdateMiddleware } from './createUpdateMiddleware';
@@ -65,8 +66,8 @@ export class QueryBuilder<
   withPreprocessor(preprocessor: PreprocessorFn<TVars, TVars>): this;
 
   /**
-   * Adds a preprocessor function to the query with a different type of input variables.
-   * The preprocessor function is called before the query function is called.
+   * Adds a pre-processor function to the query with a different type of input variables.
+   * The pre-processor function is called before the query function is called.
    */
   withPreprocessor<TVars$ = TVars>(preprocessor: PreprocessorFn<TVars$, TVars>): QueryBuilder<TVars$, TData, TError, TKey, TTags, TFlags>;
 
@@ -79,11 +80,22 @@ export class QueryBuilder<
   }
 
   /**
+   * Adds a post-processor function to the query.
+   * The post-processor function is called after the query function is successfully called.
+   * It can be used to modify the output data.
+   */
+  withPostprocessor<TData$ = TData>(
+    postprocessor: PostprocessorFn<TData, TData$>,
+  ): QueryBuilder<TVars, TData$, TError, TKey, TTags, TFlags> {
+    return this.withMiddleware(async (ctx, next) => postprocessor(await next(ctx)));
+  }
+
+  /**
    * Adds a middleware function to the query.
    * The middleware function wraps the query function and
    * can be used to modify the input variables, the output data, or the error.
    */
-  withMiddleware(middleware: MiddlewareFn<TVars, TData, TError, TKey>): this;
+  withMiddleware(middleware: MiddlewareFn<TVars, TData, TError, TKey, TData>): this;
 
   /**
    * Adds a middleware function to the query with overloaded types.
@@ -91,11 +103,11 @@ export class QueryBuilder<
    * can be used to modify the input variables, the output data, or the error.
    */
   withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
-    middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
+    middleware: MiddlewareFn<TVars$, TData$, TError$, TKey, TData>,
   ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags, TFlags>;
 
   withMiddleware<TVars$ = TVars, TData$ = TData, TError$ = TError>(
-    middleware: MiddlewareFn<TVars$, TData$, TError$, TKey>,
+    middleware: MiddlewareFn<TVars$, TData$, TError$, TKey, TData>,
     config?: Partial<BuilderConfig<TVars$, TData$, TError$, TKey>>,
   ): QueryBuilder<TVars$, TData$, TError$, TKey, TTags, TFlags> {
     const newBuilder = this as unknown as QueryBuilder<TVars$, TData$, TError$, TKey, TTags, TFlags>;

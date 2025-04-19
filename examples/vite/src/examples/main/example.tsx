@@ -25,10 +25,7 @@ export const { useQuery: useArticle, ...articleQuery } = builder
   .withTags((ctx) => ({ type: 'article', id: ctx.data.id }))
   .withPath('/articles/:id')
   .withPreprocessor<{ id: number }>((vars) => ({ ...vars, params: { id: vars.id } }))
-  .withMiddleware(async (ctx, next) => {
-    const res = await next(ctx);
-    return { ...res, titleUppercase: res.title.toUpperCase() };
-  })
+  .withPostprocessor((data) => ({ ...data, titleUppercase: data.title.toUpperCase() }))
   .asBound();
 
 export const commentsQuery = builder

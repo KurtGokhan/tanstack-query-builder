@@ -78,6 +78,17 @@ export class QueryBuilderFrozen<
   TTags extends Record<string, unknown> = Record<string, unknown>,
   TFlags extends BuilderFlags = '',
 > {
+  get types(): {
+    vars: TVars;
+    data: TData;
+    error: TError;
+    key: TKey;
+    tagMap: TTags;
+    flags: TFlags;
+  } {
+    throw new Error('Types should not be used in runtime. They are only for type inference.');
+  }
+
   constructor(public readonly config: BuilderConfig<TVars, TData, TError, TKey>) {
     if (config.bound) bindMethods(this, methodsToBind);
     this.client = new QueryBuilderClient(this) as typeof this.client;

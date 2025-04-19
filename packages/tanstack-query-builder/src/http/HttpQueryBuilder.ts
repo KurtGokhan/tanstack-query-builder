@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { QueryBuilder } from '../builder/QueryBuilder';
+import { PostprocessorFn } from '../builder/createMiddlewareFunction';
 import type { BuilderPaginationOptions } from '../builder/options';
 import type { BuilderConfig, BuilderFlags } from '../builder/types';
 import type { RequestError } from '../http/errors';
@@ -143,6 +144,10 @@ export class HttpQueryBuilder<
   ) => unknown extends TData
     ? HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, InferDataFromQueryTagOption<TTagOpt, TTags>, TError, TTags, TFlags, TKey>
     : this;
+
+  declare withPostprocessor: <TData$ = TData>(
+    postprocessor: PostprocessorFn<TData, TData$>,
+  ) => HttpQueryBuilder<TParam, TSearch, TBody, THeader, TMeta, TData$, TError, TTags, TFlags, TKey>;
 
   withTagTypes<TTag extends string, T = unknown>(): HttpQueryBuilder<
     TParam,

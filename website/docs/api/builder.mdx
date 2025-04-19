@@ -40,6 +40,17 @@ withPreprocessor(preprocessor): this
 Adds a preprocessor function to the query.
 The preprocessor function is called before the query function is called.
 
+### withPostprocessor
+
+```ts
+withPostprocessor(postprocessor): this
+```
+
+Adds a postprocessor function to the query.
+The preprocessor function is called after the query function is called successfully.
+The postprocessor function can be used to modify the output data or the error.
+Note that this is a specific case of the middleware function and middleware functions can be used to handle more advanced use cases.
+
 ### withMiddleware
 
 ```ts
