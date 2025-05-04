@@ -6,7 +6,7 @@ import type { MiddlewareFn } from './createMiddlewareFunction';
 type CreateTagMiddleware = <TVars, TData, TError, TKey extends unknown[]>(
   tags: QueryTagOption<any, any, any, any>[],
   cacheId: string | number,
-) => MiddlewareFn<TVars, TData, TError, TKey>;
+) => MiddlewareFn<TVars, TData, TError, TKey, TData>;
 
 export const createTagMiddleware: CreateTagMiddleware = (tags, cacheId) =>
   async function tagMiddlware(ctx, next, config) {
